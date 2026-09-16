@@ -122,7 +122,7 @@ test(core): catalogue consistency and gate coverage rules
 test(core): module shape and Modulith verification
 ```
 
-**Done when:** `./gradlew flywayMigrate` runs against the empty database and finds nothing to apply,
+**Done when:** `./gradlew bootRun` migrates the empty database and finds nothing to apply,
 `./gradlew integrationTest` brings up Oracle in Testcontainers, and `./gradlew rules` is green with
 the R0 and R1 rows moved from `planned` to `yes`.
 

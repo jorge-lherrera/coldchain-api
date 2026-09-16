@@ -98,9 +98,9 @@ so does a tolerated violation with no owner and no expiry date on it.
 ## How to run it
 
 ```bash
+cp .env.example .env             # local credentials, never committed
 docker compose up -d oracle      # Oracle 23ai Free, port 1521
-./gradlew flywayMigrate          # schema from scratch
-./gradlew bootRun                # API on 8080
+./gradlew bootRun                # Flyway migrates, then the API on 8080
 ```
 
 ```bash

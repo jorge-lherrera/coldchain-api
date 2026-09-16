@@ -63,7 +63,7 @@ One single migration with the module's eight tables, hand-written (R13.2). What 
 - Seed of the five system roles with their scopes, **in this same migration** and not in a startup
   seeder ([ADR-008](adr/ADR-008-reference-data-in-flyway.md)): they are catalogue, not user data.
 
-**Check:** `./gradlew flywayMigrate` against the empty database, and once more to confirm it is
+**Check:** `./gradlew bootRun` against the empty database, and once more to confirm the migration is
 idempotent.
 
 ## Step 3 · Domain and persistence

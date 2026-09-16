@@ -80,9 +80,13 @@ longest non-module branch, because everything after it depends on the shape it f
 
 **Infrastructure:**
 
-- `docker-compose.yml` with `gvenzl/oracle-free:23-slim-faststart`
+- `docker-compose.yml` with `gvenzl/oracle-free:23-slim-faststart` and the API itself, so a clone
+  reaches a running system with one command
+- a multi-stage `Dockerfile` that builds the layered jar and runs it as a non-root user
 - `application.yml` per profile, with `ddl-auto: none` and Flyway enabled, pointing at the compose
 - the migrations folder and the Flyway configuration, still without a single table
+- the baseline `SecurityConfig`: stateless, no CSRF, every route denied except the health probe, and
+  the headers of R9.15. It is what identity later extends with authentication and scopes
 
 **The package skeleton** ([ADR-006](adr/ADR-006-modules-and-events.md)), which is what every later
 branch fills in:
@@ -115,6 +119,7 @@ com.coldchain/
 
 ```
 chore(db): Oracle 23ai in compose and Flyway with no ddl-auto
+chore(build): production image and the full stack in compose
 feat(core): UUID v7 generator and RAW(16) converter
 feat(core): response envelope and RFC 9457 error model
 chore(build): rule gate tasks and the CI workflow that runs them
@@ -122,9 +127,9 @@ test(core): catalogue consistency and gate coverage rules
 test(core): module shape and Modulith verification
 ```
 
-**Done when:** `./gradlew bootRun` migrates the empty database and finds nothing to apply,
-`./gradlew integrationTest` brings up Oracle in Testcontainers, and `./gradlew rules` is green with
-the R0 and R1 rows moved from `planned` to `yes`.
+**Done when:** `docker compose up -d` leaves both containers healthy, `./gradlew bootRun` migrates
+the empty database and finds nothing to apply, `./gradlew integrationTest` brings up Oracle in
+Testcontainers, and `./gradlew rules` is green with the R0 and R1 rows moved from `planned` to `yes`.
 
 ### 3 · `feat/identity` — 8 tables
 

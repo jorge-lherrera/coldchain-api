@@ -35,7 +35,13 @@ You need **JDK 25** and **Docker** running. Everything else comes from the Gradl
 
 ```bash
 cp .env.example .env             # local credentials, never committed
-docker compose up -d oracle      # Oracle 23ai Free, port 1521
+docker compose up -d             # Oracle 23ai Free and the API, on 1521 and 8080
+```
+
+To work on the code, run the API from Gradle against the same database:
+
+```bash
+docker compose up -d oracle      # only the database
 ./gradlew bootRun                # Flyway migrates, then the API on 8080
 ```
 

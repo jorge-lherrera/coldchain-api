@@ -49,6 +49,14 @@ spring:
     problemdetails:
       enabled: false
 
+coldchain:
+  security:
+    jwt-secret: ${JWT_SECRET}
+    issuer: https://coldchain.dev
+    access-token-lifetime: 15m
+    refresh-token-lifetime: 7d
+    activation-lifetime: 48h
+
 server:
   port: ${SERVER_PORT:8080}
   servlet:

@@ -57,6 +57,7 @@ modules/<module>/
       entity/<X>JpaEntity.java            the JPA mapping, and nothing else
       jpa/<X>JpaRepository.java           Spring Data
       mapper/<X>PersistenceMapper.java    domain model <-> JPA entity
+    infrastructure/<technology>/          one folder per outbound technology the module speaks
 ```
 
 The rules that give the layout meaning:

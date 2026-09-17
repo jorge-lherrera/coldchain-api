@@ -68,6 +68,10 @@ dependencyManagement {
 	}
 }
 
+tasks.withType(JavaCompile).configureEach {
+	options.compilerArgs.addAll(['-Xlint:all,-processing', '-Werror'])
+}
+
 tasks.named('jar') {
 	enabled = false
 }

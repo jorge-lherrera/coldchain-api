@@ -36,8 +36,9 @@ spring:
     clean-disabled: true
   jackson:
     default-property-inclusion: always
-    serialization:
-      write-dates-as-timestamps: false
+    datatype:
+      datetime:
+        write-dates-as-timestamps: false
   mvc:
     problemdetails:
       enabled: false

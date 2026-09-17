@@ -51,14 +51,14 @@ else hidden. See [ADR-006](../docs/adr/ADR-006-modules-and-events.md).
 
 | Id | Rule | Sev | Enforcer | Machine | Status |
 |---|---|---|---|---|---|
-| R1.1 | A module lives in `com.coldchain.modules.<name>` and its name is **one lowercase word with no separators**. The five are `identity`, `catalog`, `shipment`, `telemetry`, `compliance` | STYLE | `ModuleShapeArchTest.everyModuleIsNamedInOneLowercaseWord` | planned | pending |
-| R1.2 | A module has exactly **two top-level folders**: `api/` and `internal/`. There is no third | STYLE | `ModuleShapeArchTest.everyModuleHasExactlyApiAndInternal` | planned | pending |
-| R1.3 | Under `internal/` the folders are `domain/`, `application/`, `infrastructure/` and `exception/`. No others | STYLE | `ModuleShapeArchTest.everyInternalHoldsOnlyItsFourFolders` | planned | pending |
-| R1.4 | The layout is fixed: `domain/{model,repository,service}`, `application/{usecase,mapper}`, `infrastructure/persistence/{entity,jpa,adapter,mapper}` ([ADR-007](../docs/adr/ADR-007-hexagonal-module-internals.md)) | STYLE | `ModuleShapeArchTest.everyLayerKeepsItsFixedLayout` | planned | pending |
+| R1.1 | A module lives in `com.coldchain.modules.<name>` and its name is **one lowercase word with no separators**. The five are `identity`, `catalog`, `shipment`, `telemetry`, `compliance` | STYLE | `ModuleShapeArchTest.everyModuleIsNamedInOneLowercaseWord` | yes | green |
+| R1.2 | A module has exactly **two top-level folders**: `api/` and `internal/`. There is no third | STYLE | `ModuleShapeArchTest.everyModuleHasExactlyApiAndInternal` | yes | green |
+| R1.3 | Under `internal/` the folders are `domain/`, `application/`, `infrastructure/` and `exception/`. No others | STYLE | `ModuleShapeArchTest.everyInternalHoldsOnlyItsFourFolders` | yes | green |
+| R1.4 | The layout is fixed: `domain/{model,repository,service}`, `application/{usecase,mapper}`, `infrastructure/persistence/{entity,jpa,adapter,mapper}` ([ADR-007](../docs/adr/ADR-007-hexagonal-module-internals.md)) | STYLE | `ModuleShapeArchTest.everyLayerKeepsItsFixedLayout` | yes | green |
 | R1.5 | A module declares its identity and its allowed dependencies in `package-info.java` with `@ApplicationModule` | STYLE | `ModuleEdgeDeclarationArchTest.everyRealEdgeIsADeclaredEdge` | planned | pending |
 | R1.6 | **Declared** and **real** dependencies match in both directions: no undeclared edge, and no declaration without an edge | INT | `ModuleEdgeDeclarationArchTest.everyRealEdgeIsADeclaredEdge` | planned | pending |
 | R1.7 | No module forms a cycle with another | INT | `ArchitectureRulesArchTest.modulesAreFreeOfCycles` | planned | pending |
-| R1.8 | **The module model builds.** Spring Modulith raises it from the `package-info` files and fails when a module declares a dependency on something that is not a module. Without this, R1.5 and R1.6 can be green over a model that no longer builds | INT | `ModulithVerificationTest.theModuleModelBuilds` | planned | pending |
+| R1.8 | **The module model builds.** Spring Modulith raises it from the `package-info` files and fails when a module declares a dependency on something that is not a module. Without this, R1.5 and R1.6 can be green over a model that no longer builds | INT | `ModulithVerificationTest.theModuleModelBuilds` | yes | green |
 
 ### R1.b — What it may and may not do
 
@@ -75,7 +75,7 @@ else hidden. See [ADR-006](../docs/adr/ADR-006-modules-and-events.md).
 
 | Id | Rule | Sev | Enforcer | Machine | Status |
 |---|---|---|---|---|---|
-| R1.15 | **`shared/` holds no business logic.** Value types, domain-free utilities and cross-cutting contracts only | STYLE | `ModuleShapeArchTest.sharedHoldsNoBusiness` | planned | pending |
+| R1.15 | **`shared/` holds no business logic.** Value types, domain-free utilities and cross-cutting contracts only | STYLE | `ModuleShapeArchTest.sharedHoldsNoBusiness` | yes | green |
 | R1.16 | **`delivery/` is an adapter, not part of the module.** `delivery.web.shipment` does not belong to module `shipment`, and R1.9 applies to it just the same | INT | `ModuleBoundariesArchTest.moduleInternalsAreOnlyAccessedWithinTheirModule` | planned | pending |
 | R1.17 | A type moves up into `shared/` only when **more than one module** consumes it. **No machine:** "more than one module consumes it" is measurable, but "it should move up" is a judgement about the future | STYLE | — | none | — |
 

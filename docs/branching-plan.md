@@ -126,12 +126,16 @@ feat(core): response envelope and RFC 9457 error model
 feat(core): sort catalogue and the auditable entity base
 chore(build): rule gate tasks and the CI workflow that runs them
 test(core): catalogue consistency and gate coverage rules
+test(core): gate coverage rules
 test(core): module shape and Modulith verification
 ```
 
 **Done when:** `docker compose up -d` leaves both containers healthy, `./gradlew bootRun` migrates
 the empty database and finds nothing to apply, `./gradlew integrationTest` brings up Oracle in
-Testcontainers, and `./gradlew rules` is green with the R0 and R1 rows moved from `planned` to `yes`.
+Testcontainers, and `./gradlew rules` is green with every R0 row and the R1 shape rows moved from
+`planned` to `yes`. The R1 rows about edges and table ownership stay `planned`: there is no module
+code for them to look at yet, and a rule that passes because it found nothing is the thing R0.16
+exists to forbid.
 
 ### 3 · `feat/identity` — 8 tables
 

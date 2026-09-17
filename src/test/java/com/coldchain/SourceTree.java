@@ -51,6 +51,26 @@ final class SourceTree {
                 .orElseThrow(() -> new IllegalStateException(file + " declares no package"));
     }
 
+    static String blockAt(String text, String marker) {
+        int start = text.indexOf(marker);
+        if (start < 0) {
+            throw new IllegalArgumentException("No block starts with " + marker);
+        }
+        int depth = 0;
+        for (int index = start; index < text.length(); index++) {
+            char character = text.charAt(index);
+            if (character == '{') {
+                depth++;
+            } else if (character == '}') {
+                depth--;
+                if (depth == 0) {
+                    return text.substring(start, index + 1);
+                }
+            }
+        }
+        throw new IllegalArgumentException("The block starting with " + marker + " is never closed");
+    }
+
     private static Stream<Path> walk(Path root) {
         if (!Files.isDirectory(root)) {
             return Stream.empty();

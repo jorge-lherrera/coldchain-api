@@ -104,6 +104,17 @@ erDiagram
     RAW(16) api_client_id PK
     VARCHAR2 scope_code PK
   }
+  refresh_token {
+    RAW(16) id PK
+    RAW(16) organization_id FK
+    RAW(16) app_user_id FK
+    RAW(16) family_id "the rotation chain"
+    VARCHAR2 token_hash UK "SHA-256, never the token"
+    TIMESTAMP_TZ issued_at
+    TIMESTAMP_TZ expires_at
+    TIMESTAMP_TZ used_at "set when rotated; a second use is reuse"
+    TIMESTAMP_TZ revoked_at
+  }
   audit_entry {
     RAW(16) id PK
     RAW(16) organization_id FK
@@ -122,6 +133,7 @@ erDiagram
   role ||--o{ user_role : "granted through"
   role ||--o{ role_scope : "groups permissions"
   api_client ||--o{ api_client_scope : "narrows"
+  app_user ||--o{ refresh_token : "rotates"
 ```
 
 ### Features
@@ -146,6 +158,11 @@ erDiagram
 - Email is globally unique and case-insensitive: a unique index over `LOWER(email)`, because in
   Oracle the default comparison very much is case-sensitive.
 - A machine credential's scopes are a child table, not a comma-separated string.
+- Refresh tokens are **stored**, because rotation has to detect reuse: presenting a token that was
+  already rotated revokes its whole family. Only a SHA-256 of the token is kept, never the token, and
+  the fast hash is the right one here — a 256-bit random value has nothing to brute-force, so the
+  Argon2id of R9.11 would only make every refresh cost a tenth of a second. `used_at` and `revoked_at`
+  are business states and not soft delete (N6.1).
 
 **Out of scope:** federated SSO, two-factor authentication, users in several organizations.
 

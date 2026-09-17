@@ -45,12 +45,13 @@ It is the piece the five migrations depend on, so it goes first and it goes with
   random for the rest.
 - Monotonicity test: a thousand identifiers generated within the same millisecond come out strictly
   increasing when compared as binary.
-- A single `UUID ↔ RAW(16)` converter and an `AttributeConverter` for JPA. Nobody else converts
-  (R4.3).
+- A single `UUID ↔ RAW(16)` converter for native queries, where the Oracle driver needs the sixteen
+  bytes. JPA needs none: Hibernate maps a `UUID` field to `RAW(16)` on its own, which is why R4.3
+  forbids a `length` and a `@JdbcTypeCode` on a key.
 
 ## Step 2 · Migration V1 — the identity schema
 
-One single migration with the module's eight tables, hand-written (R13.2). What cannot be missing:
+One single migration with the module's nine tables, hand-written (R13.2). What cannot be missing:
 
 - `RAW(16)` PK, and the four audit columns on every table (R6.15).
 - `organization.tax_id` unique; `CHECK` on `kind` and `status`.
@@ -61,6 +62,9 @@ One single migration with the module's eight tables, hand-written (R13.2). What 
   **is** `NULL` (R6.12).
 - Composite keys on `user_role`, `role_scope` and `api_client_scope`: the link *is* the pair (R6.2).
 - `organization_id` indexes on every table that gets queried by tenancy (R9.7).
+- `refresh_token` with `family_id`, `used_at` and `revoked_at`: without persisting the issued tokens,
+  the reuse detection R9.12 demands cannot exist. Unique on `token_hash`, which holds a SHA-256 and
+  never the token itself.
 - Seed of the five system roles with their scopes, **in this same migration** and not in a startup
   seeder ([ADR-008](adr/ADR-008-reference-data-in-flyway.md)): they are catalogue, not user data.
 

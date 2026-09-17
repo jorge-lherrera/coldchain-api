@@ -138,7 +138,7 @@ The walkthrough that exercises the whole system, meant to be watched in two minu
   [04 telemetry](docs/plan-04-telemetry.md) ·
   [05 compliance](docs/plan-05-compliance.md).
 - **Data model** (draw.io):
-  [`docs/coldchain-data-model.drawio`](docs/coldchain-data-model.drawio) — the 23 tables with their
+  [`docs/coldchain-data-model.drawio`](docs/coldchain-data-model.drawio) — the 24 tables with their
   columns and relationships, and one page per module.
 
 ## License

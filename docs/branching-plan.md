@@ -137,13 +137,13 @@ Testcontainers, and `./gradlew rules` is green with every R0 row and the R1 shap
 code for them to look at yet, and a rule that passes because it found nothing is the thing R0.16
 exists to forbid.
 
-### 3 · `feat/identity` — 8 tables
+### 3 · `feat/identity` — 9 tables
 
 Organizations, users, roles, permissions, login, machine credentials and auditing. The biggest module,
 and the one that leaves ready the security the other four use.
 
 ```
-feat(identity): schema for the eight module tables
+feat(identity): schema for the nine module tables
 feat(identity): organization registration with its first administrator
 feat(identity): user invitation and activation
 feat(identity): login with refresh token rotation

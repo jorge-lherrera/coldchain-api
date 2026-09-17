@@ -55,8 +55,8 @@ else hidden. See [ADR-006](../docs/adr/ADR-006-modules-and-events.md).
 | R1.2 | A module has exactly **two top-level folders**: `api/` and `internal/`. There is no third | STYLE | `ModuleShapeArchTest.everyModuleHasExactlyApiAndInternal` | yes | green |
 | R1.3 | Under `internal/` the folders are `domain/`, `application/`, `infrastructure/` and `exception/`. No others | STYLE | `ModuleShapeArchTest.everyInternalHoldsOnlyItsFourFolders` | yes | green |
 | R1.4 | The layout is fixed where it decides the design: `domain/{model,repository,service}`, `application/{usecase,mapper}` and `infrastructure/persistence/{entity,jpa,adapter,mapper}` ([ADR-007](../docs/adr/ADR-007-hexagonal-module-internals.md)). Under `infrastructure/` a module also holds one folder per outbound technology it actually speaks — `security/` for token issuing and hashing, later a `messaging/` or an `external/`. What is fixed is the shape of persistence, not how many things the outside world is made of | STYLE | `ModuleShapeArchTest.everyLayerKeepsItsFixedLayout` | yes | green |
-| R1.5 | A module declares its identity and its allowed dependencies in `package-info.java` with `@ApplicationModule` | STYLE | `ModuleEdgeDeclarationArchTest.everyRealEdgeIsADeclaredEdge` | planned | pending |
-| R1.6 | **Declared** and **real** dependencies match in both directions: no undeclared edge, and no declaration without an edge | INT | `ModuleEdgeDeclarationArchTest.everyRealEdgeIsADeclaredEdge` | planned | pending |
+| R1.5 | A module declares its identity and its allowed dependencies in `package-info.java` with `@ApplicationModule` | STYLE | `ModuleEdgeDeclarationArchTest.everyRealEdgeIsADeclaredEdge` | yes | green |
+| R1.6 | **Declared** and **real** dependencies match in both directions: no undeclared edge, and no declaration without an edge | INT | `ModuleEdgeDeclarationArchTest.everyRealEdgeIsADeclaredEdge` | yes | green |
 | R1.7 | No module forms a cycle with another | INT | `ArchitectureRulesArchTest.modulesAreFreeOfCycles` | planned | pending |
 | R1.8 | **The module model builds.** Spring Modulith raises it from the `package-info` files and fails when a module declares a dependency on something that is not a module. Without this, R1.5 and R1.6 can be green over a model that no longer builds | INT | `ModulithVerificationTest.theModuleModelBuilds` | yes | green |
 
@@ -64,7 +64,7 @@ else hidden. See [ADR-006](../docs/adr/ADR-006-modules-and-events.md).
 
 | Id | Rule | Sev | Enforcer | Machine | Status |
 |---|---|---|---|---|---|
-| R1.9 | **No module reaches into another's `internal/`.** No exception, `delivery` included | INT | `ModuleBoundariesArchTest.moduleInternalsAreOnlyAccessedWithinTheirModule` | planned | pending |
+| R1.9 | **No module reaches into another's `internal/`.** No exception, `delivery` included | INT | `ModuleBoundariesArchTest.moduleInternalsAreOnlyAccessedWithinTheirModule` | yes | green |
 | R1.10 | **Every cross-module access goes through `api/`.** The `<X>Api` interface is the only door | INT | `ArchitectureRulesArchTest.apiPackagesNeverDependOnInternals` | planned | pending |
 | R1.11 | **`api/` does not depend on `internal/`.** The contract does not drag the implementation behind it | INT | `ArchitectureRulesArchTest.apiPackagesNeverDependOnInternals` | planned | pending |
 | R1.12 | **Every table has exactly one owning module.** A second mapping from another module is a contract copied instead of called: the coupling survives, the edge disappears, and the column names become an agreement nobody signed | INT | `SchemaOwnershipArchTest.everyTableHasExactlyOneOwningModule` | planned | pending |
@@ -76,7 +76,7 @@ else hidden. See [ADR-006](../docs/adr/ADR-006-modules-and-events.md).
 | Id | Rule | Sev | Enforcer | Machine | Status |
 |---|---|---|---|---|---|
 | R1.15 | **`shared/` holds no business logic.** Value types, domain-free utilities and cross-cutting contracts only | STYLE | `ModuleShapeArchTest.sharedHoldsNoBusiness` | yes | green |
-| R1.16 | **`delivery/` is an adapter, not part of the module.** `delivery.web.shipment` does not belong to module `shipment`, and R1.9 applies to it just the same | INT | `ModuleBoundariesArchTest.moduleInternalsAreOnlyAccessedWithinTheirModule` | planned | pending |
+| R1.16 | **`delivery/` is an adapter, not part of the module.** `delivery.web.shipment` does not belong to module `shipment`, and R1.9 applies to it just the same | INT | `ModuleBoundariesArchTest.moduleInternalsAreOnlyAccessedWithinTheirModule` | yes | green |
 | R1.17 | A type moves up into `shared/` only when **more than one module** consumes it. **No machine:** "more than one module consumes it" is measurable, but "it should move up" is a judgement about the future | STYLE | — | none | — |
 
 ---
@@ -178,7 +178,7 @@ notices. The canon is the other way round — a whitelist.
 | R5.3 | **No paginated endpoint without declared sortable fields.** An open `sort` parameter is an open door to ordering by an unindexed column | CON | `ArchitectureRulesArchTest.pageableEndpointsDeclareSortableFields` | planned | pending |
 | R5.4 | **No unbounded read.** `findAll()` and `findAll(Specification)` inherited from Spring Data do not reach a use case; every listing is `Pageable` | COST | `PersistenceFetchArchTest.noUnboundedReadArrivesThroughAnInheritedOverload` | planned | pending |
 | R5.5 | **The controller depends only on `<X>Api`**, never on a use case, a repository or the module's domain | INT | `ArchitectureRulesArchTest.deliveryNeverDependsOnUseCases` · `ArchitectureRulesArchTest.deliveryNeverDependsOnModuleDomain` | planned | pending |
-| R5.6 | **No JPA entity crosses to a controller.** Always a DTO | CON | `ModuleBoundariesArchTest.moduleInternalsAreOnlyAccessedWithinTheirModule` | planned | pending |
+| R5.6 | **No JPA entity crosses to a controller.** Always a DTO | CON | `ModuleBoundariesArchTest.moduleInternalsAreOnlyAccessedWithinTheirModule` | yes | green |
 | R5.7 | **`@Valid` on the controller is mandatory** whenever there is a request body | CON | `LayerContractArchTest.everyRequestBodyIsValidated` | planned | pending |
 | R5.8 | **Business validation lives in the use case**, not in the DTO and not in the controller. The DTO validates shape; the use case validates meaning | INT | `LayerContractArchTest.noBusinessRuleIsDecidedAtTheEdge` | planned | pending |
 
@@ -259,22 +259,22 @@ client function can read either.
 
 | Id | Rule | Sev | Enforcer | Machine | Status |
 |---|---|---|---|---|---|
-| R9.1 | **Everything is closed by default.** Public routes are declared in a single place (`SecurityConfig.permitAll`) and never with a permissive `@PreAuthorize`. A public route scattered around is one nobody can audit | SEC | `SecurityPostureArchTest.thePublicRoutesAreDeclaredInOnePlace` | planned | pending |
-| R9.2 | **Every endpoint is scope-guarded**, and authorization is applied on the method, not by route pattern in the configuration | SEC | `SecurityPostureArchTest.everyEndpointIsScopeGuarded` | planned | pending |
-| R9.3 | **The scope catalogue is a closed enum in code.** A new permission is a reviewable code change, not a row somebody inserts in production | SEC | `SecurityPostureArchTest.everyScopeDemandedByAnEndpointExistsInTheCatalogue` | planned | pending |
-| R9.4 | **The session is `STATELESS` and CSRF is disabled.** With no server-side session state there is nothing for CSRF to forge | SEC | `SecurityPostureArchTest.theFilterChainIsStatelessAndDropsCsrf` | planned | pending |
-| R9.5 | **An endpoint never takes the user or the organization from a header** and never reads the current user from an adapter. The filter resolves the organization context once, at the edge, and leaves it available | SEC | `SecurityPostureArchTest.endpointsDoNotTakeUserContextHeaders` | planned | pending |
+| R9.1 | **Everything is closed by default.** Public routes are declared in a single place (`SecurityConfig.permitAll`) and never with a permissive `@PreAuthorize`. A public route scattered around is one nobody can audit | SEC | `SecurityPostureArchTest.thePublicRoutesAreDeclaredInOnePlace` | yes | green |
+| R9.2 | **Every endpoint is scope-guarded**, and authorization is applied on the method, not by route pattern in the configuration | SEC | `SecurityPostureArchTest.everyEndpointIsScopeGuarded` | yes | green |
+| R9.3 | **The scope catalogue is a closed enum in code.** A new permission is a reviewable code change, not a row somebody inserts in production | SEC | `SecurityPostureArchTest.everyScopeDemandedByAnEndpointExistsInTheCatalogue` | yes | green |
+| R9.4 | **The session is `STATELESS` and CSRF is disabled.** With no server-side session state there is nothing for CSRF to forge | SEC | `SecurityPostureArchTest.theFilterChainIsStatelessAndDropsCsrf` | yes | green |
+| R9.5 | **An endpoint never takes the user or the organization from a header** and never reads the current user from an adapter. The filter resolves the organization context once, at the edge, and leaves it available | SEC | `SecurityPostureArchTest.endpointsDoNotTakeUserContextHeaders` | yes | green |
 | R9.6 | **Every table holding organization data carries `ORGANIZATION_ID NOT NULL`** (N3.1). This is the deliberate exception to R4.10: tenancy carries a real foreign key even though it crosses a module, because it is the security property of the product and there declarative integrity beats decoupling | SEC | `SchemaStandardIT.n3_1_tenantColumnIsEnforced` | planned | pending |
 | R9.7 | **`ORGANIZATION_ID` leads an index** on every table queried by organization (N3.2) | COST | `SchemaStandardIT.n3_2_tenantColumnLeadsAnIndex` | planned | pending |
 | R9.8 | **Tenant filtering actually happens**, proven with data and not with structure. A structural test says the predicate is written somewhere; only data says a second organization gets nothing back | SEC | `TenantIsolationIT` | planned | pending |
 | R9.9 | **Visibility of a shipment is participation, and it is decided in one place** ([ADR-003](../docs/adr/ADR-003-visibility-by-participation.md)). The predicate lives in the repository, not in the service, so a new query cannot forget it | SEC | `SecurityPostureArchTest.shipmentVisibilityIsResolvedInOnePlace` · `ShipmentVisibilityIT` | planned | pending |
 | R9.10 | **Asking for a resource you cannot see returns `404`, not `403`.** A `403` confirms the resource exists, and that is already leaking information to a third party | SEC | `ShipmentVisibilityIT` | planned | pending |
-| R9.11 | **Passwords and client secrets are hashed with Argon2id.** Never reversible, never a fast hash | SEC | `SecurityPostureArchTest.secretsAreHashedWithArgon2` | planned | pending |
+| R9.11 | **Passwords and client secrets are hashed with Argon2id.** Never reversible, never a fast hash | SEC | `SecurityPostureArchTest.secretsAreHashedWithArgon2` | yes | green |
 | R9.12 | **Access token 15 minutes, refresh 7 days, and refresh rotation detects reuse**: using the same refresh token twice revokes the whole family | SEC | `SecurityPostureArchTest.theTokenLifetimesAreFifteenMinutesAndSevenDays` · `RefreshRotationIT` | planned | pending |
-| R9.13 | **A machine credential carries only the ingestion scope.** A compromised gateway cannot read a single shipment, and it never chooses its own organization: that travels signed in the token | SEC | `SecurityPostureArchTest.aMachineClientCannotAskForATenant` | planned | pending |
-| R9.14 | **Rate limiting on login, on token issuance and on ingestion** | SEC | `SecurityPostureArchTest.theUnauthenticatedEndpointsAreRateLimited` | planned | pending |
-| R9.15 | **Security headers are mandatory**: CSP `default-src 'none'`, `frame-ancestors 'none'`, HSTS one year, `Referrer-Policy`, `Permissions-Policy` | SEC | `SecurityPostureArchTest.everySecurityHeaderIsDeclared` | planned | pending |
-| R9.16 | **No secret is in the code or in a committed configuration file** | SEC | `SecurityPostureArchTest.noSecretIsWrittenIntoTheConfiguration` | planned | pending |
+| R9.13 | **A machine credential carries only the ingestion scope.** A compromised gateway cannot read a single shipment, and it never chooses its own organization: that travels signed in the token | SEC | `SecurityPostureArchTest.aMachineClientCannotAskForATenant` | yes | green |
+| R9.14 | **Rate limiting on login, on token issuance and on ingestion** | SEC | `SecurityPostureArchTest.theUnauthenticatedEndpointsAreRateLimited` | yes | green |
+| R9.15 | **Security headers are mandatory**: CSP `default-src 'none'`, `frame-ancestors 'none'`, HSTS one year, `Referrer-Policy`, `Permissions-Policy` | SEC | `SecurityPostureArchTest.everySecurityHeaderIsDeclared` | yes | green |
+| R9.16 | **No secret is in the code or in a committed configuration file** | SEC | `SecurityPostureArchTest.noSecretIsWrittenIntoTheConfiguration` | yes | green |
 | R9.17 | **Every denial is audited**, distinguishing an unauthenticated call from a denied scope, and goes out as a translated `ProblemDetail` | SEC | `SecurityPostureArchTest.everyDenialIsAudited` | planned | pending |
 | R9.18 | **Every write leaves an `AUDIT_ENTRY`** with actor, resource and payload, written in the same transaction. If the audit write fails, the operation fails: auditing is not best-effort | SEC | `AuditTrailIT.everyWriteLeavesItsEntry` | planned | pending |
 

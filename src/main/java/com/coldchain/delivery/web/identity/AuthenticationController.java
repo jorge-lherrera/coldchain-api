@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -82,6 +83,7 @@ public class AuthenticationController {
     }
 
     @GetMapping("/scopes")
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "The effective scopes of the caller",
             description = "The union of the scopes granted by every role the caller holds.")
     public ResponseEntity<ApiResponse<EffectiveScopesResponse>> myScopes() {

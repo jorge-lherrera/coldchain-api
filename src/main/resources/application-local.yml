@@ -1,0 +1,7 @@
+spring:
+  config:
+    import: file:.env[.properties]
+
+logging:
+  level:
+    org.flywaydb: debug

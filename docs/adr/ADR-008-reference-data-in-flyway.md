@@ -46,7 +46,7 @@ different rows, and nothing anywhere records that.
 
 - The database is a pure function of its schema version. `flyway_schema_history` answers "what rows are
   in there and since when", and two environments on the same version hold the same catalogue.
-- Tests get a populated catalogue from `flywayMigrate` alone, with no Spring context. The integration
+- Tests get a populated catalogue from the migrations alone, with no Spring context. The integration
   tests in [plan 01](../plan-01-identity.md) can assert against role codes without booting the
   application.
 - Changing a reference row means writing a new migration. That is more friction than editing a Java

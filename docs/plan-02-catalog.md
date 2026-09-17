@@ -34,7 +34,7 @@ nobody else. The module layout is [ADR-007](adr/ADR-007-hexagonal-module-interna
   of the index on their own, and the SKU can be reused.
 - An `organization_id` index on all three tables: they are always queried by tenancy (R9.7).
 
-**Check:** `flywayMigrate` against the empty database; then twice, to confirm it does not reapply. An
+**Check:** `./gradlew bootRun` against the empty database; then twice, to confirm it does not reapply. An
 `INSERT` that violates each `CHECK`, confirming the database rejects it.
 
 ## Step 2 · Domain and persistence — the four artefacts

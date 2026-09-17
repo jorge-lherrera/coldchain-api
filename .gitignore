@@ -44,5 +44,5 @@ CLAUDE.md
 *.hprof
 hs_err_pid*
 
-### Basura de herramientas ###
+### Tool noise ###
 .playwright-mcp/

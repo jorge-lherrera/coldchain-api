@@ -80,9 +80,13 @@ longest non-module branch, because everything after it depends on the shape it f
 
 **Infrastructure:**
 
-- `docker-compose.yml` with `gvenzl/oracle-free:23-slim-faststart`
+- `docker-compose.yml` with `gvenzl/oracle-free:23-slim-faststart` and the API itself, so a clone
+  reaches a running system with one command
+- a multi-stage `Dockerfile` that builds the layered jar and runs it as a non-root user
 - `application.yml` per profile, with `ddl-auto: none` and Flyway enabled, pointing at the compose
 - the migrations folder and the Flyway configuration, still without a single table
+- the baseline `SecurityConfig`: stateless, no CSRF, every route denied except the health probe, and
+  the headers of R9.15. It is what identity later extends with authentication and scopes
 
 **The package skeleton** ([ADR-006](adr/ADR-006-modules-and-events.md)), which is what every later
 branch fills in:
@@ -101,7 +105,8 @@ com.coldchain/
   HTTP status so no controller picks one (R8.1, R8.11)
 - the RFC 9457 error model: `DomainException`, `ErrorCode`, `ErrorCategory` and the single
   `GlobalExceptionHandler` (R8.2, R8.9)
-- the `SortCatalog` that makes a pageable endpoint declare its sortable fields (R5.3)
+- the `SortCatalog` that makes a pageable endpoint declare its sortable fields (R5.3), with the page
+  size capped by `spring.data.web.pageable.max-page-size` (R5.4)
 - the **UUID v7** generator and the `UUID ↔ RAW(16)` converter, with its monotonicity test (R4.3)
 - `AuditableEntity` with the four audit columns (R6.15)
 
@@ -115,16 +120,22 @@ com.coldchain/
 
 ```
 chore(db): Oracle 23ai in compose and Flyway with no ddl-auto
+chore(build): production image and the full stack in compose
 feat(core): UUID v7 generator and RAW(16) converter
 feat(core): response envelope and RFC 9457 error model
+feat(core): sort catalogue and the auditable entity base
 chore(build): rule gate tasks and the CI workflow that runs them
 test(core): catalogue consistency and gate coverage rules
+test(core): gate coverage rules
 test(core): module shape and Modulith verification
 ```
 
-**Done when:** `./gradlew flywayMigrate` runs against the empty database and finds nothing to apply,
-`./gradlew integrationTest` brings up Oracle in Testcontainers, and `./gradlew rules` is green with
-the R0 and R1 rows moved from `planned` to `yes`.
+**Done when:** `docker compose up -d` leaves both containers healthy, `./gradlew bootRun` migrates
+the empty database and finds nothing to apply, `./gradlew integrationTest` brings up Oracle in
+Testcontainers, and `./gradlew rules` is green with every R0 row and the R1 shape rows moved from
+`planned` to `yes`. The R1 rows about edges and table ownership stay `planned`: there is no module
+code for them to look at yet, and a rule that passes because it found nothing is the thing R0.16
+exists to forbid.
 
 ### 3 · `feat/identity` — 8 tables
 

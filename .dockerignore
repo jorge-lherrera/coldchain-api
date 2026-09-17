@@ -1,0 +1,8 @@
+*
+!gradle/
+!gradlew
+!settings.gradle
+!build.gradle
+!src/
+src/test/
+src/integrationTest/

@@ -15,8 +15,9 @@ must satisfy is the catalogue in [`rules/project-rules.md`](../rules/project-rul
   `spring-boot-starter-test`, `testcontainers:oracle-free`, `archunit-junit5`.
 - Two test *source sets*: `test` (unit, no Spring context) and `integrationTest` (with
   Testcontainers). Keep the slow task from sneaking into the fast one.
-- `docker-compose.yml` with `gvenzl/oracle-free:23-slim-faststart`, port 1521, a named volume and the
-  development password in the clear — it is local, there is nothing to protect.
+- `docker-compose.yml` with `gvenzl/oracle-free:23-slim-faststart`, a named volume, and both the
+  published ports and the credentials read from a git-ignored `.env` — 1521 and 8080 by default, and
+  overridable because a developer machine may already be running another Oracle on 1521 (R9.16).
 - `application.yml` with `ddl-auto: none` and Flyway enabled (R13.1). A `local` profile pointing at
   the compose.
 - **The package skeleton**, which is the part that decides everything after it:
@@ -63,7 +64,7 @@ One single migration with the module's eight tables, hand-written (R13.2). What 
 - Seed of the five system roles with their scopes, **in this same migration** and not in a startup
   seeder ([ADR-008](adr/ADR-008-reference-data-in-flyway.md)): they are catalogue, not user data.
 
-**Check:** `./gradlew flywayMigrate` against the empty database, and once more to confirm it is
+**Check:** `./gradlew bootRun` against the empty database, and once more to confirm the migration is
 idempotent.
 
 ## Step 3 · Domain and persistence

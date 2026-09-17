@@ -3,8 +3,8 @@ package com.coldchain.modules.identity.internal.domain.repository;
 import com.coldchain.modules.identity.internal.domain.model.AppUser;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import com.coldchain.shared.paging.PageCriteria;
+import com.coldchain.shared.paging.PagedResult;
 
 public interface AppUserRepository {
 
@@ -16,7 +16,7 @@ public interface AppUserRepository {
 
     Optional<AppUser> findByActivationTokenHash(String activationTokenHash);
 
-    Page<AppUser> findByOrganization(UUID organizationId, Pageable pageable);
+    PagedResult<AppUser> findByOrganization(UUID organizationId, PageCriteria criteria);
 
     long countAdministrators(UUID organizationId);
 }

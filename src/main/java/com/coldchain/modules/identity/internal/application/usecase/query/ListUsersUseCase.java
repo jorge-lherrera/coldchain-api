@@ -5,8 +5,8 @@ import com.coldchain.modules.identity.internal.application.mapper.IdentityApiMap
 import com.coldchain.modules.identity.internal.domain.repository.AppUserRepository;
 import com.coldchain.shared.application.UseCase;
 import java.util.UUID;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import com.coldchain.shared.paging.PageCriteria;
+import com.coldchain.shared.paging.PagedResult;
 
 @UseCase
 public class ListUsersUseCase {
@@ -20,7 +20,7 @@ public class ListUsersUseCase {
         this.mapper = mapper;
     }
 
-    public Page<UserResult> execute(UUID organizationId, Pageable pageable) {
-        return users.findByOrganization(organizationId, pageable).map(mapper::toResult);
+    public PagedResult<UserResult> execute(UUID organizationId, PageCriteria criteria) {
+        return users.findByOrganization(organizationId, criteria).map(mapper::toResult);
     }
 }

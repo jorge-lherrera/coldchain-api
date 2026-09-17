@@ -17,9 +17,9 @@ import com.coldchain.modules.identity.api.dto.RevokeRoleCommand;
 import com.coldchain.modules.identity.api.dto.RoleGrantResult;
 import com.coldchain.modules.identity.api.dto.TokenResult;
 import com.coldchain.modules.identity.api.dto.UserResult;
+import com.coldchain.shared.paging.PageCriteria;
+import com.coldchain.shared.paging.PagedResult;
 import java.util.UUID;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 public interface IdentityApi {
 
@@ -43,5 +43,5 @@ public interface IdentityApi {
 
     EffectiveScopesResult effectiveScopesOf(UUID userId);
 
-    Page<UserResult> listUsers(UUID organizationId, Pageable pageable);
+    PagedResult<UserResult> listUsers(UUID organizationId, PageCriteria criteria);
 }

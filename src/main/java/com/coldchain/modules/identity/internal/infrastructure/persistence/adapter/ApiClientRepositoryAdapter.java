@@ -14,8 +14,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import com.coldchain.shared.paging.PageCriteria;
+import com.coldchain.shared.paging.PagedResult;
+import com.coldchain.shared.paging.SpringDataPaging;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -60,9 +61,11 @@ public class ApiClientRepositoryAdapter implements ApiClientRepository {
     }
 
     @Override
-    public Page<ApiClient> findByOrganization(UUID organizationId, Pageable pageable) {
-        return clients.findByOrganizationId(organizationId, pageable)
-                .map(entity -> mapper.toDomain(entity, scopesOf(entity.getId())));
+    public PagedResult<ApiClient> findByOrganization(UUID organizationId, PageCriteria criteria) {
+        return SpringDataPaging.toPagedResult(
+                clients.findByOrganizationId(organizationId, SpringDataPaging.toPageable(criteria))
+                        .map(entity -> mapper.toDomain(entity, scopesOf(entity.getId()))),
+                criteria);
     }
 
     private Set<Scope> scopesOf(UUID apiClientId) {

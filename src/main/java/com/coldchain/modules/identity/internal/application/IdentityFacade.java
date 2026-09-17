@@ -29,9 +29,9 @@ import com.coldchain.modules.identity.internal.application.usecase.command.Regis
 import com.coldchain.modules.identity.internal.application.usecase.command.RevokeRoleUseCase;
 import com.coldchain.modules.identity.internal.application.usecase.query.GetEffectiveScopesUseCase;
 import com.coldchain.modules.identity.internal.application.usecase.query.ListUsersUseCase;
+import com.coldchain.shared.paging.PageCriteria;
+import com.coldchain.shared.paging.PagedResult;
 import java.util.UUID;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -129,7 +129,7 @@ public class IdentityFacade implements IdentityApi {
     }
 
     @Override
-    public Page<UserResult> listUsers(UUID organizationId, Pageable pageable) {
-        return listUsers.execute(organizationId, pageable);
+    public PagedResult<UserResult> listUsers(UUID organizationId, PageCriteria criteria) {
+        return listUsers.execute(organizationId, criteria);
     }
 }

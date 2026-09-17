@@ -7,8 +7,9 @@ import com.coldchain.modules.identity.internal.infrastructure.persistence.mapper
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import com.coldchain.shared.paging.PageCriteria;
+import com.coldchain.shared.paging.PagedResult;
+import com.coldchain.shared.paging.SpringDataPaging;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -48,8 +49,11 @@ public class AppUserRepositoryAdapter implements AppUserRepository {
     }
 
     @Override
-    public Page<AppUser> findByOrganization(UUID organizationId, Pageable pageable) {
-        return repository.findByOrganizationId(organizationId, pageable).map(mapper::toDomain);
+    public PagedResult<AppUser> findByOrganization(UUID organizationId, PageCriteria criteria) {
+        return SpringDataPaging.toPagedResult(
+                repository.findByOrganizationId(organizationId, SpringDataPaging.toPageable(criteria))
+                        .map(mapper::toDomain),
+                criteria);
     }
 
     @Override

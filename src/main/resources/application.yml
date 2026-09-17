@@ -56,6 +56,11 @@ coldchain:
     access-token-lifetime: 15m
     refresh-token-lifetime: 7d
     activation-lifetime: 48h
+  rate-limit:
+    enabled: true
+    capacity: 20
+    window: 1m
+    trusted-proxies: []
 
 server:
   port: ${SERVER_PORT:8080}

@@ -1,6 +1,9 @@
 package com.coldchain.shared.security;
 
 import com.coldchain.shared.error.ProblemErrorResponder;
+import com.coldchain.shared.ratelimit.ClientAddress;
+import com.coldchain.shared.ratelimit.RateLimitFilter;
+import com.coldchain.shared.ratelimit.RateLimitProperties;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.nimbusds.jose.proc.SecurityContext;
 import javax.crypto.spec.SecretKeySpec;
@@ -23,7 +26,11 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -54,8 +61,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain apiFilterChain(HttpSecurity http, ProblemErrorResponder problemErrorResponder)
-            throws Exception {
+    SecurityFilterChain apiFilterChain(HttpSecurity http, ProblemErrorResponder problemErrorResponder,
+            RateLimitProperties rateLimitProperties, ClientAddress clientAddress) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
@@ -73,6 +80,8 @@ public class SecurityConfig {
                         .requestMatchers(EndpointRequest.to("health")).permitAll()
                         .requestMatchers(HttpMethod.POST, PUBLIC_ROUTES.toArray(String[]::new)).permitAll()
                         .anyRequest().authenticated())
+                .addFilterBefore(new RateLimitFilter(publicRouteMatcher(), rateLimitProperties,
+                        clientAddress, problemErrorResponder), SecurityContextHolderFilter.class)
                 .headers(headers -> headers
                         .contentSecurityPolicy(policy -> policy.policyDirectives(CONTENT_SECURITY_POLICY))
                         .frameOptions(frame -> frame.deny())
@@ -82,6 +91,13 @@ public class SecurityConfig {
                                 .maxAgeInSeconds(HSTS_MAX_AGE_SECONDS))
                         .permissionsPolicyHeader(permissions -> permissions.policy(PERMISSIONS_POLICY)))
                 .build();
+    }
+
+    private static RequestMatcher publicRouteMatcher() {
+        PathPatternRequestMatcher.Builder patterns = PathPatternRequestMatcher.withDefaults();
+        return new OrRequestMatcher(PUBLIC_ROUTES.stream()
+                .map(route -> (RequestMatcher) patterns.matcher(HttpMethod.POST, route))
+                .toList());
     }
 
     @Bean

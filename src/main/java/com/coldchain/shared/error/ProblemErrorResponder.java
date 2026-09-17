@@ -28,15 +28,18 @@ public class ProblemErrorResponder implements AuthenticationEntryPoint, AccessDe
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
             AuthenticationException exception) throws IOException {
-        write(response, problemDetails.describe(CoreErrorCode.NOT_AUTHENTICATED, exception.getMessage(),
-                request.getRequestURI()));
+        respond(request, response, CoreErrorCode.NOT_AUTHENTICATED, exception.getMessage());
     }
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response,
             AccessDeniedException exception) throws IOException {
-        write(response, problemDetails.describe(CoreErrorCode.NOT_AUTHORIZED, exception.getMessage(),
-                request.getRequestURI()));
+        respond(request, response, CoreErrorCode.NOT_AUTHORIZED, exception.getMessage());
+    }
+
+    public void respond(HttpServletRequest request, HttpServletResponse response, ErrorCode errorCode,
+            String detail) throws IOException {
+        write(response, problemDetails.describe(errorCode, detail, request.getRequestURI()));
     }
 
     private void write(HttpServletResponse response, ProblemDetail problem) throws IOException {

@@ -3,7 +3,7 @@ services:
     image: gvenzl/oracle-free:23-slim-faststart
     container_name: coldchain-oracle
     ports:
-      - "1521:1521"
+      - "${ORACLE_PORT:-1521}:1521"
     environment:
       ORACLE_PASSWORD: ${ORACLE_SYSTEM_PASSWORD}
       APP_USER: ${DB_USERNAME}
@@ -25,7 +25,7 @@ services:
       oracle:
         condition: service_healthy
     ports:
-      - "8080:8080"
+      - "${API_PORT:-8080}:8080"
     environment:
       DB_URL: jdbc:oracle:thin:@//oracle:1521/FREEPDB1
       DB_USERNAME: ${DB_USERNAME}

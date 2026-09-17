@@ -1,5 +1,6 @@
 package com.coldchain.shared.security;
 
+import com.coldchain.shared.error.ProblemErrorResponder;
 import org.springframework.boot.security.autoconfigure.actuate.web.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,8 +24,12 @@ public class SecurityConfig {
     private static final long HSTS_MAX_AGE_SECONDS = 31_536_000L;
 
     @Bean
-    SecurityFilterChain apiFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain apiFilterChain(HttpSecurity http, ProblemErrorResponder problemErrorResponder)
+            throws Exception {
         return http
+                .exceptionHandling(handling -> handling
+                        .authenticationEntryPoint(problemErrorResponder)
+                        .accessDeniedHandler(problemErrorResponder))
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)

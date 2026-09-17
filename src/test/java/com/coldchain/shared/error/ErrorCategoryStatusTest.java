@@ -10,7 +10,7 @@ class ErrorCategoryStatusTest {
     @Test
     void everyCategoryMapsToExactlyOneStatus() {
         for (ErrorCategory category : ErrorCategory.values()) {
-            assertThat(GlobalExceptionHandler.statusOf(category))
+            assertThat(ProblemDetails.statusOf(category))
                     .describedAs("category %s has no status", category)
                     .isNotNull();
         }
@@ -18,19 +18,19 @@ class ErrorCategoryStatusTest {
 
     @Test
     void aBusinessRuleFailureIsFourTwentyTwoAndNeverFiveHundred() {
-        assertThat(GlobalExceptionHandler.statusOf(ErrorCategory.BUSINESS_RULE))
+        assertThat(ProblemDetails.statusOf(ErrorCategory.BUSINESS_RULE))
                 .isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
     }
 
     @Test
     void aConcurrencyConflictIsFourZeroNine() {
-        assertThat(GlobalExceptionHandler.statusOf(ErrorCategory.CONFLICT)).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(ProblemDetails.statusOf(ErrorCategory.CONFLICT)).isEqualTo(HttpStatus.CONFLICT);
     }
 
     @Test
     void onlyTheInternalCategoryIsAServerError() {
         for (ErrorCategory category : ErrorCategory.values()) {
-            boolean serverError = GlobalExceptionHandler.statusOf(category).is5xxServerError();
+            boolean serverError = ProblemDetails.statusOf(category).is5xxServerError();
             assertThat(serverError)
                     .describedAs("category %s", category)
                     .isEqualTo(category == ErrorCategory.INTERNAL || category == ErrorCategory.INTEGRATION);

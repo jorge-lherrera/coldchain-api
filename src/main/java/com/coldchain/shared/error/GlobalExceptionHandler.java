@@ -1,18 +1,13 @@
 package com.coldchain.shared.error;
 
 import com.coldchain.shared.observability.LogMessage;
-import com.coldchain.shared.trace.RequestTrace;
 import jakarta.servlet.http.HttpServletRequest;
-import java.net.URI;
-import java.time.Clock;
 import java.util.List;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -29,33 +24,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    private static final Map<ErrorCategory, HttpStatus> STATUS_BY_CATEGORY = Map.of(
-            ErrorCategory.VALIDATION, HttpStatus.BAD_REQUEST,
-            ErrorCategory.AUTHENTICATION, HttpStatus.UNAUTHORIZED,
-            ErrorCategory.AUTHORIZATION, HttpStatus.FORBIDDEN,
-            ErrorCategory.NOT_FOUND, HttpStatus.NOT_FOUND,
-            ErrorCategory.CONFLICT, HttpStatus.CONFLICT,
-            ErrorCategory.BUSINESS_RULE, HttpStatus.UNPROCESSABLE_CONTENT,
-            ErrorCategory.RATE_LIMIT, HttpStatus.TOO_MANY_REQUESTS,
-            ErrorCategory.INTEGRATION, HttpStatus.BAD_GATEWAY,
-            ErrorCategory.INTERNAL, HttpStatus.INTERNAL_SERVER_ERROR);
+    private final ProblemDetails problemDetails;
 
-    private final Clock clock;
-
-    public GlobalExceptionHandler(Clock clock) {
-        this.clock = clock;
-    }
-
-    public static HttpStatus statusOf(ErrorCategory category) {
-        return STATUS_BY_CATEGORY.get(category);
+    public GlobalExceptionHandler(ProblemDetails problemDetails) {
+        this.problemDetails = problemDetails;
     }
 
     @ExceptionHandler(DomainException.class)
     ResponseEntity<ProblemDetail> onDomainException(DomainException exception, HttpServletRequest request) {
-        ProblemDetail problem = describe(exception.errorCode(), exception.getMessage(), request.getRequestURI());
-        if (!exception.fieldErrors().isEmpty()) {
-            problem.setProperty("errors", exception.fieldErrors());
-        }
+        ProblemDetail problem = exception.fieldErrors().isEmpty()
+                ? problemDetails.describe(exception.errorCode(), exception.getMessage(), request.getRequestURI())
+                : problemDetails.describe(exception.errorCode(), exception.getMessage(),
+                        request.getRequestURI(), exception.fieldErrors());
         return ResponseEntity.status(problem.getStatus()).body(problem);
     }
 
@@ -94,8 +74,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         List<FieldError> fieldErrors = exception.getBindingResult().getFieldErrors().stream()
                 .map(error -> new FieldError(error.getField(), error.getDefaultMessage()))
                 .toList();
-        ProblemDetail problem = describe(CoreErrorCode.VALIDATION_FAILED, null, pathOf(request));
-        problem.setProperty("errors", fieldErrors);
+        ProblemDetail problem =
+                problemDetails.describe(CoreErrorCode.VALIDATION_FAILED, null, pathOf(request), fieldErrors);
         return ResponseEntity.status(problem.getStatus()).body(problem);
     }
 
@@ -105,28 +85,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ErrorCode errorCode = status.is5xxServerError()
                 ? CoreErrorCode.UNEXPECTED_FAILURE
                 : CoreErrorCode.MALFORMED_REQUEST;
-        ProblemDetail problem = describe(errorCode, null, pathOf(request));
+        ProblemDetail problem = problemDetails.describe(errorCode, null, pathOf(request));
         return ResponseEntity.status(problem.getStatus()).body(problem);
     }
 
     private ResponseEntity<ProblemDetail> respond(ErrorCode errorCode, String detail, HttpServletRequest request) {
-        ProblemDetail problem = describe(errorCode, detail, request.getRequestURI());
+        ProblemDetail problem = problemDetails.describe(errorCode, detail, request.getRequestURI());
         return ResponseEntity.status(problem.getStatus()).body(problem);
-    }
-
-    private ProblemDetail describe(ErrorCode errorCode, String detail, String path) {
-        HttpStatus status = statusOf(errorCode.category());
-        ProblemDetail problem = ProblemDetail.forStatus(status);
-        problem.setType(ProblemType.from(errorCode.messageKey()));
-        problem.setTitle(errorCode.title());
-        problem.setDetail(detail == null ? errorCode.title() : detail);
-        problem.setInstance(URI.create(path));
-        problem.setProperty("errorCode", errorCode.name());
-        problem.setProperty("messageKey", errorCode.messageKey());
-        problem.setProperty("category", errorCode.category().name());
-        problem.setProperty("timestamp", clock.instant());
-        problem.setProperty("traceId", RequestTrace.current());
-        return problem;
     }
 
     private static String pathOf(WebRequest request) {

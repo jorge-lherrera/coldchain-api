@@ -57,7 +57,7 @@ else hidden. See [ADR-006](../docs/adr/ADR-006-modules-and-events.md).
 | R1.4 | The layout is fixed where it decides the design: `domain/{model,repository,service}`, `application/{usecase,mapper}` and `infrastructure/persistence/{entity,jpa,adapter,mapper}` ([ADR-007](../docs/adr/ADR-007-hexagonal-module-internals.md)). Under `infrastructure/` a module also holds one folder per outbound technology it actually speaks — `security/` for token issuing and hashing, later a `messaging/` or an `external/`. What is fixed is the shape of persistence, not how many things the outside world is made of | STYLE | `ModuleShapeArchTest.everyLayerKeepsItsFixedLayout` | yes | green |
 | R1.5 | A module declares its identity and its allowed dependencies in `package-info.java` with `@ApplicationModule` | STYLE | `ModuleEdgeDeclarationArchTest.everyRealEdgeIsADeclaredEdge` | yes | green |
 | R1.6 | **Declared** and **real** dependencies match in both directions: no undeclared edge, and no declaration without an edge | INT | `ModuleEdgeDeclarationArchTest.everyRealEdgeIsADeclaredEdge` | yes | green |
-| R1.7 | No module forms a cycle with another | INT | `ArchitectureRulesArchTest.modulesAreFreeOfCycles` | planned | pending |
+| R1.7 | No module forms a cycle with another | INT | `ArchitectureRulesArchTest.modulesAreFreeOfCycles` | yes | green |
 | R1.8 | **The module model builds.** Spring Modulith raises it from the `package-info` files and fails when a module declares a dependency on something that is not a module. Without this, R1.5 and R1.6 can be green over a model that no longer builds | INT | `ModulithVerificationTest.theModuleModelBuilds` | yes | green |
 
 ### R1.b — What it may and may not do
@@ -65,8 +65,8 @@ else hidden. See [ADR-006](../docs/adr/ADR-006-modules-and-events.md).
 | Id | Rule | Sev | Enforcer | Machine | Status |
 |---|---|---|---|---|---|
 | R1.9 | **No module reaches into another's `internal/`.** No exception, `delivery` included | INT | `ModuleBoundariesArchTest.moduleInternalsAreOnlyAccessedWithinTheirModule` | yes | green |
-| R1.10 | **Every cross-module access goes through `api/`.** The `<X>Api` interface is the only door | INT | `ArchitectureRulesArchTest.apiPackagesNeverDependOnInternals` | planned | pending |
-| R1.11 | **`api/` does not depend on `internal/`.** The contract does not drag the implementation behind it | INT | `ArchitectureRulesArchTest.apiPackagesNeverDependOnInternals` | planned | pending |
+| R1.10 | **Every cross-module access goes through `api/`.** The `<X>Api` interface is the only door | INT | `ArchitectureRulesArchTest.apiPackagesNeverDependOnInternals` | yes | green |
+| R1.11 | **`api/` does not depend on `internal/`.** The contract does not drag the implementation behind it | INT | `ArchitectureRulesArchTest.apiPackagesNeverDependOnInternals` | yes | green |
 | R1.12 | **Every table has exactly one owning module.** A second mapping from another module is a contract copied instead of called: the coupling survives, the edge disappears, and the column names become an agreement nobody signed | INT | `SchemaOwnershipArchTest.everyTableHasExactlyOneOwningModule` | planned | pending |
 | R1.13 | **A query does not name tables outside its module.** Not native SQL, not JPQL, not `JdbcTemplate` | INT | `SchemaOwnershipArchTest.nativeSqlStaysInsideItsOwnModule` | planned | pending |
 | R1.14 | **A module does not write to another module's tables** — not even when seeding, which is one of the reasons reference data ships in migrations ([ADR-008](../docs/adr/ADR-008-reference-data-in-flyway.md)) | INT | `SchemaOwnershipArchTest.nativeSqlStaysInsideItsOwnModule` | planned | pending |
@@ -88,9 +88,9 @@ live in.
 
 | Id | Rule | Sev | Enforcer | Machine | Status |
 |---|---|---|---|---|---|
-| R2.1 | `<X>Api` — inbound port, in `modules/<x>/api/` | STYLE | `ArchitectureRulesArchTest.apiInterfacesAreNamedApi` | planned | pending |
+| R2.1 | `<X>Api` — inbound port, in `modules/<x>/api/` | STYLE | `ArchitectureRulesArchTest.apiInterfacesAreNamedApi` | yes | green |
 | R2.2 | `<X>Facade` — implementation of the port, in `modules/<x>/internal/application/` | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | planned | pending |
-| R2.3 | `<X>UseCase` — one use case, in `internal/application/usecase/{command,query}/` | STYLE | `ArchitectureRulesArchTest.useCaseClassesAreNamedUseCase` | planned | pending |
+| R2.3 | `<X>UseCase` — one use case, in `internal/application/usecase/{command,query}/` | STYLE | `ArchitectureRulesArchTest.useCaseClassesAreNamedUseCase` | yes | green |
 | R2.4 | `<X>Command` — an intent coming in, in `api/dto/` | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | planned | pending |
 | R2.5 | `<X>Result` — what a use case returns, in `api/dto/` | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | planned | pending |
 | R2.6 | `<X>Filter` — read criteria of the **contract**, in `api/dto/` | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | planned | pending |
@@ -101,7 +101,7 @@ live in.
 | R2.11 | `<X>ApiMapper` — domain model ↔ `api/` DTO | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | planned | pending |
 | R2.12 | `<X>JpaEntity` — persistence entity | STYLE | `NamingStandardsArchTest.jpaEntitiesUseJpaEntitySuffix` | planned | pending |
 | R2.13 | `<X>JpaRepository` — Spring Data repository, next to the entity | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | planned | pending |
-| R2.14 | `<X>Repository` — **the port**, always an interface, in `internal/domain/repository/` | STYLE | `ArchitectureRulesArchTest.repositoryPortsAreInterfaces` | planned | pending |
+| R2.14 | `<X>Repository` — **the port**, always an interface, in `internal/domain/repository/` | STYLE | `ArchitectureRulesArchTest.repositoryPortsAreInterfaces` | yes | green |
 | R2.15 | `<X>RepositoryAdapter` — implementation of the port | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | planned | pending |
 | R2.16 | `<X>ErrorCode` — the module's error catalogue, in `internal/exception/` | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | planned | pending |
 | R2.17 | Domain model — **no suffix**, in `internal/domain/model/` | STYLE | `ModuleFileLayoutArchTest.onlyDomainModelsLiveInTheDomainModelFolder` | planned | pending |
@@ -115,7 +115,7 @@ notices. The canon is the other way round — a whitelist.
 |---|---|---|---|---|---|
 | R2.18 | **`api/` admits exactly seven things**: `Api`, `Command`, `Filter`, `Result`, `Event`, `Policy` and contract enums. Nothing else | STYLE | `ApiContractCanonArchTest.apiPackagesCarryOnlyTheSevenAllowedSuffixes` | planned | pending |
 | R2.19 | **Every read DTO converges on `Result`.** No `Summary`, `View`, `Row`, `Detail`, `Info` or `Data`: the nuance goes in the **prefix**, never in the suffix, because at the point of use four suffixes for one role hide which of them may cross the boundary | STYLE | `ApiContractCanonArchTest.everyReadDtoConvergesOnResult` | planned | pending |
-| R2.20 | **Forbidden suffixes in `api/`**: `Dto` (does not say whether it comes in or goes out), `Request`/`Response` (HTTP vocabulary, and `api/` does not know HTTP exists), `Mapper` (implementation, not contract), `Service` (not a role in this project), `Query` (served two concepts that were indistinguishable at the point of use — use `Filter` or `Criteria`), `Ref` (an abbreviation covering four roles) | STYLE | `ArchitectureRulesArchTest.apiPackagesHaveNoForbiddenSuffixes` | planned | pending |
+| R2.20 | **Forbidden suffixes in `api/`**: `Dto` (does not say whether it comes in or goes out), `Request`/`Response` (HTTP vocabulary, and `api/` does not know HTTP exists), `Mapper` (implementation, not contract), `Service` (not a role in this project), `Query` (served two concepts that were indistinguishable at the point of use — use `Filter` or `Criteria`), `Ref` (an abbreviation covering four roles) | STYLE | `ArchitectureRulesArchTest.apiPackagesHaveNoForbiddenSuffixes` | yes | green |
 
 ### R2.c — Java identifiers
 
@@ -134,12 +134,12 @@ notices. The canon is the other way round — a whitelist.
 
 | Id | Rule | Sev | Enforcer | Machine | Status |
 |---|---|---|---|---|---|
-| R3.1 | **Constructor injection, always.** `@Autowired`, `@Inject` and `@Resource` on a field or a setter are forbidden | STYLE | `ArchitectureRulesArchTest.noFieldInjection` · `ArchitectureRulesArchTest.noSetterInjection` | planned | pending |
-| R3.2 | **The domain does not know the framework**: no Spring, no JPA, no Hibernate, no Jackson in `internal/domain/` | STYLE | `ArchitectureRulesArchTest.domainModelsAreFrameworkFree` | planned | pending |
+| R3.1 | **Constructor injection, always.** `@Autowired`, `@Inject` and `@Resource` on a field or a setter are forbidden | STYLE | `ArchitectureRulesArchTest.noFieldInjection` · `ArchitectureRulesArchTest.noSetterInjection` | yes | green |
+| R3.2 | **The domain does not know the framework**: no Spring, no JPA, no Hibernate, no Jackson in `internal/domain/` | STYLE | `ArchitectureRulesArchTest.domainModelsAreFrameworkFree` | yes | green |
 | R3.3 | **An aggregate is created through a named factory** (`Shipment.createNew(...)`), never through a public no-args constructor. A no-args constructor exists on the JPA entity, which is a different class | INT | `ClassConstructionArchTest.domainAggregatesAreCreatedThroughNamedFactories` | planned | pending |
 | R3.4 | **Composition over inheritance.** Inheritance only from `@MappedSuperclass`, from `RuntimeException` and from framework interfaces | STYLE | `ClassConstructionArchTest.nothingInheritsToShareBehaviour` | planned | pending |
 | R3.5 | **Every JPA entity extends `AuditableEntity`** and therefore carries the four audit columns (R7.12) | INT | `EntityCanonArchTest.everyEntityIsAuditable` | planned | pending |
-| R3.6 | **Persistence declares no transactions**, neither on the class nor on the method (R11.1) | INT | `ArchitectureRulesArchTest.persistenceDeclaresNoTransactions` | planned | pending |
+| R3.6 | **Persistence declares no transactions**, neither on the class nor on the method (R11.1) | INT | `ArchitectureRulesArchTest.persistenceDeclaresNoTransactions` | yes | green |
 | R3.7 | An entity declaring `@SQLRestriction` over a column **maps that column**. Otherwise every `SELECT` dies with `ORA-00904`, silently | INT | `EntityCanonArchTest.everyRestrictedColumnIsMapped` | planned | pending |
 | R3.8 | `Command`, `Result`, `Filter` and `Criteria` are **immutable `record`s** | STYLE | `ClassConstructionArchTest.everyContractTypeIsAnImmutableRecord` | planned | pending |
 | R3.9 | A file declares **one public type** and is named after it | STYLE | `ClassConstructionArchTest.everyFileDeclaresOnePublicTypeNamedLikeItself` | planned | pending |
@@ -173,14 +173,14 @@ notices. The canon is the other way round — a whitelist.
 
 | Id | Rule | Sev | Enforcer | Machine | Status |
 |---|---|---|---|---|---|
-| R5.1 | **A use case does one thing**, has one public `execute`, and is named after what it does | STYLE | `ArchitectureRulesArchTest.useCaseClassesAreNamedUseCase` | planned | pending |
-| R5.2 | **Command and query separated**: `usecase/command/` writes, `usecase/query/` reads and never writes | STYLE | `LayerContractArchTest.queriesDoNotWrite` | planned | pending |
-| R5.3 | **No paginated endpoint without declared sortable fields.** An open `sort` parameter is an open door to ordering by an unindexed column | CON | `ArchitectureRulesArchTest.pageableEndpointsDeclareSortableFields` | planned | pending |
+| R5.1 | **A use case does one thing**, has one public `execute`, and is named after what it does | STYLE | `ArchitectureRulesArchTest.useCaseClassesAreNamedUseCase` | yes | green |
+| R5.2 | **Command and query separated**: `usecase/command/` writes, `usecase/query/` reads and never writes | STYLE | `LayerContractArchTest.queriesDoNotWrite` | yes | green |
+| R5.3 | **No paginated endpoint without declared sortable fields.** An open `sort` parameter is an open door to ordering by an unindexed column | CON | `ArchitectureRulesArchTest.pageableEndpointsDeclareSortableFields` | yes | green |
 | R5.4 | **No unbounded read.** `findAll()` and `findAll(Specification)` inherited from Spring Data do not reach a use case; every listing is `Pageable` | COST | `PersistenceFetchArchTest.noUnboundedReadArrivesThroughAnInheritedOverload` | planned | pending |
-| R5.5 | **The controller depends only on `<X>Api`**, never on a use case, a repository or the module's domain | INT | `ArchitectureRulesArchTest.deliveryNeverDependsOnUseCases` · `ArchitectureRulesArchTest.deliveryNeverDependsOnModuleDomain` | planned | pending |
+| R5.5 | **The controller depends only on `<X>Api`**, never on a use case, a repository or the module's domain | INT | `ArchitectureRulesArchTest.deliveryNeverDependsOnUseCases` · `ArchitectureRulesArchTest.deliveryNeverDependsOnModuleDomain` | yes | green |
 | R5.6 | **No JPA entity crosses to a controller.** Always a DTO | CON | `ModuleBoundariesArchTest.moduleInternalsAreOnlyAccessedWithinTheirModule` | yes | green |
-| R5.7 | **`@Valid` on the controller is mandatory** whenever there is a request body | CON | `LayerContractArchTest.everyRequestBodyIsValidated` | planned | pending |
-| R5.8 | **Business validation lives in the use case**, not in the DTO and not in the controller. The DTO validates shape; the use case validates meaning | INT | `LayerContractArchTest.noBusinessRuleIsDecidedAtTheEdge` | planned | pending |
+| R5.7 | **`@Valid` on the controller is mandatory** whenever there is a request body | CON | `LayerContractArchTest.everyRequestBodyIsValidated` | yes | green |
+| R5.8 | **Business validation lives in the use case**, not in the DTO and not in the controller. The DTO validates shape; the use case validates meaning | INT | `LayerContractArchTest.noBusinessRuleIsDecidedAtTheEdge` | yes | green |
 
 ---
 
@@ -284,12 +284,12 @@ client function can read either.
 
 | Id | Rule | Sev | Enforcer | Machine | Status |
 |---|---|---|---|---|---|
-| R10.1 | **The transaction is declared on the use case, never on the repository.** If the caller has no transaction, the missing use case gets created — the adapter does not get annotated | INT | `ArchitectureRulesArchTest.persistenceDeclaresNoTransactions` | planned | pending |
-| R10.2 | **`@Transactional` on writes only.** A query is not transactional unless it genuinely needs a consistent read, and then it is `readOnly` | COST | `LayerContractArchTest.queriesAreReadOnlyWhenTransactional` | planned | pending |
+| R10.1 | **The transaction is declared on the use case, never on the repository.** If the caller has no transaction, the missing use case gets created — the adapter does not get annotated | INT | `ArchitectureRulesArchTest.persistenceDeclaresNoTransactions` | yes | green |
+| R10.2 | **`@Transactional` on writes only.** A query is not transactional unless it genuinely needs a consistent read, and then it is `readOnly` | COST | `LayerContractArchTest.queriesAreReadOnlyWhenTransactional` | yes | green |
 | R10.3 | **Domain events run inside the publishing transaction.** If the reaction fails, the whole operation fails: there is no dispatched shipment with no monitoring window. The response is the last thing that happens | INT | `EventDeliveryArchTest.cascadesRunInsideThePublishingTransaction` | planned | pending |
 | R10.4 | **An event handler is idempotent.** **No machine:** idempotence is proven by running the handler twice, not by reading it | INT | — | none | — |
-| R10.5 | **An event lives in `api/event/`** and is part of the module's public contract | STYLE | `LayerContractArchTest.everyEventLivesInTheModulesApi` | planned | pending |
-| R10.6 | **No external call happens inside a database transaction.** The transaction would last as long as the third party does, holding locks meanwhile | COST | `LayerContractArchTest.noExternalCallRunsInsideATransaction` | planned | pending |
+| R10.5 | **An event lives in `api/event/`** and is part of the module's public contract | STYLE | `LayerContractArchTest.everyEventLivesInTheModulesApi` | yes | green |
+| R10.6 | **No external call happens inside a database transaction.** The transaction would last as long as the third party does, holding locks meanwhile | COST | `LayerContractArchTest.noExternalCallRunsInsideATransaction` | yes | green |
 
 ---
 
@@ -339,7 +339,7 @@ In force from day one. A log is replicated, exported and retained longer than th
 | Id | Rule | Sev | Enforcer | Machine | Status |
 |---|---|---|---|---|---|
 | R14.1 | **A change that contradicts a rule corrects the rule in the same change.** A rule that lies is worse than no rule. **No machine:** whether a change contradicts a written rule is exactly what nobody knows how to automate | STYLE | — | none | — |
-| R14.2 | **Every module has its build plan** in `docs/plan-0N-<module>.md`, and the plan's closing criterion is a command somebody can run | STYLE | `LayerContractArchTest.everyModuleHasItsBuildPlan` | planned | pending |
+| R14.2 | **Every module has its build plan** in `docs/plan-0N-<module>.md`, and the plan's closing criterion is a command somebody can run | STYLE | `LayerContractArchTest.everyModuleHasItsBuildPlan` | yes | green |
 | R14.3 | **A module is closed when** its rules in this catalogue are `green` or covered by a live waiver, and none of its area is still `pending`. Closure is a condition that is read from the repository, not a judgement — otherwise the bar moves with fatigue and the module built in week one is not held to what the one built in week four is | STYLE | `ModuleClosureTest.everyClosedModuleMeetsTheClosureConditions` | planned | pending |
 | R14.4 | **One module at a time.** A finding in another module is written down and not fixed on the way past. It is not a preference about method: fixing everything at once is the reason nothing finishes | STYLE | `ModuleClosureTest.atMostOneModuleIsInProgress` | planned | pending |
 | R14.5 | **Every public endpoint is described in OpenAPI**, generated from the code and not written by hand | CON | `HttpContractArchTest.everyEndpointIsDocumentedInOpenApi` | yes | green |

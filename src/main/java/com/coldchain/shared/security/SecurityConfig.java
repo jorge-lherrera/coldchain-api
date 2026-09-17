@@ -9,6 +9,7 @@ import com.nimbusds.jose.proc.SecurityContext;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.security.autoconfigure.actuate.web.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -60,9 +61,7 @@ public class SecurityConfig {
 
     private final String jwtSecret;
 
-    public SecurityConfig(
-            @org.springframework.beans.factory.annotation.Value("${coldchain.security.jwt-secret}")
-            String jwtSecret) {
+    public SecurityConfig(@Value("${coldchain.security.jwt-secret}") String jwtSecret) {
         this.jwtSecret = jwtSecret;
     }
 

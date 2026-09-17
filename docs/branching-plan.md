@@ -105,7 +105,8 @@ com.coldchain/
   HTTP status so no controller picks one (R8.1, R8.11)
 - the RFC 9457 error model: `DomainException`, `ErrorCode`, `ErrorCategory` and the single
   `GlobalExceptionHandler` (R8.2, R8.9)
-- the `SortCatalog` that makes a pageable endpoint declare its sortable fields (R5.3)
+- the `SortCatalog` that makes a pageable endpoint declare its sortable fields (R5.3), with the page
+  size capped by `spring.data.web.pageable.max-page-size` (R5.4)
 - the **UUID v7** generator and the `UUID ↔ RAW(16)` converter, with its monotonicity test (R4.3)
 - `AuditableEntity` with the four audit columns (R6.15)
 
@@ -122,6 +123,7 @@ chore(db): Oracle 23ai in compose and Flyway with no ddl-auto
 chore(build): production image and the full stack in compose
 feat(core): UUID v7 generator and RAW(16) converter
 feat(core): response envelope and RFC 9457 error model
+feat(core): sort catalogue and the auditable entity base
 chore(build): rule gate tasks and the CI workflow that runs them
 test(core): catalogue consistency and gate coverage rules
 test(core): module shape and Modulith verification

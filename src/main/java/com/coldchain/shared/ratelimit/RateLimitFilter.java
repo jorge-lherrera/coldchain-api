@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Map;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -57,10 +58,11 @@ public class RateLimitFilter extends OncePerRequestFilter {
             chain.doFilter(request, response);
             return;
         }
-        response.setHeader(HttpHeaders.RETRY_AFTER,
-                String.valueOf(Duration.ofNanos(probe.getNanosToWaitForRefill()).toSeconds() + 1));
+        long retryAfter = Duration.ofNanos(probe.getNanosToWaitForRefill()).toSeconds() + 1;
+        response.setHeader(HttpHeaders.RETRY_AFTER, String.valueOf(retryAfter));
         responder.respond(request, response, CoreErrorCode.TOO_MANY_REQUESTS,
-                "The client exceeded the allowed number of attempts on this endpoint");
+                "The client exceeded the allowed number of attempts on this endpoint",
+                Map.of("retryAfter", retryAfter));
     }
 
     private String keyOf(HttpServletRequest request) {

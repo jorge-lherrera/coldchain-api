@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.access.AccessDeniedException;
@@ -39,7 +40,14 @@ public class ProblemErrorResponder implements AuthenticationEntryPoint, AccessDe
 
     public void respond(HttpServletRequest request, HttpServletResponse response, ErrorCode errorCode,
             String detail) throws IOException {
-        write(response, problemDetails.describe(errorCode, detail, request.getRequestURI()));
+        respond(request, response, errorCode, detail, Map.of());
+    }
+
+    public void respond(HttpServletRequest request, HttpServletResponse response, ErrorCode errorCode,
+            String detail, Map<String, Object> extensions) throws IOException {
+        ProblemDetail problem = problemDetails.describe(errorCode, detail, request.getRequestURI());
+        extensions.forEach(problem::setProperty);
+        write(response, problem);
     }
 
     private void write(HttpServletResponse response, ProblemDetail problem) throws IOException {

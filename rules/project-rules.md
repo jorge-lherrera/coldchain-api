@@ -230,22 +230,22 @@ client function can read either.
 
 | Id | Rule | Sev | Enforcer | Machine | Status |
 |---|---|---|---|---|---|
-| R8.1 | **Success:** an `ApiResponse` envelope with `status`, `code`, `messageKey`, `message`, `data`, `traceId`, `timestamp`, `meta` | CON | `HttpContractArchTest.theSuccessEnvelopeCarriesItsEightFields` | planned | pending |
-| R8.2 | **Error:** `application/problem+json` (RFC 9457) with `type`, `title`, `status`, `detail`, `instance`, `errorCode`, `messageKey`, `category`, `timestamp`, `traceId` | CON | `HttpContractArchTest.theErrorShapeIsProblemJsonPlusItsExtensions` | planned | pending |
-| R8.3 | **There is no `success` field.** The `status` already says it and the `Content-Type` tells the two shapes apart | CON | `HttpContractArchTest.thereIsNoSuccessFlagAndOnlyOneAsymmetry` | planned | pending |
-| R8.4 | **Every envelope field is always serialised**, `null` included. A typed client cannot depend on the *presence* of a field | CON | `HttpContractArchTest.everyEnvelopeFieldIsAlwaysSerialised` | planned | pending |
-| R8.5 | **Each module has its `<X>ErrorCode`** and the domain chooses the meaning, never the HTTP status | CON | `HttpContractArchTest.theDomainNeverNamesAnHttpStatus` | planned | pending |
-| R8.6 | **The HTTP status is decided by `ErrorCategory`**, a closed enum. A module does not pick an `HttpStatus` by hand | CON | `HttpContractArchTest.theHttpStatusOfAnErrorComesFromItsCategory` | planned | pending |
-| R8.7 | **`BUSINESS_RULE` is 422, not 500.** A business rule failure never goes out as an infrastructure error | CON | `HttpContractArchTest.theHttpStatusOfAnErrorComesFromItsCategory` | planned | pending |
-| R8.8 | **A use case throws `DomainException.of(<X>ErrorCode.Y)`.** Nobody returns an HTTP status from inside the domain | CON | `HttpContractArchTest.theDomainNeverNamesAnHttpStatus` | planned | pending |
-| R8.9 | **One single `GlobalExceptionHandler`** translates every exception into a `ProblemDetail`. There is no second translator | CON | `HttpContractArchTest.oneAdviceTranslatesEveryException` | planned | pending |
-| R8.10 | **The controller never assembles JSON by hand.** One line: `responseFactory.respond(code, mapper.toResponse(result))` | CON | `HttpContractArchTest.noControllerAssemblesItsOwnResponse` | planned | pending |
-| R8.11 | **The success HTTP status is carried by the `SuccessCode`**, not by the controller. The code names the operation and declares a `SuccessOutcome` — `CREATED`, `RETRIEVED`, `UPDATED`, `DELETED`, `ACCEPTED` — and the status comes from that closed enum, mirroring how `ErrorCategory` decides an error's status. A per-module enum of constants that each named their own status would let two modules disagree about what a delete returns, which is the thing this rule exists to prevent | CON | `HttpContractArchTest.noControllerChoosesAnHttpStatusItself` | planned | pending |
+| R8.1 | **Success:** an `ApiResponse` envelope with `status`, `code`, `messageKey`, `message`, `data`, `traceId`, `timestamp`, `meta` | CON | `HttpContractArchTest.theSuccessEnvelopeCarriesItsEightFields` | yes | green |
+| R8.2 | **Error:** `application/problem+json` (RFC 9457) with `type`, `title`, `status`, `detail`, `instance`, `errorCode`, `messageKey`, `category`, `timestamp`, `traceId` | CON | `HttpContractArchTest.theErrorShapeIsProblemJsonPlusItsExtensions` | yes | green |
+| R8.3 | **There is no `success` field.** The `status` already says it and the `Content-Type` tells the two shapes apart | CON | `HttpContractArchTest.thereIsNoSuccessFlagAndOnlyOneAsymmetry` | yes | green |
+| R8.4 | **Every envelope field is always serialised**, `null` included. A typed client cannot depend on the *presence* of a field | CON | `HttpContractArchTest.everyEnvelopeFieldIsAlwaysSerialised` | yes | green |
+| R8.5 | **Each module has its `<X>ErrorCode`** and the domain chooses the meaning, never the HTTP status | CON | `HttpContractArchTest.theDomainNeverNamesAnHttpStatus` | yes | green |
+| R8.6 | **The HTTP status is decided by `ErrorCategory`**, a closed enum. A module does not pick an `HttpStatus` by hand | CON | `HttpContractArchTest.theHttpStatusOfAnErrorComesFromItsCategory` | yes | green |
+| R8.7 | **`BUSINESS_RULE` is 422, not 500.** A business rule failure never goes out as an infrastructure error | CON | `HttpContractArchTest.theHttpStatusOfAnErrorComesFromItsCategory` | yes | green |
+| R8.8 | **A use case throws `DomainException.of(<X>ErrorCode.Y)`.** Nobody returns an HTTP status from inside the domain | CON | `HttpContractArchTest.theDomainNeverNamesAnHttpStatus` | yes | green |
+| R8.9 | **One single `GlobalExceptionHandler`** translates every exception into a `ProblemDetail`. There is no second translator | CON | `HttpContractArchTest.oneAdviceTranslatesEveryException` | yes | green |
+| R8.10 | **The controller never assembles JSON by hand.** One line: `responseFactory.respond(code, mapper.toResponse(result))` | CON | `HttpContractArchTest.noControllerAssemblesItsOwnResponse` | yes | green |
+| R8.11 | **The success HTTP status is carried by the `SuccessCode`**, not by the controller. The code names the operation and declares a `SuccessOutcome` — `CREATED`, `RETRIEVED`, `UPDATED`, `DELETED`, `ACCEPTED` — and the status comes from that closed enum, mirroring how `ErrorCategory` decides an error's status. A per-module enum of constants that each named their own status would let two modules disagree about what a delete returns, which is the thing this rule exists to prevent | CON | `HttpContractArchTest.noControllerChoosesAnHttpStatusItself` | yes | green |
 | R8.12 | **Message keys follow a three-segment canon** in `snake_case`: `error.<module>.<reason>` and `success.<module>.<what>`. The key is the stable contract; the English text next to it is not | CON | `MessageKeyStyleTest.everyMessageKeyFollowsTheThreeSegmentCanon` | planned | pending |
-| R8.13 | **The problem `type` is derived, never written**: from the `messageKey`, dropping the prefix and swapping separators (`error.shipment.handoff_expired` → `.../problems/shipment/handoff-expired`). A URL nobody types is a URL that cannot drift from the code | CON | `HttpContractArchTest.theProblemTypeIsDerivedAndNeverWritten` | planned | pending |
-| R8.14 | **A validation error adds `errors[]`** with field and reason; a rate-limit error adds `retryAfter` | CON | `HttpContractArchTest.validationAndRateLimitCarryTheirOwnExtensions` | planned | pending |
-| R8.15 | **Lists go through `responseFactory.paginated(...)`**, which fills `meta.pagination`. Every paginating endpoint has the same shape | CON | `HttpContractArchTest.paginationMetadataComesFromTheFactory` | planned | pending |
-| R8.16 | **One request identifier** (`traceId`) at the root of both shapes, and the `message`/`detail` asymmetry is the only one permitted — that name is fixed by RFC 9457 | CON | `HttpContractArchTest.bothShapesCarryTheSameTraceId` · `HttpContractArchTest.thereIsNoSuccessFlagAndOnlyOneAsymmetry` | planned | pending |
+| R8.13 | **The problem `type` is derived, never written**: from the `messageKey`, dropping the prefix and swapping separators (`error.shipment.handoff_expired` → `.../problems/shipment/handoff-expired`). A URL nobody types is a URL that cannot drift from the code | CON | `HttpContractArchTest.theProblemTypeIsDerivedAndNeverWritten` | yes | green |
+| R8.14 | **A validation error adds `errors[]`** with field and reason; a rate-limit error adds `retryAfter` | CON | `HttpContractArchTest.validationAndRateLimitCarryTheirOwnExtensions` | yes | green |
+| R8.15 | **Lists go through `responseFactory.paginated(...)`**, which fills `meta.pagination`. Every paginating endpoint has the same shape | CON | `HttpContractArchTest.paginationMetadataComesFromTheFactory` | yes | green |
+| R8.16 | **One request identifier** (`traceId`) at the root of both shapes, and the `message`/`detail` asymmetry is the only one permitted — that name is fixed by RFC 9457 | CON | `HttpContractArchTest.bothShapesCarryTheSameTraceId` · `HttpContractArchTest.thereIsNoSuccessFlagAndOnlyOneAsymmetry` | yes | green |
 
 ### Proposals
 
@@ -302,7 +302,7 @@ In force from day one. Every rule here describes a way of losing a value with no
 | R11.1 | **Every entity two users can write at the same time carries `@Version`.** Without optimistic locking the last write wins in silence and the first is lost without a trace | INT | `ConcurrencyArchTest.everyConcurrentlyWritableEntityIsVersioned` | planned | pending |
 | R11.2 | **No read-modify-write happens without a version or a lock.** `sequence_no` on the custody log is the canonical case: it is reserved inside the writing transaction with `SELECT MAX(...) + 1 FOR UPDATE`, never from an Oracle sequence, which would leave gaps on rollback | INT | `CustodySequenceConcurrencyIT.noTwoEventsShareASequenceNumber` | planned | pending |
 | R11.3 | **A write the client can repeat is idempotent by key.** Batch ingestion is the canonical case: the same `idempotency_key` returns the original result and writes nothing | INT | `IngestionIdempotencyIT.resendingABatchWritesNothing` | planned | pending |
-| R11.4 | **A concurrency conflict goes out as 409**, not as 500. It is an expected outcome, not a server failure | CON | `HttpContractArchTest.theHttpStatusOfAnErrorComesFromItsCategory` | planned | pending |
+| R11.4 | **A concurrency conflict goes out as 409**, not as 500. It is an expected outcome, not a server failure | CON | `HttpContractArchTest.theHttpStatusOfAnErrorComesFromItsCategory` | yes | green |
 
 ---
 
@@ -342,7 +342,7 @@ In force from day one. A log is replicated, exported and retained longer than th
 | R14.2 | **Every module has its build plan** in `docs/plan-0N-<module>.md`, and the plan's closing criterion is a command somebody can run | STYLE | `LayerContractArchTest.everyModuleHasItsBuildPlan` | planned | pending |
 | R14.3 | **A module is closed when** its rules in this catalogue are `green` or covered by a live waiver, and none of its area is still `pending`. Closure is a condition that is read from the repository, not a judgement — otherwise the bar moves with fatigue and the module built in week one is not held to what the one built in week four is | STYLE | `ModuleClosureTest.everyClosedModuleMeetsTheClosureConditions` | planned | pending |
 | R14.4 | **One module at a time.** A finding in another module is written down and not fixed on the way past. It is not a preference about method: fixing everything at once is the reason nothing finishes | STYLE | `ModuleClosureTest.atMostOneModuleIsInProgress` | planned | pending |
-| R14.5 | **Every public endpoint is described in OpenAPI**, generated from the code and not written by hand | CON | `HttpContractArchTest.everyEndpointIsDocumentedInOpenApi` | planned | pending |
+| R14.5 | **Every public endpoint is described in OpenAPI**, generated from the code and not written by hand | CON | `HttpContractArchTest.everyEndpointIsDocumentedInOpenApi` | yes | green |
 
 ---
 

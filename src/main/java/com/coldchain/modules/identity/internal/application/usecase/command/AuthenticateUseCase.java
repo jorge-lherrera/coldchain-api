@@ -4,6 +4,7 @@ import com.coldchain.modules.identity.api.ActorType;
 import com.coldchain.modules.identity.api.Scope;
 import com.coldchain.modules.identity.api.dto.AuthenticateCommand;
 import com.coldchain.modules.identity.api.dto.TokenResult;
+import com.coldchain.modules.identity.api.event.UserAuthenticated;
 import com.coldchain.modules.identity.internal.domain.model.AppUser;
 import com.coldchain.modules.identity.internal.domain.model.Organization;
 import com.coldchain.modules.identity.internal.domain.model.RefreshToken;
@@ -22,6 +23,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 
 @UseCase
@@ -41,11 +43,14 @@ public class AuthenticateUseCase {
 
     private final AccessTokenIssuer accessTokens;
 
+    private final ApplicationEventPublisher events;
+
     private final Clock clock;
 
     public AuthenticateUseCase(AppUserRepository users, OrganizationRepository organizations,
             RoleRepository roles, RefreshTokenRepository refreshTokens, SecretHasher hasher,
-            OpaqueTokenFactory tokens, AccessTokenIssuer accessTokens, Clock clock) {
+            OpaqueTokenFactory tokens, AccessTokenIssuer accessTokens, ApplicationEventPublisher events,
+            Clock clock) {
         this.users = users;
         this.organizations = organizations;
         this.roles = roles;
@@ -53,6 +58,7 @@ public class AuthenticateUseCase {
         this.hasher = hasher;
         this.tokens = tokens;
         this.accessTokens = accessTokens;
+        this.events = events;
         this.clock = clock;
     }
 
@@ -77,6 +83,7 @@ public class AuthenticateUseCase {
         refreshTokens.save(RefreshToken.openFamily(organization.id(), user.id(), refresh.fingerprint(), now,
                 accessTokens.refreshTokenLifetime()));
         String accessToken = accessTokens.issue(ActorType.USER, user.id(), organization.id(), scopes);
+        events.publishEvent(new UserAuthenticated(organization.id(), ActorType.USER, user.id(), now));
         return new TokenResult(accessToken, refresh.plainToken(), "Bearer",
                 accessTokens.accessTokenLifetime().toSeconds());
     }

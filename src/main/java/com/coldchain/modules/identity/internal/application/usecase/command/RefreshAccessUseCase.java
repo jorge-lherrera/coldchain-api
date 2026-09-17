@@ -4,6 +4,7 @@ import com.coldchain.modules.identity.api.ActorType;
 import com.coldchain.modules.identity.api.Scope;
 import com.coldchain.modules.identity.api.dto.RefreshAccessCommand;
 import com.coldchain.modules.identity.api.dto.TokenResult;
+import com.coldchain.modules.identity.api.event.AccessRefreshed;
 import com.coldchain.modules.identity.internal.domain.model.AppUser;
 import com.coldchain.modules.identity.internal.domain.model.RefreshToken;
 import com.coldchain.modules.identity.internal.domain.repository.AppUserRepository;
@@ -18,6 +19,7 @@ import com.coldchain.shared.error.DomainException;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Set;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 
 @UseCase
@@ -35,17 +37,21 @@ public class RefreshAccessUseCase {
 
     private final AccessTokenIssuer accessTokens;
 
+    private final ApplicationEventPublisher events;
+
     private final Clock clock;
 
     public RefreshAccessUseCase(RefreshTokenRepository refreshTokens,
             RevokeTokenFamilyUseCase revokeTokenFamily, AppUserRepository users, RoleRepository roles,
-            OpaqueTokenFactory tokens, AccessTokenIssuer accessTokens, Clock clock) {
+            OpaqueTokenFactory tokens, AccessTokenIssuer accessTokens, ApplicationEventPublisher events,
+            Clock clock) {
         this.refreshTokens = refreshTokens;
         this.revokeTokenFamily = revokeTokenFamily;
         this.users = users;
         this.roles = roles;
         this.tokens = tokens;
         this.accessTokens = accessTokens;
+        this.events = events;
         this.clock = clock;
     }
 
@@ -55,7 +61,7 @@ public class RefreshAccessUseCase {
         RefreshToken presented = refreshTokens.findByTokenHash(tokens.fingerprint(command.refreshToken()))
                 .orElseThrow(() -> DomainException.of(IdentityErrorCode.REFRESH_TOKEN_INVALID));
         if (presented.spent()) {
-            revokeTokenFamily.execute(presented.familyId());
+            revokeTokenFamily.execute(presented);
             throw DomainException.of(IdentityErrorCode.REFRESH_TOKEN_REUSED);
         }
         if (presented.revoked()) {
@@ -75,6 +81,8 @@ public class RefreshAccessUseCase {
                 accessTokens.refreshTokenLifetime()));
         Set<Scope> scopes = roles.findScopesOf(user.id());
         String accessToken = accessTokens.issue(ActorType.USER, user.id(), user.organizationId(), scopes);
+        events.publishEvent(new AccessRefreshed(user.organizationId(), ActorType.USER, user.id(),
+                presented.familyId(), now));
         return new TokenResult(accessToken, next.plainToken(), "Bearer",
                 accessTokens.accessTokenLifetime().toSeconds());
     }

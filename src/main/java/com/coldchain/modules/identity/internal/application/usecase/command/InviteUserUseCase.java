@@ -2,6 +2,8 @@ package com.coldchain.modules.identity.internal.application.usecase.command;
 
 import com.coldchain.modules.identity.api.dto.InviteUserCommand;
 import com.coldchain.modules.identity.api.dto.InviteUserResult;
+import com.coldchain.modules.identity.api.event.UserInvited;
+import com.coldchain.modules.identity.internal.application.CurrentIdentityActor;
 import com.coldchain.modules.identity.internal.domain.model.AppUser;
 import com.coldchain.modules.identity.internal.domain.model.Role;
 import com.coldchain.modules.identity.internal.domain.model.RoleGrant;
@@ -16,6 +18,7 @@ import com.coldchain.shared.error.DomainException;
 import com.coldchain.shared.security.CurrentActor;
 import java.time.Clock;
 import java.time.Instant;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 
 @UseCase
@@ -31,16 +34,22 @@ public class InviteUserUseCase {
 
     private final CurrentActor currentActor;
 
+    private final CurrentIdentityActor identityActor;
+
+    private final ApplicationEventPublisher events;
+
     private final Clock clock;
 
     public InviteUserUseCase(AppUserRepository users, OrganizationRepository organizations,
             RoleRepository roles, OpaqueTokenFactory tokens, CurrentActor currentActor,
-            Clock clock) {
+            CurrentIdentityActor identityActor, ApplicationEventPublisher events, Clock clock) {
         this.users = users;
         this.organizations = organizations;
         this.roles = roles;
         this.tokens = tokens;
         this.currentActor = currentActor;
+        this.identityActor = identityActor;
+        this.events = events;
         this.clock = clock;
     }
 
@@ -58,6 +67,8 @@ public class InviteUserUseCase {
         AppUser invited = users.save(AppUser.invite(command.organizationId(), command.email(),
                 command.fullName(), activation.fingerprint(), expiresAt));
         roles.grant(RoleGrant.of(invited.id(), role.id(), currentActor.id().orElse(null), clock.instant()));
+        events.publishEvent(new UserInvited(command.organizationId(), identityActor.type(),
+                identityActor.id(), invited.id(), command.role(), clock.instant()));
         return new InviteUserResult(invited.id(), invited.email(), activation.plainToken(), expiresAt);
     }
 }

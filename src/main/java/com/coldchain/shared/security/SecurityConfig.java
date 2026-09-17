@@ -52,6 +52,12 @@ public class SecurityConfig {
             "/v1/auth/client-token",
             "/v1/auth/activation");
 
+    private static final List<String> DOCUMENTATION_ROUTES = List.of(
+            "/v3/api-docs",
+            "/v3/api-docs/**",
+            "/swagger-ui.html",
+            "/swagger-ui/**");
+
     private final String jwtSecret;
 
     public SecurityConfig(
@@ -79,6 +85,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers(EndpointRequest.to("health")).permitAll()
                         .requestMatchers(HttpMethod.POST, PUBLIC_ROUTES.toArray(String[]::new)).permitAll()
+                        .requestMatchers(HttpMethod.GET, DOCUMENTATION_ROUTES.toArray(String[]::new))
+                        .permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(new RateLimitFilter(publicRouteMatcher(), rateLimitProperties,
                         clientAddress, problemErrorResponder), SecurityContextHolderFilter.class)

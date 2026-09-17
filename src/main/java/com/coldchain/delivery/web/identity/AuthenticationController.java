@@ -11,6 +11,8 @@ import com.coldchain.modules.identity.api.IdentityApi;
 import com.coldchain.shared.response.ApiResponse;
 import com.coldchain.shared.response.ResponseFactory;
 import com.coldchain.shared.security.CurrentActor;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@Tag(name = "Authentication", description = "Tokens, activation and the scopes a caller holds")
 @RequestMapping("/v1/auth")
 public class AuthenticationController {
 
@@ -40,18 +43,28 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
+    @Operation(summary = "Exchange an email and a password for tokens",
+            description = "Answers the same way whether the email is unknown or the password is "
+                    + "wrong, so the endpoint cannot be used to find out who has an account.",
+            security = {})
     public ResponseEntity<ApiResponse<TokenResponse>> login(@Valid @RequestBody LoginRequest request) {
         return responses.respond(IdentitySuccessCode.TOKEN_ISSUED,
                 mapper.toResponse(identity.authenticate(mapper.toCommand(request))));
     }
 
     @PostMapping("/refresh")
+    @Operation(summary = "Rotate a refresh token",
+            description = "The presented token is spent and a new one is issued. Presenting a spent "
+                    + "token revokes its whole family: reuse is treated as a leak.", security = {})
     public ResponseEntity<ApiResponse<TokenResponse>> refresh(@Valid @RequestBody RefreshRequest request) {
         return responses.respond(IdentitySuccessCode.TOKEN_ISSUED,
                 mapper.toResponse(identity.refreshAccess(mapper.toCommand(request))));
     }
 
     @PostMapping("/client-token")
+    @Operation(summary = "Exchange machine credentials for an access token",
+            description = "The organization travels signed in the token; a client never chooses it.",
+            security = {})
     public ResponseEntity<ApiResponse<TokenResponse>> clientToken(
             @Valid @RequestBody ClientTokenRequest request) {
         return responses.respond(IdentitySuccessCode.TOKEN_ISSUED,
@@ -59,6 +72,9 @@ public class AuthenticationController {
     }
 
     @PostMapping("/activation")
+    @Operation(summary = "Activate an invited user",
+            description = "Consumes the single-use activation token and sets the first password.",
+            security = {})
     public ResponseEntity<ApiResponse<ActivateUserResponse>> activate(
             @Valid @RequestBody ActivateUserRequest request) {
         return responses.respond(IdentitySuccessCode.USER_ACTIVATED,
@@ -66,6 +82,8 @@ public class AuthenticationController {
     }
 
     @GetMapping("/scopes")
+    @Operation(summary = "The effective scopes of the caller",
+            description = "The union of the scopes granted by every role the caller holds.")
     public ResponseEntity<ApiResponse<EffectiveScopesResponse>> myScopes() {
         return responses.respond(IdentitySuccessCode.SCOPES_RETRIEVED,
                 mapper.toResponse(identity.effectiveScopesOf(currentActor.requireId())));

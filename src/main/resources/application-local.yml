@@ -2,6 +2,12 @@ spring:
   config:
     import: file:.env[.properties]
 
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
 logging:
   level:
     org.flywaydb: debug

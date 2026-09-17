@@ -72,6 +72,92 @@ tasks.withType(JavaCompile).configureEach {
 	options.compilerArgs.addAll(['-Xlint:all,-processing', '-Werror'])
 }
 
+def ruleCatalogue = rootProject.file('rules/project-rules.md')
+
+def citedEnforcers = { boolean needingInfrastructure ->
+	def cited = [] as Set
+	ruleCatalogue.eachLine { line ->
+		def cells = line.split(/\|/, -1)*.trim()
+		if (cells.size() == 8 && cells[1] ==~ /R\d+\.\d+/ && cells[5] in ['yes', 'partial']) {
+			def citations = cells[4].replaceAll(/`[^`]+`\s*\(Gradle task\)/, '')
+			(citations =~ /`([^`]+)`/).each { match ->
+				def enforcer = match[1]
+				def className = enforcer.tokenize('.')[0]
+				if (!enforcer.contains('(') && className.endsWith('IT') == needingInfrastructure) {
+					cited << enforcer
+				}
+			}
+		}
+	}
+	return cited
+}
+
+def executedCases = { File directory ->
+	def executed = [] as Set
+	if (directory.exists()) {
+		directory.eachFileMatch(~/TEST-.*\.xml/) { file ->
+			new groovy.xml.XmlSlurper().parse(file).testcase.each { testcase ->
+				if (testcase.skipped.isEmpty()) {
+					executed << "${testcase.@classname}.${testcase.@name}".toString().replaceAll(/\(.*\)$/, '')
+				}
+			}
+		}
+	}
+	return executed
+}
+
+def unproven = { Set cited, Set executed ->
+	cited.findAll { enforcer ->
+		!executed.any { it == enforcer || it.endsWith('.' + enforcer) || it.contains('.' + enforcer + '.') }
+	}.sort()
+}
+
+def registerRanCheck = { String name, String gate, boolean needingInfrastructure ->
+	tasks.register(name) {
+		group = 'verification'
+		description = "Reads the results of ${gate} and fails if a rule that claims a machine was never executed."
+		def resultsDirectory = layout.buildDirectory.dir("test-results/${gate}").get().asFile
+		doLast {
+			def missing = unproven(citedEnforcers(needingInfrastructure), executedCases(resultsDirectory))
+			if (!missing.isEmpty()) {
+				throw new GradleException(
+						"These rules declare a machine that did not run in ${gate}: " + missing.join(', '))
+			}
+		}
+	}
+}
+
+registerRanCheck('rulesRan', 'rules', false)
+registerRanCheck('rulesDbRan', 'rulesDb', true)
+
+tasks.register('rules', Test) {
+	group = 'verification'
+	description = 'The rule gate. Every enforcer that does not need a database.'
+	testClassesDirs = sourceSets.test.output.classesDirs
+	classpath = sourceSets.test.runtimeClasspath
+	useJUnitPlatform()
+	include 'com/coldchain/*.class'
+	reports.junitXml.outputLocation = layout.buildDirectory.dir('test-results/rules')
+	reports.html.outputLocation = layout.buildDirectory.dir('reports/rules')
+	finalizedBy 'rulesRan'
+}
+
+tasks.register('rulesDb', Test) {
+	group = 'verification'
+	description = 'The rules that can only be checked against a real Oracle.'
+	testClassesDirs = sourceSets.integrationTest.output.classesDirs
+	classpath = sourceSets.integrationTest.runtimeClasspath
+	useJUnitPlatform()
+	include 'com/coldchain/*IT.class'
+	reports.junitXml.outputLocation = layout.buildDirectory.dir('test-results/rulesDb')
+	reports.html.outputLocation = layout.buildDirectory.dir('reports/rulesDb')
+	finalizedBy 'rulesDbRan'
+}
+
+tasks.named('check') {
+	dependsOn 'rules'
+}
+
 tasks.named('jar') {
 	enabled = false
 }

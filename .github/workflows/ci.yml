@@ -50,6 +50,38 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew rebuild
 
+  demo:
+    name: the walkthrough, end to end
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: credentials for the demo stack
+        run: |
+          {
+            echo "ORACLE_SYSTEM_PASSWORD=$(openssl rand -hex 16)"
+            echo "DB_USERNAME=coldchain"
+            echo "DB_PASSWORD=$(openssl rand -hex 16)"
+            echo "JWT_SECRET=$(openssl rand -base64 48)"
+          } > .env
+      - name: raise Oracle and the API
+        run: docker compose up -d --build --wait
+      - name: walk the whole story
+        run: scripts/demo.sh
+      - name: the contract the running API serves
+        run: |
+          mkdir -p build/openapi
+          curl --silent --show-error --fail http://localhost:8080/api/v3/api-docs | jq . > build/openapi/openapi.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: openapi
+          path: build/openapi/openapi.json
+      - name: what the API said while it ran
+        if: failure()
+        run: docker compose logs --no-color api
+      - name: tear it down
+        if: always()
+        run: docker compose down --volumes
+
   image:
     name: production image
     runs-on: ubuntu-latest

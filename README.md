@@ -1,5 +1,7 @@
 # ColdChain
 
+[![ci](https://github.com/jorge-lherrera/coldchain-api/actions/workflows/ci.yml/badge.svg)](https://github.com/jorge-lherrera/coldchain-api/actions/workflows/ci.yml)
+
 Cold chain custody and compliance API. A pharmaceutical shipment passes from hand to hand between
 organizations, its temperature is measured for the entire journey, and when it closes it **either has
 a certificate or it doesn't**.
@@ -106,8 +108,12 @@ writer erased the first without a trace.
 
 ```bash
 cp .env.example .env             # local credentials, never committed
-docker compose up -d             # Oracle 23ai Free and the API, on 1521 and 8080
+docker compose up -d --wait      # Oracle 23ai Free and the API, on 1521 and 8080
+scripts/demo.sh                  # the whole story below, end to end
 ```
+
+The stack answers at `http://localhost:8080/api`, and the contract it serves is browsable at
+`http://localhost:8080/api/swagger-ui.html`.
 
 To work on the code, run the API from Gradle against the same database:
 
@@ -124,15 +130,37 @@ docker compose up -d oracle      # only the database
 
 ## The demo
 
-The walkthrough that exercises the whole system, meant to be watched in two minutes. Every step of it
-runs in the integration suite against a real Oracle:
+```bash
+docker compose up -d --wait
+scripts/demo.sh                  # needs curl and jq
+```
 
-1. A lab creates a shipment of 400 vials with the `2 – 8 °C` profile and dispatches it.
-2. A carrier accepts the handoff with a single-use code; custody changes hands.
-3. A gateway pushes the temperature series in batches, with a 38-minute spike above 8 °C and a
-   22-minute gap with no data. The same batch is sent again: **nothing is duplicated**.
-4. The hospital accepts the delivery and the system issues the certificate: **FAIL**, with the
-   excursion and the `DATA_GAP` as findings, plus the document hash to verify it later.
+One run of `scripts/demo.sh`, against the stack you just raised:
+
+1. Three organizations register — a laboratory, a carrier and a hospital — and none of them can see
+   anything that is not theirs.
+2. The laboratory declares a `2 – 8 °C` profile, a product and a shipment of 400 vials, and dispatches
+   it with a sensor attached. **The thresholds are frozen at dispatch**: changing the profile
+   afterwards cannot change what this shipment was judged against.
+3. The carrier accepts the handoff with a single-use code and custody changes hands.
+4. The gateway pushes three hours of readings, one every five minutes, with a 45-minute excursion
+   above 8 °C and a 65-minute blackout. **The same batch is sent again and comes back `REPLAYED`**:
+   nothing is duplicated.
+5. The hospital takes delivery — and nobody asks for a certificate, because closing the shipment
+   already issued one:
+
+```
+verdict            FAIL
+coverage           71.43 % of the expected samples
+longest excursion  45 minutes
+content hash       04ddb79e045da4d2d57c4d2e056577087e96fcd9eb4e50567028fd82196c96f5
+finding            DATA_GAP · CRITICAL · {"coveragePercent":71.43,"minimum":80}
+finding            EXCURSION_ABOVE_MAX · CRITICAL · {"durationMinutes":45,"peakCelsius":11.5}
+```
+
+The script is not a narration: it fails if the verdict is not the one written above. **It runs in CI
+on every push**, against Oracle raised from nothing, and the OpenAPI document the API served during
+that run is published as a build artifact.
 
 ## Documentation
 

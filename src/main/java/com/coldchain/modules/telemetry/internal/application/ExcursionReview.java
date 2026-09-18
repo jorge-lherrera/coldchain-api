@@ -19,6 +19,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class ExcursionReview {
@@ -36,6 +38,7 @@ public class ExcursionReview {
         this.events = events;
     }
 
+    @Transactional(propagation = Propagation.MANDATORY)
     public void reviewShipmentsTouchedBy(List<TemperatureReading> accepted,
             List<DeviceAssignment> windows) {
         Set<UUID> touched = accepted.stream()

@@ -119,7 +119,8 @@ public class IssueCertificateUseCase {
                 findings.stream()
                         .map(finding -> Finding.restore(finding.id(), issued.id(), finding.code(),
                                 finding.severity(), finding.excursionId(), finding.detail()))
-                        .toList());
+                        .toList(),
+                issued.lockVersion());
     }
 
     private int samplingIntervalOf(ShipmentResult shipment) {

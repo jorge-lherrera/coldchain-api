@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
@@ -67,10 +68,14 @@ public class ShipmentJpaEntity extends AuditableEntity {
     @Column(name = "CLOSED_AT")
     private Instant closedAt;
 
+    @Version
+    @Column(name = "LOCK_VERSION", nullable = false)
+    private long lockVersion;
+
     protected ShipmentJpaEntity() {
     }
 
-    public ShipmentJpaEntity(UUID id, UUID organizationId, String reference, String status, UUID originSiteId, UUID destinationSiteId, UUID consigneeOrganizationId, UUID currentCustodianOrganizationId, UUID deviceId, BigDecimal minCelsius, BigDecimal maxCelsius, Integer maxSingleExcursionMinutes, Integer maxCumulativeExcursionMinutes, BigDecimal minCoveragePercent, Integer openExcursion, Instant dispatchedAt, Instant closedAt) {
+    public ShipmentJpaEntity(UUID id, UUID organizationId, String reference, String status, UUID originSiteId, UUID destinationSiteId, UUID consigneeOrganizationId, UUID currentCustodianOrganizationId, UUID deviceId, BigDecimal minCelsius, BigDecimal maxCelsius, Integer maxSingleExcursionMinutes, Integer maxCumulativeExcursionMinutes, BigDecimal minCoveragePercent, Integer openExcursion, Instant dispatchedAt, Instant closedAt, long lockVersion) {
         this.id = id;
         this.organizationId = organizationId;
         this.reference = reference;
@@ -88,6 +93,7 @@ public class ShipmentJpaEntity extends AuditableEntity {
         this.openExcursion = openExcursion;
         this.dispatchedAt = dispatchedAt;
         this.closedAt = closedAt;
+        this.lockVersion = lockVersion;
     }
 
     public UUID getId() {
@@ -156,5 +162,9 @@ public class ShipmentJpaEntity extends AuditableEntity {
 
     public Instant getClosedAt() {
         return closedAt;
+    }
+
+    public long getLockVersion() {
+        return lockVersion;
     }
 }

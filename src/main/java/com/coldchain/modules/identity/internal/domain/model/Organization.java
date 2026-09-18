@@ -23,8 +23,10 @@ public final class Organization {
 
     private final OrganizationStatus status;
 
+    private final long lockVersion;
+
     private Organization(UUID id, String taxId, String legalName, String tradeName, OrganizationKind kind,
-            String country, OrganizationStatus status) {
+            String country, OrganizationStatus status, long lockVersion) {
         this.id = Objects.requireNonNull(id);
         this.taxId = requireText(taxId, "taxId");
         this.legalName = requireText(legalName, "legalName");
@@ -32,25 +34,26 @@ public final class Organization {
         this.kind = Objects.requireNonNull(kind);
         this.country = requireCountry(country);
         this.status = Objects.requireNonNull(status);
+        this.lockVersion = lockVersion;
     }
 
     public static Organization createNew(String taxId, String legalName, String tradeName,
             OrganizationKind kind, String country) {
         return new Organization(UuidV7.generate(), taxId, legalName, tradeName, kind, country,
-                OrganizationStatus.ACTIVE);
+                OrganizationStatus.ACTIVE, 0);
     }
 
     public static Organization restore(UUID id, String taxId, String legalName, String tradeName,
-            OrganizationKind kind, String country, OrganizationStatus status) {
-        return new Organization(id, taxId, legalName, tradeName, kind, country, status);
+            OrganizationKind kind, String country, OrganizationStatus status, long lockVersion) {
+        return new Organization(id, taxId, legalName, tradeName, kind, country, status, lockVersion);
     }
 
     public Organization suspend() {
-        return new Organization(id, taxId, legalName, tradeName, kind, country, OrganizationStatus.SUSPENDED);
+        return new Organization(id, taxId, legalName, tradeName, kind, country, OrganizationStatus.SUSPENDED, lockVersion);
     }
 
     public Organization reinstate() {
-        return new Organization(id, taxId, legalName, tradeName, kind, country, OrganizationStatus.ACTIVE);
+        return new Organization(id, taxId, legalName, tradeName, kind, country, OrganizationStatus.ACTIVE, lockVersion);
     }
 
     public boolean active() {
@@ -98,5 +101,9 @@ public final class Organization {
             throw new IllegalArgumentException("A country is an ISO 3166-1 alpha-2 code, received " + country);
         }
         return country.toUpperCase(Locale.ROOT);
+    }
+
+    public long lockVersion() {
+        return lockVersion;
     }
 }

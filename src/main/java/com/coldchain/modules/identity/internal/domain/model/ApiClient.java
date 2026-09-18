@@ -26,8 +26,10 @@ public final class ApiClient {
 
     private final Set<Scope> scopes;
 
+    private final long lockVersion;
+
     private ApiClient(UUID id, UUID organizationId, String clientId, String secretHash, String label,
-            ApiClientStatus status, Instant lastUsedAt, Set<Scope> scopes) {
+            ApiClientStatus status, Instant lastUsedAt, Set<Scope> scopes, long lockVersion) {
         this.id = Objects.requireNonNull(id);
         this.organizationId = Objects.requireNonNull(organizationId);
         this.clientId = requireText(clientId, "client identifier");
@@ -36,27 +38,28 @@ public final class ApiClient {
         this.status = Objects.requireNonNull(status);
         this.lastUsedAt = lastUsedAt;
         this.scopes = Set.copyOf(Objects.requireNonNull(scopes));
+        this.lockVersion = lockVersion;
     }
 
     public static ApiClient createNew(UUID organizationId, String clientId, String secretHash, String label,
             Set<Scope> scopes) {
         return new ApiClient(UuidV7.generate(), organizationId, clientId, secretHash, label,
-                ApiClientStatus.ACTIVE, null, scopes);
+                ApiClientStatus.ACTIVE, null, scopes, 0);
     }
 
     public static ApiClient restore(UUID id, UUID organizationId, String clientId, String secretHash,
-            String label, ApiClientStatus status, Instant lastUsedAt, Set<Scope> scopes) {
-        return new ApiClient(id, organizationId, clientId, secretHash, label, status, lastUsedAt, scopes);
+            String label, ApiClientStatus status, Instant lastUsedAt, Set<Scope> scopes, long lockVersion) {
+        return new ApiClient(id, organizationId, clientId, secretHash, label, status, lastUsedAt, scopes, lockVersion);
     }
 
     public ApiClient recordUse(Instant when) {
         return new ApiClient(id, organizationId, clientId, secretHash, label, status,
-                Objects.requireNonNull(when), scopes);
+                Objects.requireNonNull(when), scopes, lockVersion);
     }
 
     public ApiClient revoke() {
         return new ApiClient(id, organizationId, clientId, secretHash, label, ApiClientStatus.REVOKED,
-                lastUsedAt, scopes);
+                lastUsedAt, scopes, lockVersion);
     }
 
     public boolean active() {
@@ -100,5 +103,9 @@ public final class ApiClient {
             throw new IllegalArgumentException("A machine credential needs a " + field);
         }
         return value.trim();
+    }
+
+    public long lockVersion() {
+        return lockVersion;
     }
 }

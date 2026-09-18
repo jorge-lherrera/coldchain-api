@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
@@ -52,13 +53,17 @@ public class StorageProfileJpaEntity extends AuditableEntity {
     @Column(name = "DELETED_AT")
     private Instant deletedAt;
 
+    @Version
+    @Column(name = "LOCK_VERSION", nullable = false)
+    private long lockVersion;
+
     protected StorageProfileJpaEntity() {
     }
 
     public StorageProfileJpaEntity(UUID id, UUID organizationId, String code, String name,
             int profileVersion, String status, BigDecimal minCelsius, BigDecimal maxCelsius,
             int maxSingleExcursionMinutes, int maxCumulativeExcursionMinutes,
-            BigDecimal minCoveragePercent, Instant deletedAt) {
+            BigDecimal minCoveragePercent, Instant deletedAt, long lockVersion) {
         this.id = id;
         this.organizationId = organizationId;
         this.code = code;
@@ -71,6 +76,7 @@ public class StorageProfileJpaEntity extends AuditableEntity {
         this.maxCumulativeExcursionMinutes = maxCumulativeExcursionMinutes;
         this.minCoveragePercent = minCoveragePercent;
         this.deletedAt = deletedAt;
+        this.lockVersion = lockVersion;
     }
 
     public UUID getId() {
@@ -119,5 +125,9 @@ public class StorageProfileJpaEntity extends AuditableEntity {
 
     public Instant getDeletedAt() {
         return deletedAt;
+    }
+
+    public long getLockVersion() {
+        return lockVersion;
     }
 }

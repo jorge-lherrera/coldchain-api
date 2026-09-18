@@ -40,11 +40,13 @@ public final class Certificate {
 
     private final List<Finding> findings;
 
+    private final long lockVersion;
+
     private Certificate(UUID id, UUID organizationId, UUID shipmentId, int version,
             Verdict verdict, BigDecimal coveragePercent, long cumulativeExcursionMinutes,
             long longestExcursionMinutes, String thresholdSnapshot, Instant evaluatedFrom,
             Instant evaluatedTo, Instant issuedAt, String contentHash, Instant supersededAt,
-            List<Finding> findings) {
+            List<Finding> findings, long lockVersion) {
         this.id = Objects.requireNonNull(id);
         this.organizationId = Objects.requireNonNull(organizationId);
         this.shipmentId = Objects.requireNonNull(shipmentId);
@@ -64,6 +66,7 @@ public final class Certificate {
             throw new IllegalArgumentException(
                     "A verdict that is not a pass must say what it found, or it argues nothing");
         }
+        this.lockVersion = lockVersion;
     }
 
     public static Certificate issue(UUID organizationId, UUID shipmentId, int version,
@@ -72,24 +75,24 @@ public final class Certificate {
             Instant evaluatedTo, Instant issuedAt, String contentHash, List<Finding> findings) {
         return new Certificate(UuidV7.generate(), organizationId, shipmentId, version,
                 verdict, coveragePercent, cumulativeExcursionMinutes, longestExcursionMinutes,
-                thresholdSnapshot, evaluatedFrom, evaluatedTo, issuedAt, contentHash, null, findings);
+                thresholdSnapshot, evaluatedFrom, evaluatedTo, issuedAt, contentHash, null, findings, 0);
     }
 
     public static Certificate restore(UUID id, UUID organizationId, UUID shipmentId,
             int version, Verdict verdict, BigDecimal coveragePercent, long cumulativeExcursionMinutes,
             long longestExcursionMinutes, String thresholdSnapshot, Instant evaluatedFrom,
             Instant evaluatedTo, Instant issuedAt, String contentHash, Instant supersededAt,
-            List<Finding> findings) {
+            List<Finding> findings, long lockVersion) {
         return new Certificate(id, organizationId, shipmentId, version, verdict,
                 coveragePercent, cumulativeExcursionMinutes, longestExcursionMinutes,
                 thresholdSnapshot, evaluatedFrom, evaluatedTo, issuedAt, contentHash, supersededAt,
-                findings);
+                findings, lockVersion);
     }
 
     public Certificate supersede(Instant when) {
         return new Certificate(id, organizationId, shipmentId, version, verdict,
                 coveragePercent, cumulativeExcursionMinutes, longestExcursionMinutes,
-                thresholdSnapshot, evaluatedFrom, evaluatedTo, issuedAt, contentHash, when, findings);
+                thresholdSnapshot, evaluatedFrom, evaluatedTo, issuedAt, contentHash, when, findings, lockVersion);
     }
 
     public UUID id() {
@@ -150,5 +153,9 @@ public final class Certificate {
 
     public List<Finding> findings() {
         return findings;
+    }
+
+    public long lockVersion() {
+        return lockVersion;
     }
 }

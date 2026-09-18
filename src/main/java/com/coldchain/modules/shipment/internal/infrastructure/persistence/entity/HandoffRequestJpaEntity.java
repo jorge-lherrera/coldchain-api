@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -40,10 +41,14 @@ public class HandoffRequestJpaEntity extends AuditableEntity {
     @Column(name = "RESOLVED_AT")
     private Instant resolvedAt;
 
+    @Version
+    @Column(name = "LOCK_VERSION", nullable = false)
+    private long lockVersion;
+
     protected HandoffRequestJpaEntity() {
     }
 
-    public HandoffRequestJpaEntity(UUID id, UUID shipmentId, UUID fromOrganizationId, UUID toOrganizationId, String codeHash, String status, Instant expiresAt, Instant resolvedAt) {
+    public HandoffRequestJpaEntity(UUID id, UUID shipmentId, UUID fromOrganizationId, UUID toOrganizationId, String codeHash, String status, Instant expiresAt, Instant resolvedAt, long lockVersion) {
         this.id = id;
         this.shipmentId = shipmentId;
         this.fromOrganizationId = fromOrganizationId;
@@ -52,6 +57,7 @@ public class HandoffRequestJpaEntity extends AuditableEntity {
         this.status = status;
         this.expiresAt = expiresAt;
         this.resolvedAt = resolvedAt;
+        this.lockVersion = lockVersion;
     }
 
     public UUID getId() {
@@ -84,5 +90,9 @@ public class HandoffRequestJpaEntity extends AuditableEntity {
 
     public Instant getResolvedAt() {
         return resolvedAt;
+    }
+
+    public long getLockVersion() {
+        return lockVersion;
     }
 }

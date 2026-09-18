@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -34,17 +35,22 @@ public class ProductJpaEntity extends AuditableEntity {
     @Column(name = "DELETED_AT")
     private Instant deletedAt;
 
+    @Version
+    @Column(name = "LOCK_VERSION", nullable = false)
+    private long lockVersion;
+
     protected ProductJpaEntity() {
     }
 
     public ProductJpaEntity(UUID id, UUID organizationId, UUID storageProfileId, String sku, String name,
-            Instant deletedAt) {
+            Instant deletedAt, long lockVersion) {
         this.id = id;
         this.organizationId = organizationId;
         this.storageProfileId = storageProfileId;
         this.sku = sku;
         this.name = name;
         this.deletedAt = deletedAt;
+        this.lockVersion = lockVersion;
     }
 
     public UUID getId() {
@@ -69,5 +75,9 @@ public class ProductJpaEntity extends AuditableEntity {
 
     public Instant getDeletedAt() {
         return deletedAt;
+    }
+
+    public long getLockVersion() {
+        return lockVersion;
     }
 }

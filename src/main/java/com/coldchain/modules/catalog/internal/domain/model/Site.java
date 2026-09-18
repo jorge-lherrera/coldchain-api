@@ -28,8 +28,10 @@ public final class Site {
 
     private final Instant deletedAt;
 
+    private final long lockVersion;
+
     private Site(UUID id, UUID organizationId, String code, String name, SiteKind kind,
-            BigDecimal latitude, BigDecimal longitude, String timeZone, Instant deletedAt) {
+            BigDecimal latitude, BigDecimal longitude, String timeZone, Instant deletedAt, long lockVersion) {
         this.id = Objects.requireNonNull(id);
         this.organizationId = Objects.requireNonNull(organizationId);
         this.code = Objects.requireNonNull(code);
@@ -39,23 +41,24 @@ public final class Site {
         this.longitude = Objects.requireNonNull(longitude);
         this.timeZone = Objects.requireNonNull(timeZone);
         this.deletedAt = deletedAt;
+        this.lockVersion = lockVersion;
     }
 
     public static Site createNew(UUID organizationId, String code, String name, SiteKind kind,
             BigDecimal latitude, BigDecimal longitude, String timeZone) {
         return new Site(UuidV7.generate(), organizationId, code, name, kind, latitude, longitude,
-                requireKnownZone(timeZone), null);
+                requireKnownZone(timeZone), null, 0);
     }
 
     public static Site restore(UUID id, UUID organizationId, String code, String name, SiteKind kind,
-            BigDecimal latitude, BigDecimal longitude, String timeZone, Instant deletedAt) {
-        return new Site(id, organizationId, code, name, kind, latitude, longitude, timeZone, deletedAt);
+            BigDecimal latitude, BigDecimal longitude, String timeZone, Instant deletedAt, long lockVersion) {
+        return new Site(id, organizationId, code, name, kind, latitude, longitude, timeZone, deletedAt, lockVersion);
     }
 
     public Site relocatedTo(String newName, BigDecimal newLatitude, BigDecimal newLongitude,
             String newTimeZone) {
         return new Site(id, organizationId, code, newName, kind, newLatitude, newLongitude,
-                requireKnownZone(newTimeZone), deletedAt);
+                requireKnownZone(newTimeZone), deletedAt, lockVersion);
     }
 
     private static String requireKnownZone(String candidate) {
@@ -100,5 +103,9 @@ public final class Site {
 
     public Instant deletedAt() {
         return deletedAt;
+    }
+
+    public long lockVersion() {
+        return lockVersion;
     }
 }

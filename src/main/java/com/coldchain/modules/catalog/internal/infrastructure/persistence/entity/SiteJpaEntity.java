@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
@@ -43,11 +44,15 @@ public class SiteJpaEntity extends AuditableEntity {
     @Column(name = "DELETED_AT")
     private Instant deletedAt;
 
+    @Version
+    @Column(name = "LOCK_VERSION", nullable = false)
+    private long lockVersion;
+
     protected SiteJpaEntity() {
     }
 
     public SiteJpaEntity(UUID id, UUID organizationId, String code, String name, String kind,
-            BigDecimal latitude, BigDecimal longitude, String timeZone, Instant deletedAt) {
+            BigDecimal latitude, BigDecimal longitude, String timeZone, Instant deletedAt, long lockVersion) {
         this.id = id;
         this.organizationId = organizationId;
         this.code = code;
@@ -57,6 +62,7 @@ public class SiteJpaEntity extends AuditableEntity {
         this.longitude = longitude;
         this.timeZone = timeZone;
         this.deletedAt = deletedAt;
+        this.lockVersion = lockVersion;
     }
 
     public UUID getId() {
@@ -93,5 +99,9 @@ public class SiteJpaEntity extends AuditableEntity {
 
     public Instant getDeletedAt() {
         return deletedAt;
+    }
+
+    public long getLockVersion() {
+        return lockVersion;
     }
 }

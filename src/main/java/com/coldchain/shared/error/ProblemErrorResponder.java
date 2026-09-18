@@ -1,10 +1,13 @@
 package com.coldchain.shared.error;
 
+import com.coldchain.shared.observability.LogMessage;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.access.AccessDeniedException;
@@ -16,6 +19,8 @@ import tools.jackson.databind.ObjectMapper;
 
 @Component
 public class ProblemErrorResponder implements AuthenticationEntryPoint, AccessDeniedHandler {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ProblemErrorResponder.class);
 
     private final ProblemDetails problemDetails;
 
@@ -29,12 +34,16 @@ public class ProblemErrorResponder implements AuthenticationEntryPoint, AccessDe
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
             AuthenticationException exception) throws IOException {
+        LOG.warn(LogMessage.DENIED_UNAUTHENTICATED, request.getMethod(), request.getRequestURI(),
+                CoreErrorCode.NOT_AUTHENTICATED.messageKey());
         respond(request, response, CoreErrorCode.NOT_AUTHENTICATED, exception.getMessage());
     }
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response,
             AccessDeniedException exception) throws IOException {
+        LOG.warn(LogMessage.DENIED_SCOPE, request.getMethod(), request.getRequestURI(),
+                CoreErrorCode.NOT_AUTHORIZED.messageKey());
         respond(request, response, CoreErrorCode.NOT_AUTHORIZED, exception.getMessage());
     }
 

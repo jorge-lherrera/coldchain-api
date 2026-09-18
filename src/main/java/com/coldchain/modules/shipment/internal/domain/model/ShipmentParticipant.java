@@ -18,28 +18,31 @@ public final class ShipmentParticipant {
 
     private final Instant revokedAt;
 
+    private final long lockVersion;
+
     private ShipmentParticipant(UUID id, UUID shipmentId, UUID organizationId,
-            Participation participation, Instant revokedAt) {
+            Participation participation, Instant revokedAt, long lockVersion) {
         this.id = Objects.requireNonNull(id);
         this.shipmentId = Objects.requireNonNull(shipmentId);
         this.organizationId = Objects.requireNonNull(organizationId);
         this.participation = Objects.requireNonNull(participation);
         this.revokedAt = revokedAt;
+        this.lockVersion = lockVersion;
     }
 
     public static ShipmentParticipant createNew(UUID shipmentId, UUID organizationId,
             Participation participation) {
         return new ShipmentParticipant(UuidV7.generate(), shipmentId, organizationId, participation,
-                null);
+                null, 0);
     }
 
     public static ShipmentParticipant restore(UUID id, UUID shipmentId, UUID organizationId,
-            Participation participation, Instant revokedAt) {
-        return new ShipmentParticipant(id, shipmentId, organizationId, participation, revokedAt);
+            Participation participation, Instant revokedAt, long lockVersion) {
+        return new ShipmentParticipant(id, shipmentId, organizationId, participation, revokedAt, lockVersion);
     }
 
     public ShipmentParticipant revoke(Instant when) {
-        return new ShipmentParticipant(id, shipmentId, organizationId, participation, when);
+        return new ShipmentParticipant(id, shipmentId, organizationId, participation, when, lockVersion);
     }
 
     public boolean live() {
@@ -64,5 +67,9 @@ public final class ShipmentParticipant {
 
     public Instant revokedAt() {
         return revokedAt;
+    }
+
+    public long lockVersion() {
+        return lockVersion;
     }
 }

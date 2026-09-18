@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
@@ -59,13 +60,17 @@ public class CertificateJpaEntity extends AuditableEntity {
     @Column(name = "SUPERSEDED_AT")
     private Instant supersededAt;
 
+    @Version
+    @Column(name = "LOCK_VERSION", nullable = false)
+    private long lockVersion;
+
     protected CertificateJpaEntity() {
     }
 
     public CertificateJpaEntity(UUID id, UUID organizationId, UUID shipmentId,
             int certificateVersion, String verdict, BigDecimal coveragePercent, long cumulativeMinutes,
             long longestMinutes, String thresholdSnapshot, Instant evaluatedFrom, Instant evaluatedTo,
-            Instant issuedAt, String contentHash, Instant supersededAt) {
+            Instant issuedAt, String contentHash, Instant supersededAt, long lockVersion) {
         this.id = id;
         this.organizationId = organizationId;
         this.shipmentId = shipmentId;
@@ -80,6 +85,7 @@ public class CertificateJpaEntity extends AuditableEntity {
         this.issuedAt = issuedAt;
         this.contentHash = contentHash;
         this.supersededAt = supersededAt;
+        this.lockVersion = lockVersion;
     }
 
     public UUID getId() {
@@ -136,5 +142,9 @@ public class CertificateJpaEntity extends AuditableEntity {
 
     public Instant getSupersededAt() {
         return supersededAt;
+    }
+
+    public long getLockVersion() {
+        return lockVersion;
     }
 }

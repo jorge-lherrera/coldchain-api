@@ -11,12 +11,12 @@ public class ShipmentParticipantPersistenceMapper {
     public ShipmentParticipantJpaEntity toEntity(ShipmentParticipant participant) {
         return new ShipmentParticipantJpaEntity(participant.id(), participant.shipmentId(),
                 participant.organizationId(), participant.participation().name(),
-                participant.revokedAt());
+                participant.revokedAt(), participant.lockVersion());
     }
 
     public ShipmentParticipant toDomain(ShipmentParticipantJpaEntity entity) {
         return ShipmentParticipant.restore(entity.getId(), entity.getShipmentId(),
                 entity.getOrganizationId(), Participation.valueOf(entity.getParticipation()),
-                entity.getRevokedAt());
+                entity.getRevokedAt(), entity.getLockVersion());
     }
 }

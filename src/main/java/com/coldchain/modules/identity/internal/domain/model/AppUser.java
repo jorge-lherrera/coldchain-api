@@ -27,8 +27,10 @@ public final class AppUser {
 
     private final Instant lastLoginAt;
 
+    private final long lockVersion;
+
     private AppUser(UUID id, UUID organizationId, String email, String passwordHash, String fullName,
-            UserStatus status, String activationTokenHash, Instant activationExpiresAt, Instant lastLoginAt) {
+            UserStatus status, String activationTokenHash, Instant activationExpiresAt, Instant lastLoginAt, long lockVersion) {
         this.id = Objects.requireNonNull(id);
         this.organizationId = Objects.requireNonNull(organizationId);
         this.email = normaliseEmail(email);
@@ -41,40 +43,41 @@ public final class AppUser {
         if (status == UserStatus.ACTIVE && passwordHash == null) {
             throw new IllegalArgumentException("An active user has a password");
         }
+        this.lockVersion = lockVersion;
     }
 
     public static AppUser createAdministrator(UUID organizationId, String email, String fullName,
             String passwordHash) {
         return new AppUser(UuidV7.generate(), organizationId, email, passwordHash, fullName, UserStatus.ACTIVE,
-                null, null, null);
+                null, null, null, 0);
     }
 
     public static AppUser invite(UUID organizationId, String email, String fullName,
             String activationTokenHash, Instant activationExpiresAt) {
         return new AppUser(UuidV7.generate(), organizationId, email, null, fullName, UserStatus.INVITED,
-                Objects.requireNonNull(activationTokenHash), Objects.requireNonNull(activationExpiresAt), null);
+                Objects.requireNonNull(activationTokenHash), Objects.requireNonNull(activationExpiresAt), null, 0);
     }
 
     public static AppUser restore(UUID id, UUID organizationId, String email, String passwordHash,
             String fullName, UserStatus status, String activationTokenHash, Instant activationExpiresAt,
-            Instant lastLoginAt) {
+            Instant lastLoginAt, long lockVersion) {
         return new AppUser(id, organizationId, email, passwordHash, fullName, status, activationTokenHash,
-                activationExpiresAt, lastLoginAt);
+                activationExpiresAt, lastLoginAt, lockVersion);
     }
 
     public AppUser activate(String newPasswordHash) {
         return new AppUser(id, organizationId, email, Objects.requireNonNull(newPasswordHash), fullName,
-                UserStatus.ACTIVE, null, null, lastLoginAt);
+                UserStatus.ACTIVE, null, null, lastLoginAt, lockVersion);
     }
 
     public AppUser suspend() {
         return new AppUser(id, organizationId, email, passwordHash, fullName, UserStatus.SUSPENDED,
-                activationTokenHash, activationExpiresAt, lastLoginAt);
+                activationTokenHash, activationExpiresAt, lastLoginAt, lockVersion);
     }
 
     public AppUser recordLogin(Instant when) {
         return new AppUser(id, organizationId, email, passwordHash, fullName, status, activationTokenHash,
-                activationExpiresAt, Objects.requireNonNull(when));
+                activationExpiresAt, Objects.requireNonNull(when), lockVersion);
     }
 
     public boolean active() {
@@ -134,5 +137,9 @@ public final class AppUser {
             throw new IllegalArgumentException("A user needs a " + field);
         }
         return value.trim();
+    }
+
+    public long lockVersion() {
+        return lockVersion;
     }
 }

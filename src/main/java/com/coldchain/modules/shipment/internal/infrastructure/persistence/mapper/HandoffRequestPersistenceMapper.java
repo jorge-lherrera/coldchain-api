@@ -11,13 +11,13 @@ public class HandoffRequestPersistenceMapper {
     public HandoffRequestJpaEntity toEntity(HandoffRequest request) {
         return new HandoffRequestJpaEntity(request.id(), request.shipmentId(),
                 request.fromOrganizationId(), request.toOrganizationId(), request.codeHash(),
-                request.status().name(), request.expiresAt(), request.resolvedAt());
+                request.status().name(), request.expiresAt(), request.resolvedAt(), request.lockVersion());
     }
 
     public HandoffRequest toDomain(HandoffRequestJpaEntity entity) {
         return HandoffRequest.restore(entity.getId(), entity.getShipmentId(),
                 entity.getFromOrganizationId(), entity.getToOrganizationId(), entity.getCodeHash(),
                 HandoffStatus.valueOf(entity.getStatus()), entity.getExpiresAt(),
-                entity.getResolvedAt());
+                entity.getResolvedAt(), entity.getLockVersion());
     }
 }

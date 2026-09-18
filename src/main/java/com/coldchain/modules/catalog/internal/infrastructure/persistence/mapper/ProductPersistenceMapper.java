@@ -9,11 +9,11 @@ public class ProductPersistenceMapper {
 
     public ProductJpaEntity toEntity(Product product) {
         return new ProductJpaEntity(product.id(), product.organizationId(), product.storageProfileId(),
-                product.sku(), product.name(), product.deletedAt());
+                product.sku(), product.name(), product.deletedAt(), product.lockVersion());
     }
 
     public Product toDomain(ProductJpaEntity entity) {
         return Product.restore(entity.getId(), entity.getOrganizationId(), entity.getStorageProfileId(),
-                entity.getSku(), entity.getName(), entity.getDeletedAt());
+                entity.getSku(), entity.getName(), entity.getDeletedAt(), entity.getLockVersion());
     }
 }

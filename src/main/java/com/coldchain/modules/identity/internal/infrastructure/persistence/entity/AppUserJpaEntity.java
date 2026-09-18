@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -42,10 +43,14 @@ public class AppUserJpaEntity extends AuditableEntity {
     @Column(name = "LAST_LOGIN_AT")
     private Instant lastLoginAt;
 
+    @Version
+    @Column(name = "LOCK_VERSION", nullable = false)
+    private long lockVersion;
+
     protected AppUserJpaEntity() {
     }
 
-    public AppUserJpaEntity(UUID id, UUID organizationId, String email, String passwordHash, String fullName, String status, String activationTokenHash, Instant activationExpiresAt, Instant lastLoginAt) {
+    public AppUserJpaEntity(UUID id, UUID organizationId, String email, String passwordHash, String fullName, String status, String activationTokenHash, Instant activationExpiresAt, Instant lastLoginAt, long lockVersion) {
         this.id = id;
         this.organizationId = organizationId;
         this.email = email;
@@ -55,6 +60,7 @@ public class AppUserJpaEntity extends AuditableEntity {
         this.activationTokenHash = activationTokenHash;
         this.activationExpiresAt = activationExpiresAt;
         this.lastLoginAt = lastLoginAt;
+        this.lockVersion = lockVersion;
     }
 
     public UUID getId() {
@@ -91,5 +97,9 @@ public class AppUserJpaEntity extends AuditableEntity {
 
     public Instant getLastLoginAt() {
         return lastLoginAt;
+    }
+
+    public long getLockVersion() {
+        return lockVersion;
     }
 }

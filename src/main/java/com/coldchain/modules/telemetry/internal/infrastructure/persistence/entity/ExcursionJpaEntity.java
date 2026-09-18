@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
@@ -49,10 +50,14 @@ public class ExcursionJpaEntity extends AuditableEntity {
     @Column(name = "DURATION_MINUTES", nullable = false)
     private long durationMinutes;
 
+    @Version
+    @Column(name = "LOCK_VERSION", nullable = false)
+    private long lockVersion;
+
     protected ExcursionJpaEntity() {
     }
 
-    public ExcursionJpaEntity(UUID id, UUID organizationId, UUID shipmentId, String kind, String status, Instant openedAt, Instant closedAt, UUID openedByReadingId, UUID closedByReadingId, BigDecimal peakCelsius, long durationMinutes) {
+    public ExcursionJpaEntity(UUID id, UUID organizationId, UUID shipmentId, String kind, String status, Instant openedAt, Instant closedAt, UUID openedByReadingId, UUID closedByReadingId, BigDecimal peakCelsius, long durationMinutes, long lockVersion) {
         this.id = id;
         this.organizationId = organizationId;
         this.shipmentId = shipmentId;
@@ -64,6 +69,7 @@ public class ExcursionJpaEntity extends AuditableEntity {
         this.closedByReadingId = closedByReadingId;
         this.peakCelsius = peakCelsius;
         this.durationMinutes = durationMinutes;
+        this.lockVersion = lockVersion;
     }
 
     public UUID getId() {
@@ -108,5 +114,9 @@ public class ExcursionJpaEntity extends AuditableEntity {
 
     public long getDurationMinutes() {
         return durationMinutes;
+    }
+
+    public long getLockVersion() {
+        return lockVersion;
     }
 }

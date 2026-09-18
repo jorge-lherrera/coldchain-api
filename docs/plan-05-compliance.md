@@ -1,5 +1,7 @@
 # Build plan · 05 · compliance
 
+> **Status:** closed
+
 Two tables and the payoff of the whole story: turning a temperature series into a verdict somebody can
 defend. The milestone ends when the `README` demo runs end to end and the certificate comes out `FAIL`
 with its two findings.

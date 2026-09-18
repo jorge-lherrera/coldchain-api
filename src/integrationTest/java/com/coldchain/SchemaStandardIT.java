@@ -47,6 +47,39 @@ class SchemaStandardIT {
             Map.entry("CERTIFICATE", "compliance"),
             Map.entry("CERTIFICATE_FINDING", "compliance"));
 
+    private static final Map<String, String> DELETE_RULE_OF = Map.ofEntries(
+            Map.entry("FK_API_CLIENT_ORGANIZATION", "NO ACTION"),
+            Map.entry("FK_API_CLIENT_SCOPE_CLIENT", "CASCADE"),
+            Map.entry("FK_APP_USER_ORGANIZATION", "NO ACTION"),
+            Map.entry("FK_AUDIT_ENTRY_ORGANIZATION", "NO ACTION"),
+            Map.entry("FK_CERTIFICATE_FINDING_CERTIFICATE", "CASCADE"),
+            Map.entry("FK_CERTIFICATE_ORGANIZATION", "NO ACTION"),
+            Map.entry("FK_CUSTODY_EVENT_SHIPMENT", "CASCADE"),
+            Map.entry("FK_DEVICE_ASSIGNMENT_DEVICE", "NO ACTION"),
+            Map.entry("FK_DEVICE_ORGANIZATION", "NO ACTION"),
+            Map.entry("FK_EXCURSION_ORGANIZATION", "NO ACTION"),
+            Map.entry("FK_HANDOFF_REQUEST_FROM_ORGANIZATION", "NO ACTION"),
+            Map.entry("FK_HANDOFF_REQUEST_SHIPMENT", "CASCADE"),
+            Map.entry("FK_HANDOFF_REQUEST_TO_ORGANIZATION", "NO ACTION"),
+            Map.entry("FK_PRODUCT_ORGANIZATION", "NO ACTION"),
+            Map.entry("FK_PRODUCT_STORAGE_PROFILE", "NO ACTION"),
+            Map.entry("FK_READING_BATCH_DEVICE", "NO ACTION"),
+            Map.entry("FK_READING_BATCH_ORGANIZATION", "NO ACTION"),
+            Map.entry("FK_REFRESH_TOKEN_APP_USER", "CASCADE"),
+            Map.entry("FK_REFRESH_TOKEN_ORGANIZATION", "NO ACTION"),
+            Map.entry("FK_ROLE_SCOPE_ROLE", "CASCADE"),
+            Map.entry("FK_SHIPMENT_LINE_SHIPMENT", "CASCADE"),
+            Map.entry("FK_SHIPMENT_ORGANIZATION", "NO ACTION"),
+            Map.entry("FK_SHIPMENT_PARTICIPANT_ORGANIZATION", "NO ACTION"),
+            Map.entry("FK_SHIPMENT_PARTICIPANT_SHIPMENT", "CASCADE"),
+            Map.entry("FK_SITE_ORGANIZATION", "NO ACTION"),
+            Map.entry("FK_STORAGE_PROFILE_ORGANIZATION", "NO ACTION"),
+            Map.entry("FK_TEMPERATURE_READING_DEVICE", "NO ACTION"),
+            Map.entry("FK_TEMPERATURE_READING_READING_BATCH", "CASCADE"),
+            Map.entry("FK_USER_ROLE_APP_USER", "CASCADE"),
+            Map.entry("FK_USER_ROLE_GRANTED_BY", "SET NULL"),
+            Map.entry("FK_USER_ROLE_ROLE", "NO ACTION"));
+
     private static final List<String> TENANT_TABLES =
             List.of("APP_USER", "API_CLIENT", "REFRESH_TOKEN", "AUDIT_ENTRY");
 
@@ -448,5 +481,60 @@ class SchemaStandardIT {
                 .filter(condition -> condition != null)
                 .map(SchemaStandardIT::compact)
                 .collect(Collectors.toList());
+    }
+
+    @Test
+    void n2_4_everyForeignKeyDeclaresItsDeleteAction() {
+        Map<String, String> declared = jdbc.queryForList("""
+                SELECT constraint_name, delete_rule
+                FROM user_constraints
+                WHERE constraint_type = 'R' AND""" + " " + OURS).stream()
+                .collect(Collectors.toMap(row -> String.valueOf(row.get("CONSTRAINT_NAME")),
+                        row -> String.valueOf(row.get("DELETE_RULE"))));
+
+        assertThat(declared).isNotEmpty();
+        assertThat(declared.keySet())
+                .describedAs("a foreign key exists whose delete action nobody decided, or a "
+                        + "decision survives a key that no longer exists")
+                .containsExactlyInAnyOrderElementsOf(DELETE_RULE_OF.keySet());
+        assertThat(declared)
+                .describedAs("the database disagrees with the decision that was written down")
+                .containsExactlyInAnyOrderEntriesOf(DELETE_RULE_OF);
+    }
+
+    @Test
+    void n4_5_noClobOrJsonInADistinctOrPredicate() {
+        List<String> unsearchable = jdbc.queryForList("""
+                SELECT table_name || '.' || column_name AS column_path
+                FROM user_tab_columns
+                WHERE data_type IN ('CLOB', 'JSON', 'NCLOB') AND""" + " " + OURS)
+                .stream()
+                .map(row -> String.valueOf(row.get("COLUMN_PATH")))
+                .toList();
+        List<String> queries = SourceTree.javaFiles(SourceTree.MAIN).stream()
+                .filter(file -> file.getFileName().toString().endsWith("JpaRepository.java")
+                        || file.getFileName().toString().endsWith("RepositoryAdapter.java"))
+                .map(SourceTree::read)
+                .toList();
+
+        assertThat(unsearchable).isNotEmpty();
+        assertThat(queries).isNotEmpty();
+        assertThat(queries)
+                .describedAs("Oracle refuses a CLOB in a DISTINCT with ORA-22848, at runtime and "
+                        + "not at compile time")
+                .allSatisfy(query -> assertThat(query.toUpperCase()).doesNotContain("DISTINCT"));
+        assertThat(unsearchable).allSatisfy(column -> assertThat(queries)
+                .describedAs("%s is a document, and a document is read by key, never compared",
+                        column)
+                .allSatisfy(query -> assertThat(query).doesNotContain(
+                        "By" + pascalCaseOf(column.substring(column.indexOf('.') + 1)))));
+    }
+
+    private static String pascalCaseOf(String columnName) {
+        StringBuilder name = new StringBuilder();
+        for (String word : columnName.toLowerCase().split("_")) {
+            name.append(Character.toUpperCase(word.charAt(0))).append(word.substring(1));
+        }
+        return name.toString();
     }
 }

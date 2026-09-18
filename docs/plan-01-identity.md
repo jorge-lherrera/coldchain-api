@@ -1,5 +1,7 @@
 # Build plan · 01 · identity
 
+> **Status:** closed
+
 Attack order for the first module. Every step leaves the project compiling; the milestone ends when
 a protected endpoint answers with a token and returns `403` without the scope.
 

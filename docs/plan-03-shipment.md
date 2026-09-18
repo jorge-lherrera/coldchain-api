@@ -1,5 +1,7 @@
 # Build plan · 03 · shipment
 
+> **Status:** closed
+
 The heart of the system: nothing moves without a shipment. Five tables, a state machine and the
 visibility rule everything else hangs on. The milestone ends when two organizations hand custody
 over with a code and a third one cannot see the shipment.

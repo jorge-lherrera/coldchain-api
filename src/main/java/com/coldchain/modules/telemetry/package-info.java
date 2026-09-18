@@ -1,5 +1,5 @@
 /**
- * Devices, their assignment windows, batch ingestion and excursion detection.
+ * The readings a device sends, the shipment each one belongs to and the excursions they reveal.
  */
 @ApplicationModule(id = "telemetry", allowedDependencies = {})
 package com.coldchain.modules.telemetry;

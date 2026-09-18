@@ -162,7 +162,7 @@ notices. The canon is the other way round — a whitelist.
 | R4.6 | **Every declared index and constraint carries a canonical name**: `IX_<TABLE>_<COLUMNS>`, `UQ_<TABLE>_<COLUMNS>`, `PK_<TABLE>`, `FK_<CHILD>_<PARENT>`, `CK_<TABLE>_<WHAT>`. A `SYS_C0015138` does not say what it guarantees, so an integrity failure in production is not diagnosed, it is investigated (N9.1) | STYLE | `PersistenceNamingCanonArchTest.everyDeclaredConstraintCarriesACanonicalName` | planned | pending |
 | R4.7 | **The same concept is named the same across the whole schema.** The machine is partial and always will be: it catches the synonym somebody already wrote and banned, never the one invented tomorrow | STYLE | `NamingSynonymArchTest.fieldsAndColumnsDoNotUseBannedSynonyms` | planned | pending |
 | R4.8 | **The tenancy column declares its index on the entity**, not only in the DDL (N3.2) | COST | `SchemaDeclarationArchTest.tenantColumnIndexIsDeclaredOnTheEntity` | planned | pending |
-| R4.9 | **A quantity that is summed or compared is `NUMBER(p,s)`.** Never `BINARY_DOUBLE`, never text. A temperature is `NUMBER(5,2)` and a duration is whole seconds (N4.1) | INT | `SchemaStandardIT.n4_1_measurableQuantitiesAreExactDecimals` | planned | pending |
+| R4.9 | **A quantity that is summed or compared is `NUMBER(p,s)`.** Never `BINARY_DOUBLE`, never text. A temperature is `NUMBER(5,2)` and a duration is whole seconds (N4.1) | INT | `SchemaStandardIT.n4_1_measurableQuantitiesAreExactDecimals` | yes | green |
 | R4.10 | **An identifier from another bounded context is a `UUID` column with no foreign key**, never an embedded object ([ADR-006](../docs/adr/ADR-006-modules-and-events.md)). The single deliberate exception is the tenancy column, R10.6 | INT | `EntityCanonArchTest.noEntityHoldsAnotherModulesEntity` | planned | pending |
 | R4.11 | **No collection undercuts the global `default_batch_fetch_size`** with its own `@BatchSize`: set below the global, it costs twice the round trips | COST | `PersistenceFetchArchTest.noCollectionUnderCutsTheGlobalBatchFetchSize` | planned | pending |
 | R4.12 | **A frozen snapshot column is named for what it is and never written twice.** The five threshold columns on `SHIPMENT` are set once at dispatch and are immutable afterwards ([ADR-004](../docs/adr/ADR-004-frozen-thresholds.md)) | INT | `EntityCanonArchTest.frozenColumnsHaveNoSetter` | planned | pending |
@@ -207,7 +207,7 @@ binds.
 | R6.13 | **A closed, stable set of values is a `CHECK`; one the business administers is a catalogue table with a foreign key** (N8.2). The criterion is who changes it: a deployment or a screen | INT | `SchemaStandardIT.n8_2_closedSetsAreChecks` | yes | green |
 | R6.14 | **No constraint or index carries a system-generated name** (N9.1) | STYLE | `SchemaStandardIT.n9_1_noSystemGeneratedConstraintNames` | yes | green |
 | R6.15 | **Every table carries the four audit columns** (N6.4) — `CREATED_AT`, `CREATED_BY`, `UPDATED_AT`, `UPDATED_BY` — and the first two are `NOT NULL` | INT | `SchemaStandardIT.n6_4_everyTableIsAuditable` | yes | green |
-| R6.16 | **`TEMPERATURE_READING` is range-partitioned with a monthly interval** on `MEASURED_AT`. It is the only table that grows without a ceiling, and partitioning is included in the Free edition | COST | `SchemaStandardIT.theReadingTableIsIntervalPartitioned` | planned | pending |
+| R6.16 | **`TEMPERATURE_READING` is not partitioned.** Oracle refuses to partition, or to make unique, a `TIMESTAMP WITH TIME ZONE` column (ORA-02329, ORA-03001), and R6.6 wins: a cross-border instant without a zone is ambiguous, while a partition is an optimisation. Sample uniqueness is a function-based index on `SYS_EXTRACT_UTC(MEASURED_AT)`. **No machine:** there is nothing left to check | COST | — | none | — |
 
 ---
 
@@ -301,7 +301,7 @@ In force from day one. Every rule here describes a way of losing a value with no
 |---|---|---|---|---|---|
 | R11.1 | **Every entity two users can write at the same time carries `@Version`.** Without optimistic locking the last write wins in silence and the first is lost without a trace | INT | `ConcurrencyArchTest.everyConcurrentlyWritableEntityIsVersioned` | planned | pending |
 | R11.2 | **No read-modify-write happens without a version or a lock.** `sequence_no` on the custody log is the canonical case: it is reserved inside the writing transaction with `SELECT MAX(...) + 1 FOR UPDATE`, never from an Oracle sequence, which would leave gaps on rollback | INT | `CustodySequenceConcurrencyIT.noTwoEventsShareASequenceNumber` | planned | pending |
-| R11.3 | **A write the client can repeat is idempotent by key.** Batch ingestion is the canonical case: the same `idempotency_key` returns the original result and writes nothing | INT | `IngestionIdempotencyIT.resendingABatchWritesNothing` | planned | pending |
+| R11.3 | **A write the client can repeat is idempotent by key.** Batch ingestion is the canonical case: the same `idempotency_key` returns the original result and writes nothing | INT | `TelemetryIngestionIT.resendingABatchWritesNothing` | yes | green |
 | R11.4 | **A concurrency conflict goes out as 409**, not as 500. It is an expected outcome, not a server failure | CON | `HttpContractArchTest.theHttpStatusOfAnErrorComesFromItsCategory` | yes | green |
 
 ---

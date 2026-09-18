@@ -48,6 +48,11 @@ public class ShipmentRepositoryAdapter implements ShipmentRepository {
     }
 
     @Override
+    public int markOpenExcursion(UUID shipmentId, boolean open) {
+        return shipments.markOpenExcursion(shipmentId, open ? 1 : 0);
+    }
+
+    @Override
     public Optional<Shipment> findVisible(UUID shipmentId, UUID viewerOrganizationId) {
         return shipments.findVisible(shipmentId, viewerOrganizationId)
                 .map(entity -> mapper.toDomain(entity, lines.findByShipmentId(entity.getId())));

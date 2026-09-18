@@ -43,7 +43,9 @@ class SchemaStandardIT {
             Map.entry("DEVICE_ASSIGNMENT", "telemetry"),
             Map.entry("READING_BATCH", "telemetry"),
             Map.entry("TEMPERATURE_READING", "telemetry"),
-            Map.entry("EXCURSION", "telemetry"));
+            Map.entry("EXCURSION", "telemetry"),
+            Map.entry("COMPLIANCE_CERTIFICATE", "compliance"),
+            Map.entry("CERTIFICATE_FINDING", "compliance"));
 
     private static final List<String> TENANT_TABLES =
             List.of("APP_USER", "API_CLIENT", "REFRESH_TOKEN", "AUDIT_ENTRY");

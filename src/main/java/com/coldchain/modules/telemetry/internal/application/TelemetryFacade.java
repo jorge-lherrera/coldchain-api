@@ -12,6 +12,7 @@ import com.coldchain.modules.telemetry.internal.application.usecase.command.Assi
 import com.coldchain.modules.telemetry.internal.application.usecase.command.DetachDeviceUseCase;
 import com.coldchain.modules.telemetry.internal.application.usecase.command.IngestBatchUseCase;
 import com.coldchain.modules.telemetry.internal.application.usecase.command.RegisterDeviceUseCase;
+import com.coldchain.modules.telemetry.internal.application.usecase.query.GetDeviceUseCase;
 import com.coldchain.modules.telemetry.internal.application.usecase.query.ListDevicesUseCase;
 import com.coldchain.modules.telemetry.internal.application.usecase.query.QuerySeriesUseCase;
 import com.coldchain.shared.paging.PageCriteria;
@@ -33,16 +34,20 @@ public class TelemetryFacade implements TelemetryApi {
 
     private final ListDevicesUseCase listDevices;
 
+    private final GetDeviceUseCase getDevice;
+
     private final QuerySeriesUseCase querySeries;
 
     public TelemetryFacade(RegisterDeviceUseCase registerDevice, AssignDeviceUseCase assignDevice,
             DetachDeviceUseCase detachDevice, IngestBatchUseCase ingestBatch,
-            ListDevicesUseCase listDevices, QuerySeriesUseCase querySeries) {
+            ListDevicesUseCase listDevices, GetDeviceUseCase getDevice,
+            QuerySeriesUseCase querySeries) {
         this.registerDevice = registerDevice;
         this.assignDevice = assignDevice;
         this.detachDevice = detachDevice;
         this.ingestBatch = ingestBatch;
         this.listDevices = listDevices;
+        this.getDevice = getDevice;
         this.querySeries = querySeries;
     }
 
@@ -59,6 +64,11 @@ public class TelemetryFacade implements TelemetryApi {
     @Override
     public AssignmentResult detachDevice(UUID deviceId, Instant detachedAt) {
         return detachDevice.execute(deviceId, detachedAt);
+    }
+
+    @Override
+    public DeviceResult deviceOf(UUID deviceId) {
+        return getDevice.execute(deviceId);
     }
 
     @Override

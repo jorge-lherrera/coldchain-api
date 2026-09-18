@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -31,6 +32,10 @@ public interface ShipmentJpaRepository extends JpaRepository<ShipmentJpaEntity, 
             """)
     Page<ShipmentJpaEntity> findVisibleTo(@Param("viewerOrganizationId") UUID viewerOrganizationId,
             Pageable pageable);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE ShipmentJpaEntity s SET s.hasOpenExcursion = :flag WHERE s.id = :shipmentId")
+    int markOpenExcursion(@Param("shipmentId") UUID shipmentId, @Param("flag") Integer flag);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT s FROM ShipmentJpaEntity s WHERE s.id = :shipmentId")

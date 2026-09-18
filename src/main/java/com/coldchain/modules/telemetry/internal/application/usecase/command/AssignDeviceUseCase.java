@@ -1,0 +1,42 @@
+package com.coldchain.modules.telemetry.internal.application.usecase.command;
+
+import com.coldchain.modules.telemetry.api.dto.AssignDeviceCommand;
+import com.coldchain.modules.telemetry.api.dto.AssignmentResult;
+import com.coldchain.modules.telemetry.internal.application.mapper.TelemetryApiMapper;
+import com.coldchain.modules.telemetry.internal.domain.model.DeviceAssignment;
+import com.coldchain.modules.telemetry.internal.domain.model.SensorDevice;
+import com.coldchain.modules.telemetry.internal.domain.repository.DeviceAssignmentRepository;
+import com.coldchain.modules.telemetry.internal.domain.repository.SensorDeviceRepository;
+import com.coldchain.modules.telemetry.internal.exception.TelemetryErrorCode;
+import com.coldchain.shared.application.UseCase;
+import com.coldchain.shared.error.DomainException;
+import org.springframework.transaction.annotation.Transactional;
+
+@UseCase
+public class AssignDeviceUseCase {
+
+    private final SensorDeviceRepository devices;
+
+    private final DeviceAssignmentRepository assignments;
+
+    private final TelemetryApiMapper mapper;
+
+    public AssignDeviceUseCase(SensorDeviceRepository devices, DeviceAssignmentRepository assignments,
+            TelemetryApiMapper mapper) {
+        this.devices = devices;
+        this.assignments = assignments;
+        this.mapper = mapper;
+    }
+
+    @Transactional
+    public AssignmentResult execute(AssignDeviceCommand command) {
+        SensorDevice device = devices.findById(command.deviceId())
+                .orElseThrow(() -> DomainException.of(TelemetryErrorCode.DEVICE_NOT_FOUND));
+        if (!device.usable()) {
+            throw DomainException.of(TelemetryErrorCode.DEVICE_NOT_USABLE);
+        }
+        return mapper.toResult(assignments.save(DeviceAssignment.attach(device.id(),
+                command.shipmentId(), command.thresholds().minCelsius(),
+                command.thresholds().maxCelsius(), command.attachedAt())));
+    }
+}

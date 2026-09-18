@@ -13,4 +13,6 @@ public interface ShipmentRepository {
     Optional<Shipment> findVisible(UUID shipmentId, UUID viewerOrganizationId);
 
     PagedResult<Shipment> findVisibleTo(UUID viewerOrganizationId, PageCriteria criteria);
+
+    int markOpenExcursion(UUID shipmentId, boolean open);
 }

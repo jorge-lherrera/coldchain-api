@@ -38,7 +38,12 @@ class SchemaStandardIT {
             Map.entry("SHIPMENT_LINE", "shipment"),
             Map.entry("SHIPMENT_PARTICIPANT", "shipment"),
             Map.entry("CUSTODY_EVENT", "shipment"),
-            Map.entry("HANDOFF_REQUEST", "shipment"));
+            Map.entry("HANDOFF_REQUEST", "shipment"),
+            Map.entry("SENSOR_DEVICE", "telemetry"),
+            Map.entry("DEVICE_ASSIGNMENT", "telemetry"),
+            Map.entry("READING_BATCH", "telemetry"),
+            Map.entry("TEMPERATURE_READING", "telemetry"),
+            Map.entry("EXCURSION", "telemetry"));
 
     private static final List<String> TENANT_TABLES =
             List.of("APP_USER", "API_CLIENT", "REFRESH_TOKEN", "AUDIT_ENTRY");
@@ -197,6 +202,28 @@ class SchemaStandardIT {
             assertThat(checkConditions()).describedAs("%s must be constrained to 0 or 1", flag)
                     .anyMatch(condition -> condition.contains(column + "IN(0,1)"));
         });
+    }
+
+    @Test
+    void n4_1_measurableQuantitiesAreExactDecimals() {
+        List<String> approximate = jdbc.queryForList("""
+                SELECT table_name || '.' || column_name
+                FROM user_tab_columns
+                WHERE %s AND data_type IN ('BINARY_DOUBLE', 'BINARY_FLOAT', 'FLOAT')
+                """.formatted(OURS), String.class);
+        List<String> temperatures = jdbc.queryForList("""
+                SELECT table_name || '.' || column_name
+                FROM user_tab_columns
+                WHERE %s AND column_name LIKE '%%CELSIUS'
+                  AND (data_type <> 'NUMBER' OR data_precision <> 5 OR data_scale <> 2)
+                """.formatted(OURS), String.class);
+
+        assertThat(approximate)
+                .describedAs("a temperature that is summed and compared cannot be approximate")
+                .isEmpty();
+        assertThat(temperatures)
+                .describedAs("every temperature is NUMBER(5,2), so two readings compare exactly")
+                .isEmpty();
     }
 
     @Test

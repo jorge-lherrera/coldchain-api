@@ -89,22 +89,22 @@ live in.
 | Id | Rule | Sev | Enforcer | Machine | Status |
 |---|---|---|---|---|---|
 | R2.1 | `<X>Api` — inbound port, in `modules/<x>/api/` | STYLE | `ArchitectureRulesArchTest.apiInterfacesAreNamedApi` | yes | green |
-| R2.2 | `<X>Facade` — implementation of the port, in `modules/<x>/internal/application/` | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | planned | pending |
+| R2.2 | `<X>Facade` — implementation of the port, in `modules/<x>/internal/application/` | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | yes | green |
 | R2.3 | `<X>UseCase` — one use case, in `internal/application/usecase/{command,query}/` | STYLE | `ArchitectureRulesArchTest.useCaseClassesAreNamedUseCase` | yes | green |
-| R2.4 | `<X>Command` — an intent coming in, in `api/dto/` | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | planned | pending |
-| R2.5 | `<X>Result` — what a use case returns, in `api/dto/` | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | planned | pending |
-| R2.6 | `<X>Filter` — read criteria of the **contract**, in `api/dto/` | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | planned | pending |
-| R2.7 | `<X>Criteria` — read criteria of the **domain**, in `internal/domain/model/` | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | planned | pending |
-| R2.8 | `<X>Event` — domain or integration event, in `api/event/` | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | planned | pending |
-| R2.9 | `<X>Request` / `<X>Response` — HTTP and only HTTP, in `delivery/web/<x>/dto/` | STYLE | `ModuleFileLayoutArchTest.httpVocabularyStaysInDelivery` | planned | pending |
-| R2.10 | `<X>WebMapper` — Request↔Command, Result↔Response, in the delivery channel | STYLE | `ModuleFileLayoutArchTest.everyChannelMapperSitsInItsChannel` | planned | pending |
-| R2.11 | `<X>ApiMapper` — domain model ↔ `api/` DTO | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | planned | pending |
+| R2.4 | `<X>Command` — an intent coming in, in `api/dto/` | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | yes | green |
+| R2.5 | `<X>Result` — what a use case returns, in `api/dto/` | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | yes | green |
+| R2.6 | `<X>Filter` — read criteria of the **contract**, in `api/dto/` | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | yes | green |
+| R2.7 | `<X>Criteria` — read criteria of the **domain**, in `internal/domain/model/` | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | yes | green |
+| R2.8 | An event a module publishes is a `record` in `api/event/` permitted by that module's sealed `<Module>Event` interface, and it is named as the fact it states (`ShipmentDispatched`), not with an `Event` suffix. Nothing outside `api/event/` implements the interface | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | yes | green |
+| R2.9 | `<X>Request` / `<X>Response` — HTTP and only HTTP, in `delivery/web/<x>/dto/`, together with the `<X>Payload` pieces they nest. Nothing outside the channel is a `Response`, and the module contract never names a `Request` | STYLE | `ModuleFileLayoutArchTest.httpVocabularyStaysInDelivery` | yes | green |
+| R2.10 | `<X>WebMapper` — Request↔Command, Result↔Response, in the delivery channel | STYLE | `ModuleFileLayoutArchTest.everyChannelMapperSitsInItsChannel` | yes | green |
+| R2.11 | `<X>ApiMapper` — domain model ↔ `api/` DTO | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | yes | green |
 | R2.12 | `<X>JpaEntity` — persistence entity | STYLE | `NamingStandardsArchTest.jpaEntitiesUseJpaEntitySuffix` | yes | green |
-| R2.13 | `<X>JpaRepository` — Spring Data repository, next to the entity | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | planned | pending |
+| R2.13 | `<X>JpaRepository` — Spring Data repository, in `internal/infrastructure/persistence/jpa/` | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | yes | green |
 | R2.14 | `<X>Repository` — **the port**, always an interface, in `internal/domain/repository/` | STYLE | `ArchitectureRulesArchTest.repositoryPortsAreInterfaces` | yes | green |
-| R2.15 | `<X>RepositoryAdapter` — implementation of the port | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | planned | pending |
-| R2.16 | `<X>ErrorCode` — the module's error catalogue, in `internal/exception/` | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | planned | pending |
-| R2.17 | Domain model — **no suffix**, in `internal/domain/model/` | STYLE | `ModuleFileLayoutArchTest.onlyDomainModelsLiveInTheDomainModelFolder` | planned | pending |
+| R2.15 | `<X>RepositoryAdapter` — implementation of the port | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | yes | green |
+| R2.16 | `<X>ErrorCode` — the module's error catalogue, in `internal/exception/` | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | yes | green |
+| R2.17 | Domain model — **no suffix**, in `internal/domain/model/` | STYLE | `ModuleFileLayoutArchTest.onlyDomainModelsLiveInTheDomainModelFolder` | yes | green |
 
 ### R2.b — The `api/` contract
 
@@ -113,8 +113,8 @@ notices. The canon is the other way round — a whitelist.
 
 | Id | Rule | Sev | Enforcer | Machine | Status |
 |---|---|---|---|---|---|
-| R2.18 | **`api/` admits exactly seven things**: `Api`, `Command`, `Filter`, `Result`, `Event`, `Policy` and contract enums. Nothing else | STYLE | `ApiContractCanonArchTest.apiPackagesCarryOnlyTheSevenAllowedSuffixes` | planned | pending |
-| R2.19 | **Every read DTO converges on `Result`.** No `Summary`, `View`, `Row`, `Detail`, `Info` or `Data`: the nuance goes in the **prefix**, never in the suffix, because at the point of use four suffixes for one role hide which of them may cross the boundary | STYLE | `ApiContractCanonArchTest.everyReadDtoConvergesOnResult` | planned | pending |
+| R2.18 | **`api/` admits exactly seven things**: the `<Module>Api` door and the contract enums at its root; `Command`, `Filter`, `Result` and the value records they carry in `dto/`; and the published facts in `event/`. Nothing else | STYLE | `ApiContractCanonArchTest.apiPackagesCarryOnlyTheSevenAllowedSuffixes` | yes | green |
+| R2.19 | **Every read DTO converges on `Result`.** No `Summary`, `View`, `Row`, `Detail`, `Info` or `Data`: the nuance goes in the **prefix**, never in the suffix, because at the point of use four suffixes for one role hide which of them may cross the boundary | STYLE | `ApiContractCanonArchTest.everyReadDtoConvergesOnResult` | yes | green |
 | R2.20 | **Forbidden suffixes in `api/`**: `Dto` (does not say whether it comes in or goes out), `Request`/`Response` (HTTP vocabulary, and `api/` does not know HTTP exists), `Mapper` (implementation, not contract), `Service` (not a role in this project), `Query` (served two concepts that were indistinguishable at the point of use — use `Filter` or `Criteria`), `Ref` (an abbreviation covering four roles) | STYLE | `ArchitectureRulesArchTest.apiPackagesHaveNoForbiddenSuffixes` | yes | green |
 
 ### R2.c — Java identifiers
@@ -143,7 +143,7 @@ notices. The canon is the other way round — a whitelist.
 | R3.7 | An entity declaring `@SQLRestriction` over a column **maps that column**. Otherwise every `SELECT` dies with `ORA-00904`, silently | INT | `EntityCanonArchTest.everyRestrictedColumnIsMapped` | planned | pending |
 | R3.8 | `Command`, `Result`, `Filter` and `Criteria` are **immutable `record`s** | STYLE | `ClassConstructionArchTest.everyContractTypeIsAnImmutableRecord` | planned | pending |
 | R3.9 | A file declares **one public type** and is named after it | STYLE | `ClassConstructionArchTest.everyFileDeclaresOnePublicTypeNamedLikeItself` | planned | pending |
-| R3.10 | **A use case is annotated `@UseCase`, never `@Service`.** The stereotype says what the class is, and `@Service` does not distinguish a use case from anything else | STYLE | `ApiContractCanonArchTest.useCasesAreAnnotatedAsUseCasesNotAsServices` | planned | pending |
+| R3.10 | **A use case is annotated `@UseCase`, never `@Service`.** The stereotype says what the class is, and `@Service` does not distinguish a use case from anything else | STYLE | `ApiContractCanonArchTest.useCasesAreAnnotatedAsUseCasesNotAsServices` | yes | green |
 | R3.11 | **No comment inside a code block.** If a block needs explaining, the name is wrong or the decision belongs in an ADR | STYLE | `ClassConstructionArchTest.noCommentExplainsCodeFromInsideABlock` | planned | pending |
 | R3.12 | **Controllers document themselves in OpenAPI annotations, never in javadoc**; use cases and domain carry no javadoc at all; infrastructure and configuration carry javadoc only when it explains a *why* | STYLE | `ClassConstructionArchTest.controllersDocumentThemselvesInOpenApi` · `ClassConstructionArchTest.useCasesAndDomainCarryNoJavadoc` | planned | pending |
 | R3.13 | **Imports at the top and grouped** (`java.*` → `jakarta`/third party → `com.coldchain.*`), with no qualified names inline | STYLE | `ClassConstructionArchTest.importsAreGroupedJavaThenLibrariesThenLocal` | planned | pending |

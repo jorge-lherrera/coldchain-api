@@ -16,6 +16,8 @@ public enum CoreErrorCode implements ErrorCode {
             "The resource does not exist or is not visible"),
     CONCURRENT_MODIFICATION("error.core.concurrent_modification", ErrorCategory.CONFLICT,
             "The resource changed while this request was being processed"),
+    TOO_MANY_REQUESTS("error.core.too_many_requests", ErrorCategory.RATE_LIMIT,
+            "The client sent too many requests in a short time"),
     UNEXPECTED_FAILURE("error.core.unexpected_failure", ErrorCategory.INTERNAL,
             "The request could not be completed");
 

@@ -6,7 +6,7 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.springframework.data.domain.PageRequest;
+import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
@@ -28,15 +28,18 @@ public final class SortCatalog<F extends Enum<F> & SortField> {
         return new SortCatalog<>(byParameter, Sort.by(direction, fallback.property()));
     }
 
-    public Pageable apply(Pageable requested) {
-        return PageRequest.of(requested.getPageNumber(), requested.getPageSize(), resolve(requested.getSort()));
+    public PageCriteria apply(Pageable requested) {
+        return new PageCriteria(requested.getPageNumber(), requested.getPageSize(),
+                resolve(requested.getSort()));
     }
 
-    public Sort resolve(Sort requested) {
-        if (requested.isUnsorted()) {
-            return fallback;
-        }
-        return Sort.by(requested.stream().map(this::translate).toList());
+    public List<SortOrder> resolve(Sort requested) {
+        Sort resolved = requested.isUnsorted() ? fallback
+                : Sort.by(requested.stream().map(this::translate).toList());
+        return resolved.stream()
+                .map(order -> new SortOrder(order.getProperty(),
+                        order.isDescending() ? SortDirection.DESC : SortDirection.ASC))
+                .toList();
     }
 
     private Sort.Order translate(Sort.Order order) {

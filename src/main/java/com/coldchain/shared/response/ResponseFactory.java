@@ -1,10 +1,10 @@
 package com.coldchain.shared.response;
 
+import com.coldchain.shared.paging.PagedResult;
 import com.coldchain.shared.trace.RequestTrace;
 import java.time.Clock;
 import java.util.List;
 import java.util.Map;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -29,8 +29,8 @@ public class ResponseFactory {
         return build(code, data, ResponseMeta.empty());
     }
 
-    public <T> ResponseEntity<ApiResponse<List<T>>> paginated(SuccessCode code, Page<T> page) {
-        return build(code, page.getContent(), ResponseMeta.paginated(PaginationMeta.of(page)));
+    public <T> ResponseEntity<ApiResponse<List<T>>> paginated(SuccessCode code, PagedResult<T> page) {
+        return build(code, page.content(), ResponseMeta.paginated(PaginationMeta.of(page)));
     }
 
     public static HttpStatus statusOf(SuccessOutcome outcome) {

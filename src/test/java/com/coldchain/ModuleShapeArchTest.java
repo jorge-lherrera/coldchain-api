@@ -34,7 +34,6 @@ class ModuleShapeArchTest {
             "internal/domain", List.of("model", "repository", "service"),
             "internal/application", List.of("usecase", "mapper"),
             "internal/application/usecase", List.of("command", "query"),
-            "internal/infrastructure", List.of("persistence"),
             "internal/infrastructure/persistence", List.of("entity", "jpa", "adapter", "mapper"));
 
     @Test

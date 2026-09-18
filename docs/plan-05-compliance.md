@@ -162,7 +162,7 @@ a typed file response rather than assembling anything by hand (R8.10).
   "telemetry::api"})`, verified by Modulith (R1.5); ArchUnit adds that `compliance` never queries
   another module's tables and that `VerdictCalculator` depends on no repository.
 
-**Milestone closed:** the full `README` walkthrough — the lab dispatches, the carrier accepts the
+**Milestone done when:** the full `README` walkthrough — the lab dispatches, the carrier accepts the
 handoff, the gateway pushes the series with the spike and the gap, the hospital accepts the delivery —
 and the certificate comes out `FAIL` with `EXCURSION_ABOVE_MAX` and `DATA_GAP`, with its verifiable
 hash, and no rule of the `compliance` area still `pending` (R14.3).

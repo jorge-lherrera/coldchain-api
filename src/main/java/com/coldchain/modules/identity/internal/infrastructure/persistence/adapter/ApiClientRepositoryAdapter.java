@@ -8,15 +8,15 @@ import com.coldchain.modules.identity.internal.infrastructure.persistence.entity
 import com.coldchain.modules.identity.internal.infrastructure.persistence.jpa.ApiClientJpaRepository;
 import com.coldchain.modules.identity.internal.infrastructure.persistence.jpa.ApiClientScopeJpaRepository;
 import com.coldchain.modules.identity.internal.infrastructure.persistence.mapper.ApiClientPersistenceMapper;
+import com.coldchain.shared.paging.PageCriteria;
+import com.coldchain.shared.paging.PagedResult;
+import com.coldchain.shared.paging.SpringDataPaging;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.dao.DataIntegrityViolationException;
-import com.coldchain.shared.paging.PageCriteria;
-import com.coldchain.shared.paging.PagedResult;
-import com.coldchain.shared.paging.SpringDataPaging;
 import org.springframework.stereotype.Repository;
 
 @Repository

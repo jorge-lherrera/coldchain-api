@@ -1,30 +1,30 @@
 package com.coldchain.modules.telemetry.internal.infrastructure.persistence.mapper;
 
+import com.coldchain.modules.telemetry.api.BatchStatus;
 import com.coldchain.modules.telemetry.api.DeviceStatus;
 import com.coldchain.modules.telemetry.api.ExcursionKind;
 import com.coldchain.modules.telemetry.api.ExcursionStatus;
-import com.coldchain.modules.telemetry.api.BatchStatus;
+import com.coldchain.modules.telemetry.internal.domain.model.Device;
 import com.coldchain.modules.telemetry.internal.domain.model.DeviceAssignment;
 import com.coldchain.modules.telemetry.internal.domain.model.Excursion;
 import com.coldchain.modules.telemetry.internal.domain.model.ReadingBatch;
-import com.coldchain.modules.telemetry.internal.domain.model.SensorDevice;
 import com.coldchain.modules.telemetry.internal.infrastructure.persistence.entity.DeviceAssignmentJpaEntity;
+import com.coldchain.modules.telemetry.internal.infrastructure.persistence.entity.DeviceJpaEntity;
 import com.coldchain.modules.telemetry.internal.infrastructure.persistence.entity.ExcursionJpaEntity;
 import com.coldchain.modules.telemetry.internal.infrastructure.persistence.entity.ReadingBatchJpaEntity;
-import com.coldchain.modules.telemetry.internal.infrastructure.persistence.entity.SensorDeviceJpaEntity;
 import org.springframework.stereotype.Component;
 
 @Component
 public class TelemetryPersistenceMapper {
 
-    public SensorDeviceJpaEntity toEntity(SensorDevice device) {
-        return new SensorDeviceJpaEntity(device.id(), device.organizationId(), device.serialNumber(),
+    public DeviceJpaEntity toEntity(Device device) {
+        return new DeviceJpaEntity(device.id(), device.organizationId(), device.serialNumber(),
                 device.model(), device.firmware(), device.status().name(),
                 device.samplingIntervalSeconds(), device.calibratedAt(), device.deletedAt());
     }
 
-    public SensorDevice toDomain(SensorDeviceJpaEntity entity) {
-        return SensorDevice.restore(entity.getId(), entity.getOrganizationId(),
+    public Device toDomain(DeviceJpaEntity entity) {
+        return Device.restore(entity.getId(), entity.getOrganizationId(),
                 entity.getSerialNumber(), entity.getModel(), entity.getFirmware(),
                 DeviceStatus.valueOf(entity.getStatus()), entity.getSamplingIntervalSeconds(),
                 entity.getCalibratedAt(), entity.getDeletedAt());

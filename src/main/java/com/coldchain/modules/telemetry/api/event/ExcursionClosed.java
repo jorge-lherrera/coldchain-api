@@ -5,5 +5,10 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record ExcursionClosed(UUID excursionId, UUID organizationId, UUID shipmentId,
-        ExcursionKind kind, long durationMinutes, Instant closedAt) {
+        ExcursionKind kind, long durationMinutes, Instant closedAt) implements TelemetryEvent {
+
+    @Override
+    public Instant occurredAt() {
+        return closedAt;
+    }
 }

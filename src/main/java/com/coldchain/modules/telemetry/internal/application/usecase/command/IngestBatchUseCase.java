@@ -7,18 +7,19 @@ import com.coldchain.modules.telemetry.api.dto.IngestBatchCommand;
 import com.coldchain.modules.telemetry.api.dto.IngestBatchResult;
 import com.coldchain.modules.telemetry.api.dto.ReadingCommand;
 import com.coldchain.modules.telemetry.internal.application.ExcursionReview;
+import com.coldchain.modules.telemetry.internal.domain.model.Device;
 import com.coldchain.modules.telemetry.internal.domain.model.DeviceAssignment;
 import com.coldchain.modules.telemetry.internal.domain.model.ReadingBatch;
-import com.coldchain.modules.telemetry.internal.domain.model.SensorDevice;
 import com.coldchain.modules.telemetry.internal.domain.model.TemperatureReading;
 import com.coldchain.modules.telemetry.internal.domain.repository.DeviceAssignmentRepository;
+import com.coldchain.modules.telemetry.internal.domain.repository.DeviceRepository;
 import com.coldchain.modules.telemetry.internal.domain.repository.ReadingBatchRepository;
-import com.coldchain.modules.telemetry.internal.domain.repository.SensorDeviceRepository;
 import com.coldchain.modules.telemetry.internal.domain.repository.TemperatureReadingRepository;
 import com.coldchain.modules.telemetry.internal.domain.service.AssignmentWindowResolver;
 import com.coldchain.modules.telemetry.internal.exception.TelemetryErrorCode;
 import com.coldchain.shared.application.UseCase;
 import com.coldchain.shared.error.DomainException;
+import com.coldchain.shared.identifier.UuidV7;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
@@ -39,7 +40,7 @@ public class IngestBatchUseCase {
 
     private static final BigDecimal HOTTEST_POSSIBLE = new BigDecimal("100");
 
-    private final SensorDeviceRepository devices;
+    private final DeviceRepository devices;
 
     private final DeviceAssignmentRepository assignments;
 
@@ -51,7 +52,7 @@ public class IngestBatchUseCase {
 
     private final Clock clock;
 
-    public IngestBatchUseCase(SensorDeviceRepository devices, DeviceAssignmentRepository assignments,
+    public IngestBatchUseCase(DeviceRepository devices, DeviceAssignmentRepository assignments,
             ReadingBatchRepository batches, TemperatureReadingRepository readings,
             ExcursionReview excursionReview, Clock clock) {
         this.devices = devices;
@@ -73,7 +74,7 @@ public class IngestBatchUseCase {
         if (command.readings().isEmpty()) {
             throw DomainException.of(TelemetryErrorCode.EMPTY_BATCH);
         }
-        SensorDevice device = devices.findById(command.deviceId())
+        Device device = devices.findById(command.deviceId())
                 .orElseThrow(() -> DomainException.of(TelemetryErrorCode.DEVICE_NOT_FOUND));
         if (!device.usable()) {
             throw DomainException.of(TelemetryErrorCode.DEVICE_NOT_USABLE);
@@ -85,7 +86,7 @@ public class IngestBatchUseCase {
         Set<Instant> seenInThisBatch = new LinkedHashSet<>();
         List<TemperatureReading> accepted = new ArrayList<>();
         List<DiscardedReading> discarded = new ArrayList<>();
-        UUID batchId = com.coldchain.shared.identifier.UuidV7.generate();
+        UUID batchId = UuidV7.generate();
 
         for (ReadingCommand reading : command.readings()) {
             Instant measuredAt = reading.measuredAt().truncatedTo(ChronoUnit.MICROS);

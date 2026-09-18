@@ -89,8 +89,8 @@ class CatalogLifecycleIT {
 
         assertThatThrownBy(() -> jdbc.update("""
                 INSERT INTO storage_profile (id, organization_id, code, name, profile_version, status,
-                        min_celsius, max_celsius, max_single_excursion_min,
-                        max_cumulative_excursion_min, min_coverage_pct, created_at, created_by)
+                        min_celsius, max_celsius, max_single_excursion_minutes,
+                        max_cumulative_excursion_minutes, min_coverage_percent, created_at, created_by)
                 VALUES (SYS_GUID(), ?, 'UPSIDE-DOWN', 'Upside down', 1, 'DRAFT',
                         8, 2, 10, 20, 95, SYSTIMESTAMP, SYS_GUID())
                 """, RawUuid.toBytes(organization)))

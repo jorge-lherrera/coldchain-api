@@ -2,7 +2,7 @@ package com.coldchain.modules.compliance.internal.application.mapper;
 
 import com.coldchain.modules.compliance.api.dto.CertificateResult;
 import com.coldchain.modules.compliance.api.dto.FindingResult;
-import com.coldchain.modules.compliance.internal.domain.model.ComplianceCertificate;
+import com.coldchain.modules.compliance.internal.domain.model.Certificate;
 import com.coldchain.modules.compliance.internal.domain.model.Finding;
 import com.coldchain.modules.shipment.api.dto.ShipmentThresholds;
 import org.springframework.stereotype.Component;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ComplianceApiMapper {
 
-    public CertificateResult toResult(ComplianceCertificate certificate) {
+    public CertificateResult toResult(Certificate certificate) {
         return new CertificateResult(certificate.id(), certificate.shipmentId(), certificate.version(),
                 certificate.verdict(), certificate.coveragePercent(),
                 certificate.cumulativeExcursionMinutes(), certificate.longestExcursionMinutes(),

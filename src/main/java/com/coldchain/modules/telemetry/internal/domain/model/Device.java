@@ -6,7 +6,7 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-public final class SensorDevice {
+public final class Device {
 
     private final UUID id;
 
@@ -26,7 +26,7 @@ public final class SensorDevice {
 
     private final Instant deletedAt;
 
-    private SensorDevice(UUID id, UUID organizationId, String serialNumber, String model,
+    private Device(UUID id, UUID organizationId, String serialNumber, String model,
             String firmware, DeviceStatus status, int samplingIntervalSeconds, Instant calibratedAt,
             Instant deletedAt) {
         this.id = Objects.requireNonNull(id);
@@ -43,16 +43,16 @@ public final class SensorDevice {
         }
     }
 
-    public static SensorDevice register(UUID organizationId, String serialNumber, String model,
+    public static Device register(UUID organizationId, String serialNumber, String model,
             String firmware, int samplingIntervalSeconds, Instant calibratedAt) {
-        return new SensorDevice(UuidV7.generate(), organizationId, serialNumber, model, firmware,
+        return new Device(UuidV7.generate(), organizationId, serialNumber, model, firmware,
                 DeviceStatus.ACTIVE, samplingIntervalSeconds, calibratedAt, null);
     }
 
-    public static SensorDevice restore(UUID id, UUID organizationId, String serialNumber, String model,
+    public static Device restore(UUID id, UUID organizationId, String serialNumber, String model,
             String firmware, DeviceStatus status, int samplingIntervalSeconds, Instant calibratedAt,
             Instant deletedAt) {
-        return new SensorDevice(id, organizationId, serialNumber, model, firmware, status,
+        return new Device(id, organizationId, serialNumber, model, firmware, status,
                 samplingIntervalSeconds, calibratedAt, deletedAt);
     }
 

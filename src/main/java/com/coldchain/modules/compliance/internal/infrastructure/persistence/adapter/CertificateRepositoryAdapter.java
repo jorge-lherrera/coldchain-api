@@ -1,10 +1,10 @@
 package com.coldchain.modules.compliance.internal.infrastructure.persistence.adapter;
 
-import com.coldchain.modules.compliance.internal.domain.model.ComplianceCertificate;
+import com.coldchain.modules.compliance.internal.domain.model.Certificate;
 import com.coldchain.modules.compliance.internal.domain.repository.CertificateRepository;
-import com.coldchain.modules.compliance.internal.infrastructure.persistence.entity.ComplianceCertificateJpaEntity;
+import com.coldchain.modules.compliance.internal.infrastructure.persistence.entity.CertificateJpaEntity;
 import com.coldchain.modules.compliance.internal.infrastructure.persistence.jpa.CertificateFindingJpaRepository;
-import com.coldchain.modules.compliance.internal.infrastructure.persistence.jpa.ComplianceCertificateJpaRepository;
+import com.coldchain.modules.compliance.internal.infrastructure.persistence.jpa.CertificateJpaRepository;
 import com.coldchain.modules.compliance.internal.infrastructure.persistence.mapper.CertificatePersistenceMapper;
 import java.util.Optional;
 import java.util.UUID;
@@ -13,13 +13,13 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class CertificateRepositoryAdapter implements CertificateRepository {
 
-    private final ComplianceCertificateJpaRepository certificates;
+    private final CertificateJpaRepository certificates;
 
     private final CertificateFindingJpaRepository findings;
 
     private final CertificatePersistenceMapper mapper;
 
-    public CertificateRepositoryAdapter(ComplianceCertificateJpaRepository certificates,
+    public CertificateRepositoryAdapter(CertificateJpaRepository certificates,
             CertificateFindingJpaRepository findings, CertificatePersistenceMapper mapper) {
         this.certificates = certificates;
         this.findings = findings;
@@ -27,7 +27,7 @@ public class CertificateRepositoryAdapter implements CertificateRepository {
     }
 
     @Override
-    public ComplianceCertificate save(ComplianceCertificate certificate) {
+    public Certificate save(Certificate certificate) {
         certificates.saveAndFlush(mapper.toEntity(certificate));
         certificate.findings().stream().map(mapper::toEntity).forEach(findings::save);
         findings.flush();
@@ -35,7 +35,7 @@ public class CertificateRepositoryAdapter implements CertificateRepository {
     }
 
     @Override
-    public Optional<ComplianceCertificate> findCurrent(UUID shipmentId) {
+    public Optional<Certificate> findCurrent(UUID shipmentId) {
         return certificates.findByShipmentIdAndSupersededAtIsNull(shipmentId)
                 .map(entity -> mapper.toDomain(entity, findings.findByCertificateId(entity.getId())));
     }
@@ -43,7 +43,7 @@ public class CertificateRepositoryAdapter implements CertificateRepository {
     @Override
     public int highestVersionOf(UUID shipmentId) {
         return certificates.findFirstByShipmentIdOrderByCertificateVersionDesc(shipmentId)
-                .map(ComplianceCertificateJpaEntity::getCertificateVersion)
+                .map(CertificateJpaEntity::getCertificateVersion)
                 .orElse(0);
     }
 }

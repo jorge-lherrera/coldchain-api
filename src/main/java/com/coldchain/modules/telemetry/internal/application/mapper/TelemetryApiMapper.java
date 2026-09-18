@@ -4,16 +4,16 @@ import com.coldchain.modules.telemetry.api.dto.AssignmentResult;
 import com.coldchain.modules.telemetry.api.dto.DeviceResult;
 import com.coldchain.modules.telemetry.api.dto.ExcursionResult;
 import com.coldchain.modules.telemetry.api.dto.SeriesPoint;
+import com.coldchain.modules.telemetry.internal.domain.model.Device;
 import com.coldchain.modules.telemetry.internal.domain.model.DeviceAssignment;
 import com.coldchain.modules.telemetry.internal.domain.model.Excursion;
-import com.coldchain.modules.telemetry.internal.domain.model.SensorDevice;
 import com.coldchain.modules.telemetry.internal.domain.model.TemperatureReading;
 import org.springframework.stereotype.Component;
 
 @Component
 public class TelemetryApiMapper {
 
-    public DeviceResult toResult(SensorDevice device) {
+    public DeviceResult toResult(Device device) {
         return new DeviceResult(device.id(), device.organizationId(), device.serialNumber(),
                 device.model(), device.firmware(), device.status(), device.samplingIntervalSeconds(),
                 device.calibratedAt());

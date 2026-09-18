@@ -9,6 +9,7 @@ import com.coldchain.modules.telemetry.internal.domain.repository.ExcursionRepos
 import com.coldchain.modules.telemetry.internal.domain.repository.TemperatureReadingRepository;
 import com.coldchain.modules.telemetry.internal.domain.service.DetectedExcursion;
 import com.coldchain.modules.telemetry.internal.domain.service.ExcursionDetector;
+import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +49,7 @@ public class ExcursionReview {
             return;
         }
         List<TemperatureReading> series = readings.findOfShipment(shipmentId);
-        Map<java.time.Instant, Excursion> before = excursions.findOfShipment(shipmentId).stream()
+        Map<Instant, Excursion> before = excursions.findOfShipment(shipmentId).stream()
                 .collect(Collectors.toMap(Excursion::openedAt, Function.identity(),
                         (first, second) -> first));
         excursions.deleteOfShipment(shipmentId);

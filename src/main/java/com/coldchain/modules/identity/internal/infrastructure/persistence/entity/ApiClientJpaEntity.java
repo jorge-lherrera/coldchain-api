@@ -4,8 +4,8 @@ import com.coldchain.shared.persistence.AuditableEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import jakarta.persistence.Index;
+import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
 

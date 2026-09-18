@@ -155,7 +155,7 @@ class ShipmentCustodyIT {
         assertThat(timeline.verdict().intact()).isTrue();
 
         jdbc.update("UPDATE custody_event SET kind = 'COMPENSATION' WHERE shipment_id = ? "
-                + "AND sequence_no = 2", RawUuid.toBytes(dispatched.id()));
+                + "AND sequence_number = 2", RawUuid.toBytes(dispatched.id()));
 
         ShipmentTimelineResult tampered = shipments.timelineOf(dispatched.id(),
                 shipper.organizationId());

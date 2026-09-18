@@ -39,12 +39,12 @@ class SchemaStandardIT {
             Map.entry("SHIPMENT_PARTICIPANT", "shipment"),
             Map.entry("CUSTODY_EVENT", "shipment"),
             Map.entry("HANDOFF_REQUEST", "shipment"),
-            Map.entry("SENSOR_DEVICE", "telemetry"),
+            Map.entry("DEVICE", "telemetry"),
             Map.entry("DEVICE_ASSIGNMENT", "telemetry"),
             Map.entry("READING_BATCH", "telemetry"),
             Map.entry("TEMPERATURE_READING", "telemetry"),
             Map.entry("EXCURSION", "telemetry"),
-            Map.entry("COMPLIANCE_CERTIFICATE", "compliance"),
+            Map.entry("CERTIFICATE", "compliance"),
             Map.entry("CERTIFICATE_FINDING", "compliance"));
 
     private static final List<String> TENANT_TABLES =

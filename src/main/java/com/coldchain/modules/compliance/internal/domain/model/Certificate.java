@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-public final class ComplianceCertificate {
+public final class Certificate {
 
     private final UUID id;
 
@@ -40,7 +40,7 @@ public final class ComplianceCertificate {
 
     private final List<Finding> findings;
 
-    private ComplianceCertificate(UUID id, UUID organizationId, UUID shipmentId, int version,
+    private Certificate(UUID id, UUID organizationId, UUID shipmentId, int version,
             Verdict verdict, BigDecimal coveragePercent, long cumulativeExcursionMinutes,
             long longestExcursionMinutes, String thresholdSnapshot, Instant evaluatedFrom,
             Instant evaluatedTo, Instant issuedAt, String contentHash, Instant supersededAt,
@@ -66,28 +66,28 @@ public final class ComplianceCertificate {
         }
     }
 
-    public static ComplianceCertificate issue(UUID organizationId, UUID shipmentId, int version,
+    public static Certificate issue(UUID organizationId, UUID shipmentId, int version,
             Verdict verdict, BigDecimal coveragePercent, long cumulativeExcursionMinutes,
             long longestExcursionMinutes, String thresholdSnapshot, Instant evaluatedFrom,
             Instant evaluatedTo, Instant issuedAt, String contentHash, List<Finding> findings) {
-        return new ComplianceCertificate(UuidV7.generate(), organizationId, shipmentId, version,
+        return new Certificate(UuidV7.generate(), organizationId, shipmentId, version,
                 verdict, coveragePercent, cumulativeExcursionMinutes, longestExcursionMinutes,
                 thresholdSnapshot, evaluatedFrom, evaluatedTo, issuedAt, contentHash, null, findings);
     }
 
-    public static ComplianceCertificate restore(UUID id, UUID organizationId, UUID shipmentId,
+    public static Certificate restore(UUID id, UUID organizationId, UUID shipmentId,
             int version, Verdict verdict, BigDecimal coveragePercent, long cumulativeExcursionMinutes,
             long longestExcursionMinutes, String thresholdSnapshot, Instant evaluatedFrom,
             Instant evaluatedTo, Instant issuedAt, String contentHash, Instant supersededAt,
             List<Finding> findings) {
-        return new ComplianceCertificate(id, organizationId, shipmentId, version, verdict,
+        return new Certificate(id, organizationId, shipmentId, version, verdict,
                 coveragePercent, cumulativeExcursionMinutes, longestExcursionMinutes,
                 thresholdSnapshot, evaluatedFrom, evaluatedTo, issuedAt, contentHash, supersededAt,
                 findings);
     }
 
-    public ComplianceCertificate supersede(Instant when) {
-        return new ComplianceCertificate(id, organizationId, shipmentId, version, verdict,
+    public Certificate supersede(Instant when) {
+        return new Certificate(id, organizationId, shipmentId, version, verdict,
                 coveragePercent, cumulativeExcursionMinutes, longestExcursionMinutes,
                 thresholdSnapshot, evaluatedFrom, evaluatedTo, issuedAt, contentHash, when, findings);
     }

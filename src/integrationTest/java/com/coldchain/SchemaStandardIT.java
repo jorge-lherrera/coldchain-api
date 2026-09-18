@@ -190,6 +190,58 @@ class SchemaStandardIT {
     }
 
     @Test
+    void n6_1_softDeleteHasOneName() {
+        List<String> otherNames = jdbc.queryForList("""
+                SELECT table_name || '.' || column_name
+                FROM user_tab_columns
+                WHERE %s
+                  AND (column_name IN ('IS_DELETED', 'DELETED', 'ACTIVE', 'IS_ACTIVE', 'REMOVED_AT')
+                    OR SUBSTR(column_name, 1, 8) = 'DELETED_')
+                  AND column_name <> 'DELETED_AT'
+                """.formatted(OURS), String.class);
+        List<String> softDeleted = jdbc.queryForList("""
+                SELECT table_name FROM user_tab_columns WHERE %s AND column_name = 'DELETED_AT'
+                """.formatted(OURS), String.class);
+
+        assertThat(softDeleted).describedAs("there is a soft-deleted table to check").isNotEmpty();
+        assertThat(otherNames)
+                .describedAs("one question, one column: DELETED_AT, and NULL means alive")
+                .isEmpty();
+        assertThat(jdbc.queryForList("""
+                SELECT table_name FROM user_tab_columns
+                WHERE %s AND column_name = 'DELETED_AT' AND data_type NOT LIKE '%%WITH TIME ZONE'
+                """.formatted(OURS), String.class))
+                .describedAs("it answers when, not only whether")
+                .isEmpty();
+    }
+
+    @Test
+    void n7_3_conditionalUniquenessIsAFunctionBasedIndex() {
+        List<String> plainUniques = jdbc.queryForList("""
+                SELECT i.index_name
+                FROM user_indexes i
+                WHERE i.uniqueness = 'UNIQUE'
+                  AND UPPER(i.table_name) NOT LIKE 'FLYWAY%%'
+                  AND i.index_type NOT LIKE 'FUNCTION%%'
+                  AND NOT EXISTS (SELECT 1 FROM user_constraints k
+                                  WHERE k.index_name = i.index_name AND k.constraint_type = 'P')
+                  AND EXISTS (SELECT 1 FROM user_tab_columns c
+                              WHERE c.table_name = i.table_name AND c.column_name = 'DELETED_AT')
+                """.formatted(), String.class);
+
+        assertThat(jdbc.queryForList("""
+                SELECT index_name FROM user_indexes
+                WHERE uniqueness = 'UNIQUE' AND index_type LIKE 'FUNCTION%'
+                """, String.class))
+                .describedAs("there is a conditional uniqueness to check")
+                .isNotEmpty();
+        assertThat(plainUniques)
+                .describedAs("a plain unique index over a soft-deleted table forbids reusing the code "
+                        + "of a row nobody can see any more")
+                .isEmpty();
+    }
+
+    @Test
     void n8_1_mandatoryTextRejectsTheEmptyString() {
         List<String> mandatoryText = jdbc.queryForList("""
                 SELECT table_name || '.' || column_name

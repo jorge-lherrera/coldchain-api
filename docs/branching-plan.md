@@ -16,6 +16,9 @@ main                                  publishable at any moment
       ├── feat/shipment
       ├── feat/telemetry
       ├── feat/compliance
+      ├── feat/rules-naming
+      ├── feat/rules-structure
+      ├── feat/rules-runtime
       └── chore/ci-and-readme
 ```
 
@@ -218,7 +221,54 @@ feat(compliance): compliance dashboard
 **Done when:** the `README` demo runs end to end and the certificate comes out `FAIL` with the
 excursion and the `DATA_GAP` as findings.
 
-### 8 · `chore/ci-and-readme`
+### 8 · `feat/rules-naming` — the canon of names
+
+The rules each module branch left `planned` are closed in three branches, one per kind of thing they
+govern, because a hundred enforcers landing at once is a review nobody does.
+
+This one is names: packages, types, members, constants, enum constants and type parameters; entities
+that say in their name that they map a table; columns and tables in `UPPER_SNAKE_CASE` and singular;
+constraints and indexes that say what they guarantee and on what. Writing them found the abbreviations
+the schema had been carrying and the two concepts that answered to two names each, so the renames
+travel in this branch too.
+
+```
+refactor(core): spell out what the schema had been abbreviating
+test(core): enforce the naming canon on identifiers, columns and constraints
+refactor(core): one name per concept, and an id that survives a read
+```
+
+**Done when:** no name in the schema has to be guessed, and `./gradlew rules` is green.
+
+### 9 · `feat/rules-structure` — where each thing lives
+
+A suffix decides a folder, the contract admits only what it publishes, an aggregate is built through
+a named factory, a table has exactly one owning module, and the schema belongs to Flyway alone.
+
+```
+feat(core): seal the events shipment and telemetry publish
+test(core): enforce where each role lives and what the contract may say
+test(core): enforce how a class is built and who owns each table
+```
+
+**Done when:** every structural rule has a machine and the module graph is proven, not asserted.
+
+### 10 · `feat/rules-runtime` — what only shows at run time
+
+Optimistic locking on the aggregates that change state, observability, the contract snapshots that
+make a version grow and never shrink, and the rules that need a real Oracle: delete actions, query
+budgets checked by exact equality, visibility by participation, and the custody sequence under two
+concurrent writers.
+
+```
+feat(core): stop the second writer from erasing the first
+test(core): close the catalogue — no rule is left without a machine
+docs: the documentation the five modules actually built
+```
+
+**Done when:** the catalogue has no `planned` row left and `./gradlew rebuild` is green from nothing.
+
+### 11 · `chore/ci-and-readme`
 
 CI already exists from step 2, so this is what is left before publishing: the generated OpenAPI
 document published as an artifact, the final `README` with the demo, and the script that seeds the
@@ -234,7 +284,7 @@ chore: demo seeding script
 live waiver, and somebody who clones the repository reaches the certificate following only the
 `README`.
 
-### 9 · `main`
+### 12 · `main`
 
 ```
 git checkout main && git merge --no-ff develop && git tag v1.0.0

@@ -31,6 +31,8 @@ public interface CatalogApi {
 
     ProductResult updateProduct(UpdateProductCommand command);
 
+    ProductResult productOf(UUID productId);
+
     void retireProduct(UUID productId);
 
     PagedResult<ProductResult> listProducts(UUID organizationId, PageCriteria criteria);

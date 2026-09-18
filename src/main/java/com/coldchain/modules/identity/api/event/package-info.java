@@ -1,5 +1,7 @@
 /**
- * The facts the identity module publishes. They are part of its contract, so a reaction in another
- * module compiles against a record and never against the inside of identity.
+ * The facts the identity module publishes, and part of its contract.
  */
+@NamedInterface("api")
 package com.coldchain.modules.identity.api.event;
+
+import org.springframework.modulith.NamedInterface;

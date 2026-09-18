@@ -2,7 +2,7 @@ package com.coldchain.modules.compliance.internal.application.usecase.command;
 
 import com.coldchain.modules.compliance.api.dto.CertificateResult;
 import com.coldchain.modules.compliance.internal.application.mapper.ComplianceApiMapper;
-import com.coldchain.modules.compliance.internal.domain.model.ComplianceCertificate;
+import com.coldchain.modules.compliance.internal.domain.model.Certificate;
 import com.coldchain.modules.compliance.internal.domain.model.Finding;
 import com.coldchain.modules.compliance.internal.domain.repository.CertificateRepository;
 import com.coldchain.modules.compliance.internal.domain.service.Evaluation;
@@ -94,7 +94,7 @@ public class IssueCertificateUseCase {
         evaluation.findings().forEach(draft -> findings.add(Finding.createNew(certificateId,
                 draft.code(), draft.severity(), draft.excursionId(), draft.detail())));
 
-        ComplianceCertificate issued = ComplianceCertificate.issue(organizationId, shipmentId, version,
+        Certificate issued = Certificate.issue(organizationId, shipmentId, version,
                 evaluation.verdict(), evaluation.coveragePercent(),
                 evaluation.cumulativeExcursionMinutes(), evaluation.longestExcursionMinutes(),
                 snapshot, from, to, now,
@@ -110,8 +110,8 @@ public class IssueCertificateUseCase {
                 .orElse(closing);
     }
 
-    private ComplianceCertificate rebuild(ComplianceCertificate issued, List<Finding> findings) {
-        return ComplianceCertificate.restore(issued.id(), issued.organizationId(), issued.shipmentId(),
+    private Certificate rebuild(Certificate issued, List<Finding> findings) {
+        return Certificate.restore(issued.id(), issued.organizationId(), issued.shipmentId(),
                 issued.version(), issued.verdict(), issued.coveragePercent(),
                 issued.cumulativeExcursionMinutes(), issued.longestExcursionMinutes(),
                 issued.thresholdSnapshot(), issued.evaluatedFrom(), issued.evaluatedTo(),

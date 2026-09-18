@@ -2,6 +2,7 @@ package com.coldchain.shared.security;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -31,7 +32,7 @@ public class CurrentActor {
         return id().orElseThrow(() -> new IllegalStateException("No actor in the security context"));
     }
 
-    private Optional<UUID> claim(java.util.function.Function<Jwt, String> reader) {
+    private Optional<UUID> claim(Function<Jwt, String> reader) {
         return jwt().map(reader).map(UUID::fromString);
     }
 

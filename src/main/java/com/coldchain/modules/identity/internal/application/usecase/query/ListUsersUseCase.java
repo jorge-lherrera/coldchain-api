@@ -4,9 +4,9 @@ import com.coldchain.modules.identity.api.dto.UserResult;
 import com.coldchain.modules.identity.internal.application.mapper.IdentityApiMapper;
 import com.coldchain.modules.identity.internal.domain.repository.AppUserRepository;
 import com.coldchain.shared.application.UseCase;
-import java.util.UUID;
 import com.coldchain.shared.paging.PageCriteria;
 import com.coldchain.shared.paging.PagedResult;
+import java.util.UUID;
 
 @UseCase
 public class ListUsersUseCase {

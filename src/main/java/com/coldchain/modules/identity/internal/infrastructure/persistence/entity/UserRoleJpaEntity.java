@@ -17,7 +17,7 @@ import java.util.UUID;
 public class UserRoleJpaEntity extends AuditableEntity {
 
     @Id
-    @Column(name = "USER_ID", nullable = false, updatable = false)
+    @Column(name = "APP_USER_ID", nullable = false, updatable = false)
     private UUID userId;
 
     @Id

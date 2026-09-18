@@ -4,12 +4,12 @@ import com.coldchain.modules.identity.internal.domain.model.AppUser;
 import com.coldchain.modules.identity.internal.domain.repository.AppUserRepository;
 import com.coldchain.modules.identity.internal.infrastructure.persistence.jpa.AppUserJpaRepository;
 import com.coldchain.modules.identity.internal.infrastructure.persistence.mapper.AppUserPersistenceMapper;
-import java.util.Optional;
-import java.util.UUID;
-import org.springframework.dao.DataIntegrityViolationException;
 import com.coldchain.shared.paging.PageCriteria;
 import com.coldchain.shared.paging.PagedResult;
 import com.coldchain.shared.paging.SpringDataPaging;
+import java.util.Optional;
+import java.util.UUID;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 
 @Repository

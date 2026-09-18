@@ -34,7 +34,7 @@ public class IdentityAuditListener {
     @EventListener
     public void on(IdentityEvent event) {
         AuditedFacts facts = factsOf(event);
-        auditEntries.save(AuditEntry.record(event.organizationId(), event.actorType(), event.actorId(),
+        auditEntries.save(AuditEntry.createNew(event.organizationId(), event.actorType(), event.actorId(),
                 facts.action(), facts.resourceType(), facts.resourceId(), serialise(facts.payload()),
                 event.occurredAt()));
     }

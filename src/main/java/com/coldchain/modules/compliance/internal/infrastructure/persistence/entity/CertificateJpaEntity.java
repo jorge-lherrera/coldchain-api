@@ -11,9 +11,10 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "COMPLIANCE_CERTIFICATE", indexes = {
-        @Index(name = "IX_COMPLIANCE_CERTIFICATE_SHIPMENT_ID", columnList = "SHIPMENT_ID")})
-public class ComplianceCertificateJpaEntity extends AuditableEntity {
+@Table(name = "CERTIFICATE", indexes = {
+        @Index(name = "IX_CERTIFICATE_ORGANIZATION_ID", columnList = "ORGANIZATION_ID"),
+        @Index(name = "IX_CERTIFICATE_SHIPMENT_ID", columnList = "SHIPMENT_ID")})
+public class CertificateJpaEntity extends AuditableEntity {
 
     @Id
     @Column(name = "ID", nullable = false, updatable = false)
@@ -58,10 +59,10 @@ public class ComplianceCertificateJpaEntity extends AuditableEntity {
     @Column(name = "SUPERSEDED_AT")
     private Instant supersededAt;
 
-    protected ComplianceCertificateJpaEntity() {
+    protected CertificateJpaEntity() {
     }
 
-    public ComplianceCertificateJpaEntity(UUID id, UUID organizationId, UUID shipmentId,
+    public CertificateJpaEntity(UUID id, UUID organizationId, UUID shipmentId,
             int certificateVersion, String verdict, BigDecimal coveragePercent, long cumulativeMinutes,
             long longestMinutes, String thresholdSnapshot, Instant evaluatedFrom, Instant evaluatedTo,
             Instant issuedAt, String contentHash, Instant supersededAt) {

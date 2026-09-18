@@ -39,10 +39,16 @@ public final class AuditEntry {
         this.occurredAt = Objects.requireNonNull(occurredAt);
     }
 
-    public static AuditEntry record(UUID organizationId, ActorType actorType, UUID actorId, String action,
+    public static AuditEntry createNew(UUID organizationId, ActorType actorType, UUID actorId, String action,
             String resourceType, UUID resourceId, String payload, Instant occurredAt) {
         return new AuditEntry(UuidV7.generate(), organizationId, actorType, actorId, action, resourceType,
                 resourceId, payload, occurredAt);
+    }
+
+    public static AuditEntry restore(UUID id, UUID organizationId, ActorType actorType, UUID actorId,
+            String action, String resourceType, UUID resourceId, String payload, Instant occurredAt) {
+        return new AuditEntry(id, organizationId, actorType, actorId, action, resourceType, resourceId,
+                payload, occurredAt);
     }
 
     public UUID id() {

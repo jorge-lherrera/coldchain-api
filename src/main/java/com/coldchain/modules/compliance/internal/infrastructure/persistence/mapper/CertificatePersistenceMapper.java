@@ -3,18 +3,18 @@ package com.coldchain.modules.compliance.internal.infrastructure.persistence.map
 import com.coldchain.modules.compliance.api.FindingCode;
 import com.coldchain.modules.compliance.api.Severity;
 import com.coldchain.modules.compliance.api.Verdict;
-import com.coldchain.modules.compliance.internal.domain.model.ComplianceCertificate;
+import com.coldchain.modules.compliance.internal.domain.model.Certificate;
 import com.coldchain.modules.compliance.internal.domain.model.Finding;
 import com.coldchain.modules.compliance.internal.infrastructure.persistence.entity.CertificateFindingJpaEntity;
-import com.coldchain.modules.compliance.internal.infrastructure.persistence.entity.ComplianceCertificateJpaEntity;
+import com.coldchain.modules.compliance.internal.infrastructure.persistence.entity.CertificateJpaEntity;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
 public class CertificatePersistenceMapper {
 
-    public ComplianceCertificateJpaEntity toEntity(ComplianceCertificate certificate) {
-        return new ComplianceCertificateJpaEntity(certificate.id(), certificate.organizationId(),
+    public CertificateJpaEntity toEntity(Certificate certificate) {
+        return new CertificateJpaEntity(certificate.id(), certificate.organizationId(),
                 certificate.shipmentId(), certificate.version(), certificate.verdict().name(),
                 certificate.coveragePercent(), certificate.cumulativeExcursionMinutes(),
                 certificate.longestExcursionMinutes(), certificate.thresholdSnapshot(),
@@ -28,9 +28,9 @@ public class CertificatePersistenceMapper {
                 finding.detail());
     }
 
-    public ComplianceCertificate toDomain(ComplianceCertificateJpaEntity entity,
+    public Certificate toDomain(CertificateJpaEntity entity,
             List<CertificateFindingJpaEntity> findings) {
-        return ComplianceCertificate.restore(entity.getId(), entity.getOrganizationId(),
+        return Certificate.restore(entity.getId(), entity.getOrganizationId(),
                 entity.getShipmentId(), entity.getCertificateVersion(),
                 Verdict.valueOf(entity.getVerdict()), entity.getCoveragePercent(),
                 entity.getCumulativeMinutes(), entity.getLongestMinutes(),

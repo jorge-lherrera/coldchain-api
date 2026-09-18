@@ -11,6 +11,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "READING_BATCH", indexes = {
+        @Index(name = "IX_READING_BATCH_ORGANIZATION_ID", columnList = "ORGANIZATION_ID"),
         @Index(name = "IX_READING_BATCH_DEVICE_ID", columnList = "DEVICE_ID")})
 public class ReadingBatchJpaEntity extends AuditableEntity {
 

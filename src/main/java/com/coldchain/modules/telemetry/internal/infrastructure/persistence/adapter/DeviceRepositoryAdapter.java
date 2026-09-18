@@ -1,8 +1,8 @@
 package com.coldchain.modules.telemetry.internal.infrastructure.persistence.adapter;
 
-import com.coldchain.modules.telemetry.internal.domain.model.SensorDevice;
-import com.coldchain.modules.telemetry.internal.domain.repository.SensorDeviceRepository;
-import com.coldchain.modules.telemetry.internal.infrastructure.persistence.jpa.SensorDeviceJpaRepository;
+import com.coldchain.modules.telemetry.internal.domain.model.Device;
+import com.coldchain.modules.telemetry.internal.domain.repository.DeviceRepository;
+import com.coldchain.modules.telemetry.internal.infrastructure.persistence.jpa.DeviceJpaRepository;
 import com.coldchain.modules.telemetry.internal.infrastructure.persistence.mapper.TelemetryPersistenceMapper;
 import com.coldchain.shared.paging.PageCriteria;
 import com.coldchain.shared.paging.PagedResult;
@@ -13,20 +13,20 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class SensorDeviceRepositoryAdapter implements SensorDeviceRepository {
+public class DeviceRepositoryAdapter implements DeviceRepository {
 
-    private final SensorDeviceJpaRepository devices;
+    private final DeviceJpaRepository devices;
 
     private final TelemetryPersistenceMapper mapper;
 
-    public SensorDeviceRepositoryAdapter(SensorDeviceJpaRepository devices,
+    public DeviceRepositoryAdapter(DeviceJpaRepository devices,
             TelemetryPersistenceMapper mapper) {
         this.devices = devices;
         this.mapper = mapper;
     }
 
     @Override
-    public SensorDevice save(SensorDevice device) {
+    public Device save(Device device) {
         try {
             devices.saveAndFlush(mapper.toEntity(device));
         } catch (DataIntegrityViolationException cause) {
@@ -36,12 +36,12 @@ public class SensorDeviceRepositoryAdapter implements SensorDeviceRepository {
     }
 
     @Override
-    public Optional<SensorDevice> findById(UUID id) {
+    public Optional<Device> findById(UUID id) {
         return devices.findById(id).map(mapper::toDomain);
     }
 
     @Override
-    public PagedResult<SensorDevice> findByOrganization(UUID organizationId, PageCriteria criteria) {
+    public PagedResult<Device> findByOrganization(UUID organizationId, PageCriteria criteria) {
         return SpringDataPaging.toPagedResult(
                 devices.findByOrganizationIdAndDeletedAtIsNull(organizationId,
                         SpringDataPaging.toPageable(criteria)).map(mapper::toDomain),

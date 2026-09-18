@@ -15,8 +15,9 @@ public class AuditEntryPersistenceMapper {
     }
 
     public AuditEntry toDomain(AuditEntryJpaEntity entity) {
-        return AuditEntry.record(entity.getOrganizationId(), ActorType.valueOf(entity.getActorType()),
-                entity.getActorId(), entity.getAction(), entity.getResourceType(), entity.getResourceId(),
-                entity.getPayload(), entity.getOccurredAt());
+        return AuditEntry.restore(entity.getId(), entity.getOrganizationId(),
+                ActorType.valueOf(entity.getActorType()), entity.getActorId(), entity.getAction(),
+                entity.getResourceType(), entity.getResourceId(), entity.getPayload(),
+                entity.getOccurredAt());
     }
 }

@@ -10,9 +10,9 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "SENSOR_DEVICE", indexes = {
-        @Index(name = "IX_SENSOR_DEVICE_ORGANIZATION_ID", columnList = "ORGANIZATION_ID")})
-public class SensorDeviceJpaEntity extends AuditableEntity {
+@Table(name = "DEVICE", indexes = {
+        @Index(name = "IX_DEVICE_ORGANIZATION_ID", columnList = "ORGANIZATION_ID")})
+public class DeviceJpaEntity extends AuditableEntity {
 
     @Id
     @Column(name = "ID", nullable = false, updatable = false)
@@ -42,10 +42,10 @@ public class SensorDeviceJpaEntity extends AuditableEntity {
     @Column(name = "DELETED_AT")
     private Instant deletedAt;
 
-    protected SensorDeviceJpaEntity() {
+    protected DeviceJpaEntity() {
     }
 
-    public SensorDeviceJpaEntity(UUID id, UUID organizationId, String serialNumber, String model, String firmware, String status, int samplingIntervalSeconds, Instant calibratedAt, Instant deletedAt) {
+    public DeviceJpaEntity(UUID id, UUID organizationId, String serialNumber, String model, String firmware, String status, int samplingIntervalSeconds, Instant calibratedAt, Instant deletedAt) {
         this.id = id;
         this.organizationId = organizationId;
         this.serialNumber = serialNumber;

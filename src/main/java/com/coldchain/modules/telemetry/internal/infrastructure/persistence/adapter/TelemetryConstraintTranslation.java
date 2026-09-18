@@ -10,7 +10,7 @@ final class TelemetryConstraintTranslation {
 
     private static final Map<String, TelemetryErrorCode> BY_CONSTRAINT = Map.of(
             "UX_DEVICE_ASSIGNMENT_ACTIVE", TelemetryErrorCode.DEVICE_ALREADY_ASSIGNED,
-            "UX_SENSOR_DEVICE_SERIAL_LIVE", TelemetryErrorCode.SERIAL_ALREADY_REGISTERED);
+            "UX_DEVICE_SERIAL_LIVE", TelemetryErrorCode.SERIAL_ALREADY_REGISTERED);
 
     private TelemetryConstraintTranslation() {
     }

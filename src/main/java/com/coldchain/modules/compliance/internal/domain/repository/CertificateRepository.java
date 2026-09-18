@@ -1,14 +1,14 @@
 package com.coldchain.modules.compliance.internal.domain.repository;
 
-import com.coldchain.modules.compliance.internal.domain.model.ComplianceCertificate;
+import com.coldchain.modules.compliance.internal.domain.model.Certificate;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface CertificateRepository {
 
-    ComplianceCertificate save(ComplianceCertificate certificate);
+    Certificate save(Certificate certificate);
 
-    Optional<ComplianceCertificate> findCurrent(UUID shipmentId);
+    Optional<Certificate> findCurrent(UUID shipmentId);
 
     int highestVersionOf(UUID shipmentId);
 }

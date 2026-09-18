@@ -3,6 +3,7 @@ package com.coldchain.modules.identity.internal.domain.model;
 import com.coldchain.modules.identity.api.OrganizationKind;
 import com.coldchain.modules.identity.api.OrganizationStatus;
 import com.coldchain.shared.identifier.UuidV7;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -96,6 +97,6 @@ public final class Organization {
         if (country.length() != 2) {
             throw new IllegalArgumentException("A country is an ISO 3166-1 alpha-2 code, received " + country);
         }
-        return country.toUpperCase(java.util.Locale.ROOT);
+        return country.toUpperCase(Locale.ROOT);
     }
 }

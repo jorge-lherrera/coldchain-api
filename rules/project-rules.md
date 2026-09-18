@@ -67,9 +67,9 @@ else hidden. See [ADR-006](../docs/adr/ADR-006-modules-and-events.md).
 | R1.9 | **No module reaches into another's `internal/`.** No exception, `delivery` included | INT | `ModuleBoundariesArchTest.moduleInternalsAreOnlyAccessedWithinTheirModule` | yes | green |
 | R1.10 | **Every cross-module access goes through `api/`.** The `<X>Api` interface is the only door | INT | `ArchitectureRulesArchTest.apiPackagesNeverDependOnInternals` | yes | green |
 | R1.11 | **`api/` does not depend on `internal/`.** The contract does not drag the implementation behind it | INT | `ArchitectureRulesArchTest.apiPackagesNeverDependOnInternals` | yes | green |
-| R1.12 | **Every table has exactly one owning module.** A second mapping from another module is a contract copied instead of called: the coupling survives, the edge disappears, and the column names become an agreement nobody signed | INT | `SchemaOwnershipArchTest.everyTableHasExactlyOneOwningModule` | planned | pending |
-| R1.13 | **A query does not name tables outside its module.** Not native SQL, not JPQL, not `JdbcTemplate` | INT | `SchemaOwnershipArchTest.nativeSqlStaysInsideItsOwnModule` | planned | pending |
-| R1.14 | **A module does not write to another module's tables** — not even when seeding, which is one of the reasons reference data ships in migrations ([ADR-008](../docs/adr/ADR-008-reference-data-in-flyway.md)) | INT | `SchemaOwnershipArchTest.nativeSqlStaysInsideItsOwnModule` | planned | pending |
+| R1.12 | **Every table has exactly one owning module.** A second mapping from another module is a contract copied instead of called: the coupling survives, the edge disappears, and the column names become an agreement nobody signed | INT | `SchemaOwnershipArchTest.everyTableHasExactlyOneOwningModule` | yes | green |
+| R1.13 | **A query does not name tables outside its module.** Not native SQL, not JPQL, not `JdbcTemplate` | INT | `SchemaOwnershipArchTest.nativeSqlStaysInsideItsOwnModule` | yes | green |
+| R1.14 | **A module does not write to another module's tables** — not even when seeding, which is one of the reasons reference data ships in migrations ([ADR-008](../docs/adr/ADR-008-reference-data-in-flyway.md)) | INT | `SchemaOwnershipArchTest.nativeSqlStaysInsideItsOwnModule` | yes | green |
 
 ### R1.c — The two packages that are not modules
 
@@ -136,17 +136,17 @@ notices. The canon is the other way round — a whitelist.
 |---|---|---|---|---|---|
 | R3.1 | **Constructor injection, always.** `@Autowired`, `@Inject` and `@Resource` on a field or a setter are forbidden | STYLE | `ArchitectureRulesArchTest.noFieldInjection` · `ArchitectureRulesArchTest.noSetterInjection` | yes | green |
 | R3.2 | **The domain does not know the framework**: no Spring, no JPA, no Hibernate, no Jackson in `internal/domain/` | STYLE | `ArchitectureRulesArchTest.domainModelsAreFrameworkFree` | yes | green |
-| R3.3 | **An aggregate is created through a named factory** (`Shipment.createNew(...)`), never through a public no-args constructor. A no-args constructor exists on the JPA entity, which is a different class | INT | `ClassConstructionArchTest.domainAggregatesAreCreatedThroughNamedFactories` | planned | pending |
-| R3.4 | **Composition over inheritance.** Inheritance only from `@MappedSuperclass`, from `RuntimeException` and from framework interfaces | STYLE | `ClassConstructionArchTest.nothingInheritsToShareBehaviour` | planned | pending |
-| R3.5 | **Every JPA entity extends `AuditableEntity`** and therefore carries the four audit columns (R7.12) | INT | `EntityCanonArchTest.everyEntityIsAuditable` | planned | pending |
+| R3.3 | **An aggregate is created through a named factory** (`Shipment.createNew(...)`), never through a public no-args constructor. A no-args constructor exists on the JPA entity, which is a different class | INT | `ClassConstructionArchTest.domainAggregatesAreCreatedThroughNamedFactories` | yes | green |
+| R3.4 | **Composition over inheritance.** No class of this project inherits from another to share behaviour. The only parents allowed are `@MappedSuperclass`, `RuntimeException` and the base class a framework requires in order to plug in | STYLE | `ClassConstructionArchTest.nothingInheritsToShareBehaviour` | yes | green |
+| R3.5 | **Every JPA entity extends `AuditableEntity`** and therefore carries the four audit columns (R7.12) | INT | `EntityCanonArchTest.everyEntityIsAuditable` | yes | green |
 | R3.6 | **Persistence declares no transactions**, neither on the class nor on the method (R11.1) | INT | `ArchitectureRulesArchTest.persistenceDeclaresNoTransactions` | yes | green |
-| R3.7 | An entity declaring `@SQLRestriction` over a column **maps that column**. Otherwise every `SELECT` dies with `ORA-00904`, silently | INT | `EntityCanonArchTest.everyRestrictedColumnIsMapped` | planned | pending |
-| R3.8 | `Command`, `Result`, `Filter` and `Criteria` are **immutable `record`s** | STYLE | `ClassConstructionArchTest.everyContractTypeIsAnImmutableRecord` | planned | pending |
-| R3.9 | A file declares **one public type** and is named after it | STYLE | `ClassConstructionArchTest.everyFileDeclaresOnePublicTypeNamedLikeItself` | planned | pending |
+| R3.7 | An entity that names a column outside its field mappings — in an `@SQLRestriction` or in the `columnList` of an `@Index` — **maps that column**. Otherwise every `SELECT` dies with `ORA-00904`, silently | INT | `EntityCanonArchTest.everyRestrictedColumnIsMapped` | yes | green |
+| R3.8 | `Command`, `Result`, `Filter` and `Criteria` are **immutable `record`s** | STYLE | `ClassConstructionArchTest.everyContractTypeIsAnImmutableRecord` | yes | green |
+| R3.9 | A file declares **one public type** and is named after it | STYLE | `ClassConstructionArchTest.everyFileDeclaresOnePublicTypeNamedLikeItself` | yes | green |
 | R3.10 | **A use case is annotated `@UseCase`, never `@Service`.** The stereotype says what the class is, and `@Service` does not distinguish a use case from anything else | STYLE | `ApiContractCanonArchTest.useCasesAreAnnotatedAsUseCasesNotAsServices` | yes | green |
-| R3.11 | **No comment inside a code block.** If a block needs explaining, the name is wrong or the decision belongs in an ADR | STYLE | `ClassConstructionArchTest.noCommentExplainsCodeFromInsideABlock` | planned | pending |
-| R3.12 | **Controllers document themselves in OpenAPI annotations, never in javadoc**; use cases and domain carry no javadoc at all; infrastructure and configuration carry javadoc only when it explains a *why* | STYLE | `ClassConstructionArchTest.controllersDocumentThemselvesInOpenApi` · `ClassConstructionArchTest.useCasesAndDomainCarryNoJavadoc` | planned | pending |
-| R3.13 | **Imports at the top and grouped** (`java.*` → `jakarta`/third party → `com.coldchain.*`), with no qualified names inline | STYLE | `ClassConstructionArchTest.importsAreGroupedJavaThenLibrariesThenLocal` | planned | pending |
+| R3.11 | **No comment inside a code block.** If a block needs explaining, the name is wrong or the decision belongs in an ADR | STYLE | `ClassConstructionArchTest.noCommentExplainsCodeFromInsideABlock` | yes | green |
+| R3.12 | **Controllers document themselves in OpenAPI annotations, never in javadoc**; use cases and domain carry no javadoc at all; infrastructure and configuration carry javadoc only when it explains a *why* | STYLE | `ClassConstructionArchTest.controllersDocumentThemselvesInOpenApi` · `ClassConstructionArchTest.useCasesAndDomainCarryNoJavadoc` | yes | green |
+| R3.13 | **Imports at the top, the static ones first and every other one in a single ASCII-sorted block**, with no qualified name written inline. One order decided once, so a diff shows what changed instead of who formatted it | STYLE | `ClassConstructionArchTest.importsAreGroupedJavaThenLibrariesThenLocal` | yes | green |
 
 ---
 
@@ -158,14 +158,14 @@ notices. The canon is the other way round — a whitelist.
 | R4.2 | **An instant is `Instant`.** Never `Date`, never `LocalDateTime` (N4.3) | INT | `NamingStandardsArchTest.timestampsAvoidLegacyDateTypes` | yes | green |
 | R4.3 | **A key is a `UUID`** in Java and `RAW(16)` in Oracle, with no `length` and no `@JdbcTypeCode`, and it is a **UUID v7** generated in the application (N1.2, [ADR-002](../docs/adr/ADR-002-uuid-v7-raw16.md)) | INT | `SchemaStandardIT.n1_2_uuidKeysAreStoredAsRaw16` · `UuidRawBindingIT.theSixteenBytesAreTheSameOnesHibernateWrites` | yes | green |
 | R4.4 | **Column names in `UPPER_SNAKE_CASE`** in `@Column` and `@JoinColumn`; **table names in `UPPER_SNAKE_CASE` and singular** in `@Table` | STYLE | `NamingStandardsArchTest.persistenceNamesAreUpperSnakeCase` · `PersistenceNamingCanonArchTest.tableNamesAreSingular` | yes | green |
-| R4.5 | **A reference to another table is `<TARGET_TABLE>_ID`** (`SHIPMENT_ID`, not `SHIPMENT` nor `ID_SHIPMENT`) | STYLE | `EntityCanonArchTest.everyReferenceColumnIsNamedAfterItsTarget` | planned | pending |
+| R4.5 | **A reference to another table is `<TARGET_TABLE>_ID`** (`SHIPMENT_ID`, not `SHIPMENT` nor `ID_SHIPMENT`), checked on every declared foreign key. A `<WHO>_BY` column names a person on purpose and is the one exception; an identifier from another context has no foreign key to check and is R4.10's business | STYLE | `EntityCanonArchTest.everyReferenceColumnIsNamedAfterItsTarget` | yes | green |
 | R4.6 | **Every declared index and constraint carries a canonical name**: `PK_<TABLE>`, `FK_<CHILD>_<PARENT>`, `UQ_<TABLE>_<COLUMNS>`, `CK_<TABLE>_<WHAT>` for constraints, and `IX_<TABLE>_<COLUMNS>` / `UX_<TABLE>_<COLUMNS>` for plain and unique indexes. A `SYS_C0015138` does not say what it guarantees, so an integrity failure in production is not diagnosed, it is investigated (N9.1) | STYLE | `PersistenceNamingCanonArchTest.everyDeclaredConstraintCarriesACanonicalName` | yes | green |
 | R4.7 | **The same concept is named the same across the whole schema.** The machine is partial and always will be: it catches the synonym somebody already wrote and banned, never the one invented tomorrow | STYLE | `NamingSynonymArchTest.fieldsAndColumnsDoNotUseBannedSynonyms` | partial | green |
-| R4.8 | **The tenancy column declares its index on the entity**, not only in the DDL (N3.2) | COST | `SchemaDeclarationArchTest.tenantColumnIndexIsDeclaredOnTheEntity` | planned | pending |
+| R4.8 | **A table read by tenant declares that index on the entity**, not only in the DDL (N3.2). A table that carries the tenancy column for the check but is never read by it — the custody log, the audit trail — is not indexed by it, because an index nobody reads is a write nobody asked for | COST | `SchemaDeclarationArchTest.tenantColumnIndexIsDeclaredOnTheEntity` | yes | green |
 | R4.9 | **A quantity that is summed or compared is `NUMBER(p,s)`.** Never `BINARY_DOUBLE`, never text. A temperature is `NUMBER(5,2)` and a duration is whole seconds (N4.1) | INT | `SchemaStandardIT.n4_1_measurableQuantitiesAreExactDecimals` | yes | green |
-| R4.10 | **An identifier from another bounded context is a `UUID` column with no foreign key**, never an embedded object ([ADR-006](../docs/adr/ADR-006-modules-and-events.md)). The single deliberate exception is the tenancy column, R10.6 | INT | `EntityCanonArchTest.noEntityHoldsAnotherModulesEntity` | planned | pending |
-| R4.11 | **No collection undercuts the global `default_batch_fetch_size`** with its own `@BatchSize`: set below the global, it costs twice the round trips | COST | `PersistenceFetchArchTest.noCollectionUnderCutsTheGlobalBatchFetchSize` | planned | pending |
-| R4.12 | **A frozen snapshot column is named for what it is and never written twice.** The five threshold columns on `SHIPMENT` are set once at dispatch and are immutable afterwards ([ADR-004](../docs/adr/ADR-004-frozen-thresholds.md)) | INT | `EntityCanonArchTest.frozenColumnsHaveNoSetter` | planned | pending |
+| R4.10 | **An identifier from another bounded context is a `UUID` column with no foreign key**, never an embedded object ([ADR-006](../docs/adr/ADR-006-modules-and-events.md)). The single deliberate exception is the tenancy column, R10.6 | INT | `EntityCanonArchTest.noEntityHoldsAnotherModulesEntity` | yes | green |
+| R4.11 | **No collection undercuts the global `default_batch_fetch_size`** with its own `@BatchSize`: set below the global, it costs twice the round trips | COST | `PersistenceFetchArchTest.noCollectionUnderCutsTheGlobalBatchFetchSize` | yes | green |
+| R4.12 | **A frozen snapshot column is named for what it is and never written twice.** No entity offers a setter and no domain model holds a field that is not `final`, so the five threshold columns on `SHIPMENT` are set once at dispatch and a second write would have to build a new object ([ADR-004](../docs/adr/ADR-004-frozen-thresholds.md)) | INT | `EntityCanonArchTest.frozenColumnsHaveNoSetter` | yes | green |
 
 ---
 
@@ -176,7 +176,7 @@ notices. The canon is the other way round — a whitelist.
 | R5.1 | **A use case does one thing**, has one public `execute`, and is named after what it does | STYLE | `ArchitectureRulesArchTest.useCaseClassesAreNamedUseCase` | yes | green |
 | R5.2 | **Command and query separated**: `usecase/command/` writes, `usecase/query/` reads and never writes | STYLE | `LayerContractArchTest.queriesDoNotWrite` | yes | green |
 | R5.3 | **No paginated endpoint without declared sortable fields.** An open `sort` parameter is an open door to ordering by an unindexed column | CON | `ArchitectureRulesArchTest.pageableEndpointsDeclareSortableFields` | yes | green |
-| R5.4 | **No unbounded read.** `findAll()` and `findAll(Specification)` inherited from Spring Data do not reach a use case; every listing is `Pageable` | COST | `PersistenceFetchArchTest.noUnboundedReadArrivesThroughAnInheritedOverload` | planned | pending |
+| R5.4 | **No unbounded read.** `findAll()` and `findAll(Specification)` inherited from Spring Data do not reach a use case; every listing is `Pageable` | COST | `PersistenceFetchArchTest.noUnboundedReadArrivesThroughAnInheritedOverload` | yes | green |
 | R5.5 | **The controller depends only on `<X>Api`**, never on a use case, a repository or the module's domain | INT | `ArchitectureRulesArchTest.deliveryNeverDependsOnUseCases` · `ArchitectureRulesArchTest.deliveryNeverDependsOnModuleDomain` | yes | green |
 | R5.6 | **No JPA entity crosses to a controller.** Always a DTO | CON | `ModuleBoundariesArchTest.moduleInternalsAreOnlyAccessedWithinTheirModule` | yes | green |
 | R5.7 | **`@Valid` on the controller is mandatory** whenever there is a request body | CON | `LayerContractArchTest.everyRequestBodyIsValidated` | yes | green |
@@ -215,11 +215,11 @@ binds.
 
 | Id | Rule | Sev | Enforcer | Machine | Status |
 |---|---|---|---|---|---|
-| R7.1 | **The global `default_batch_fetch_size` is configured** and it is the one that rules | COST | `PersistenceFetchArchTest.theGlobalBatchFetchSizeIsConfigured` | planned | pending |
+| R7.1 | **The global `default_batch_fetch_size` is configured** and it is the one that rules | COST | `PersistenceFetchArchTest.theGlobalBatchFetchSizeIsConfigured` | yes | green |
 | R7.2 | **Every listing endpoint has a query budget checked by exact equality**: one query more breaks it and one query less breaks it too. A budget that only has an upper bound stops noticing the day a read disappears because it started returning nothing | COST | `ShipmentListingQueryBudgetIT` · `TelemetrySeriesQueryBudgetIT` | planned | pending |
-| R7.3 | **Aggregation is computed in the database, not by pulling rows into Java.** The compliance dashboard and the downsampled time series are `GROUP BY`, not streams | COST | `PersistenceFetchArchTest.aggregatesAreProjectedNotComputedInMemory` | planned | pending |
+| R7.3 | **Aggregation is computed in the database, not by pulling rows into Java.** The compliance dashboard and the downsampled time series are `GROUP BY`, not streams | COST | `PersistenceFetchArchTest.aggregatesAreProjectedNotComputedInMemory` | yes | green |
 | R7.4 | **A batch write is one statement, not one per row.** Reading ingestion writes thousands of rows at a time with application-generated UUIDs precisely so there is no round trip per row | COST | `TelemetryIngestionQueryBudgetIT` | planned | pending |
-| R7.5 | **Pagination is `OFFSET ... ROWS FETCH NEXT ... ROWS ONLY`**, never a nested `ROWNUM` | COST | `PersistenceFetchArchTest.paginationUsesTheAnsiOffsetSyntax` | planned | pending |
+| R7.5 | **Pagination is `OFFSET ... ROWS FETCH NEXT ... ROWS ONLY`**, never a nested `ROWNUM` | COST | `PersistenceFetchArchTest.paginationUsesTheAnsiOffsetSyntax` | yes | green |
 
 ---
 
@@ -325,10 +325,10 @@ In force from day one. A log is replicated, exported and retained longer than th
 
 | Id | Rule | Sev | Enforcer | Machine | Status |
 |---|---|---|---|---|---|
-| R13.1 | **The schema is Flyway and only Flyway.** `ddl-auto: none` in every profile, tests included | INT | `SchemaLifecycleArchTest.hibernateNeverWritesTheSchemaInAnyProfile` | planned | pending |
-| R13.2 | **Migrations are hand-written, one per module, numbered and never edited once applied.** Hibernate does not generate interval partitioning, function-based indexes or composite `CHECK`s, and this schema depends on all three | INT | `SchemaLifecycleArchTest.everyMigrationIsNumberedAndUnique` | planned | pending |
-| R13.3 | **The dialect is pinned explicitly.** Without pinning it, the schema depends on the machine that produced it | INT | `SchemaLifecycleArchTest.theDialectIsPinnedExplicitly` | planned | pending |
-| R13.4 | **Reference data ships in the migration that creates its table** ([ADR-008](../docs/adr/ADR-008-reference-data-in-flyway.md)). No `CommandLineRunner`, no `@PostConstruct` writes rows, ever | INT | `SchemaLifecycleArchTest.nothingSeedsRowsAtStartup` | planned | pending |
+| R13.1 | **The schema is Flyway and only Flyway.** `ddl-auto: none` in every profile, tests included | INT | `SchemaLifecycleArchTest.hibernateNeverWritesTheSchemaInAnyProfile` | yes | green |
+| R13.2 | **Migrations are hand-written, one per module, numbered and never edited once applied.** Hibernate does not generate interval partitioning, function-based indexes or composite `CHECK`s, and this schema depends on all three | INT | `SchemaLifecycleArchTest.everyMigrationIsNumberedAndUnique` | yes | green |
+| R13.3 | **The dialect is pinned explicitly.** Without pinning it, the schema depends on the machine that produced it | INT | `SchemaLifecycleArchTest.theDialectIsPinnedExplicitly` | yes | green |
+| R13.4 | **Reference data ships in the migration that creates its table** ([ADR-008](../docs/adr/ADR-008-reference-data-in-flyway.md)). No `CommandLineRunner`, no `@PostConstruct` writes rows, ever | INT | `SchemaLifecycleArchTest.nothingSeedsRowsAtStartup` | yes | green |
 | R13.5 | **A catalogue that mirrors an enum is checked against it.** The code is the source of truth for the set, the migration for the rows, and a test asserts they agree. A mismatch fails the build; it is not silently repaired at boot | INT | `ScopeCatalogueIT.theSeededScopesMatchTheEnum` | yes | green |
 | R13.6 | **Every migration is idempotent to re-run and the full rebuild is exercised**: drop, migrate, start, run the integration suite. It runs in CI, so "it works on a fresh database" is a fact and not a belief | INT | `rebuild` (Gradle task) | planned | pending |
 

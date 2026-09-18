@@ -23,7 +23,7 @@ public class ShipmentPersistenceMapper {
                 thresholds == null ? null : thresholds.maxSingleExcursionMinutes(),
                 thresholds == null ? null : thresholds.maxCumulativeExcursionMinutes(),
                 thresholds == null ? null : thresholds.minCoveragePercent(),
-                shipment.openExcursion() ? 1 : 0, shipment.dispatchedAt(), shipment.closedAt());
+                shipment.openExcursion() ? 1 : 0, shipment.dispatchedAt(), shipment.closedAt(), shipment.lockVersion());
     }
 
     public ShipmentLineJpaEntity toEntity(ShipmentLine line) {
@@ -37,7 +37,7 @@ public class ShipmentPersistenceMapper {
                 entity.getDestinationSiteId(), entity.getConsigneeOrganizationId(),
                 entity.getCurrentCustodianOrganizationId(), entity.getDeviceId(),
                 toThresholds(entity), entity.getOpenExcursion() == 1, entity.getDispatchedAt(),
-                entity.getClosedAt(), lines.stream().map(this::toDomain).toList());
+                entity.getClosedAt(), lines.stream().map(this::toDomain).toList(), entity.getLockVersion());
     }
 
     public ShipmentLine toDomain(ShipmentLineJpaEntity entity) {

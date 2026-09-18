@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
@@ -38,10 +39,14 @@ public class DeviceAssignmentJpaEntity extends AuditableEntity {
     @Column(name = "DETACHED_AT")
     private Instant detachedAt;
 
+    @Version
+    @Column(name = "LOCK_VERSION", nullable = false)
+    private long lockVersion;
+
     protected DeviceAssignmentJpaEntity() {
     }
 
-    public DeviceAssignmentJpaEntity(UUID id, UUID deviceId, UUID shipmentId, BigDecimal minCelsius, BigDecimal maxCelsius, Instant attachedAt, Instant detachedAt) {
+    public DeviceAssignmentJpaEntity(UUID id, UUID deviceId, UUID shipmentId, BigDecimal minCelsius, BigDecimal maxCelsius, Instant attachedAt, Instant detachedAt, long lockVersion) {
         this.id = id;
         this.deviceId = deviceId;
         this.shipmentId = shipmentId;
@@ -49,6 +54,7 @@ public class DeviceAssignmentJpaEntity extends AuditableEntity {
         this.maxCelsius = maxCelsius;
         this.attachedAt = attachedAt;
         this.detachedAt = detachedAt;
+        this.lockVersion = lockVersion;
     }
 
     public UUID getId() {
@@ -77,5 +83,9 @@ public class DeviceAssignmentJpaEntity extends AuditableEntity {
 
     public Instant getDetachedAt() {
         return detachedAt;
+    }
+
+    public long getLockVersion() {
+        return lockVersion;
     }
 }

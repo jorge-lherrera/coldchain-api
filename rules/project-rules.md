@@ -196,10 +196,10 @@ binds.
 | R6.2 | **The primary key of a link table is the pair of linked columns** (N1.3): the link *is* the pair, and a synthetic key on top admits two identical rows with different ids | INT | `SchemaStandardIT.n1_3_linkTablesAreKeyedByTheirPair` | yes | green |
 | R6.3 | **A reference inside the same module carries a foreign key** (N2.1); one that crosses a module does not (R4.10) | INT | `SchemaStandardIT.n2_1_intraModuleReferencesCarryAForeignKey` | yes | green |
 | R6.4 | **Every foreign key leads an index by its child column** (N2.3). Without it Oracle locks or scans the child table when the parent changes | COST | `SchemaStandardIT.n2_3_everyForeignKeyIsIndexed` | yes | green |
-| R6.5 | **The delete action is explicit on every foreign key** (N2.4): cascade when the child does not exist without the parent, restrict when it has a life of its own. There is no default by omission | INT | `SchemaStandardIT.n2_4_everyForeignKeyDeclaresItsDeleteAction` | planned | pending |
+| R6.5 | **The delete action is explicit on every foreign key** (N2.4): cascade when the child does not exist without the parent, restrict when it has a life of its own. There is no default by omission | INT | `SchemaStandardIT.n2_4_everyForeignKeyDeclaresItsDeleteAction` | yes | green |
 | R6.6 | **An instant is `TIMESTAMP WITH TIME ZONE`** (N4.3). The system is cross-border by definition: a timestamp without a zone is ambiguous the moment a shipment crosses one | INT | `SchemaStandardIT.n4_3_timestampsCarryTimeZone` | yes | green |
 | R6.7 | **A boolean is `NUMBER(1)` with `CHECK (col IN (0,1))`** (N4.4), **not** the native 23ai `BOOLEAN`. A function-based unique index whose expression touches a native `BOOLEAN` column materialises hidden virtual columns and freezes the table against schema change: on Oracle 23.26, dropping that index, dropping a column or reclaiming unused ones all answer `ORA-00600` — an internal engine error, with `SET UNUSED` as the only way out and no way back. None of this schema's three conditional indexes touches a boolean today; `HAS_OPEN_EXCURSION` is the obvious future candidate, and the point of a type rule is that it holds before somebody needs it. Hibernate maps `NUMBER(1)` to a Java `boolean` either way, so the cost is the type name in the dictionary and nothing else | INT | `SchemaStandardIT.n4_4_flagsAreNumberOneWithACheck` | yes | green |
-| R6.8 | **Text is sized by its content** (N4.5), and a `CLOB` never enters an equality comparison, a `DISTINCT` or a `GROUP BY`: Oracle rejects it with `ORA-22848`, at runtime, not at compile time. `JSON` columns are read by key only | INT | `SchemaStandardIT.n4_5_noClobOrJsonInADistinctOrPredicate` | planned | pending |
+| R6.8 | **Text is sized by its content** (N4.5), and a `CLOB` never enters an equality comparison, a `DISTINCT` or a `GROUP BY`: Oracle rejects it with `ORA-22848`, at runtime, not at compile time. `JSON` columns are read by key only | INT | `SchemaStandardIT.n4_5_noClobOrJsonInADistinctOrPredicate` | yes | green |
 | R6.9 | **Soft delete has one name in the whole schema** (N6.1): `DELETED_AT`, and `NULL` means alive. An instant and not a flag, because it answers "is it deleted?" and also "when?", which is the question asked the moment there is an incident. `REVOKED_AT`, `DETACHED_AT` and `SUPERSEDED_AT` are **not** soft delete: they are business states and they close a window rather than erase a row | INT | `SchemaStandardIT.n6_1_softDeleteHasOneName` | yes | green |
 | R6.10 | **A unique index over a soft-deleted or state-scoped table is partial** (N7.3), expressed as a function-based index — `CASE WHEN cond THEN col END` — because Oracle has no partial indexes and does not index `NULL`s. It is what guarantees one active device assignment, one pending handoff and one current certificate | INT | `SchemaStandardIT.n7_3_conditionalUniquenessIsAFunctionBasedIndex` | yes | green |
 | R6.11 | **Every business uniqueness rule exists as a constraint in the database** (N8.3), even when the code already validates it: the code validates to give a decent error message, the database guarantees. Without it, two concurrent requests pass both validations and both write | INT | `SchemaStandardIT.n8_3_businessUniquenessIsEnforcedByTheDatabase` | yes | green |
@@ -216,9 +216,9 @@ binds.
 | Id | Rule | Sev | Enforcer | Machine | Status |
 |---|---|---|---|---|---|
 | R7.1 | **The global `default_batch_fetch_size` is configured** and it is the one that rules | COST | `PersistenceFetchArchTest.theGlobalBatchFetchSizeIsConfigured` | yes | green |
-| R7.2 | **Every listing endpoint has a query budget checked by exact equality**: one query more breaks it and one query less breaks it too. A budget that only has an upper bound stops noticing the day a read disappears because it started returning nothing | COST | `ShipmentListingQueryBudgetIT` · `TelemetrySeriesQueryBudgetIT` | planned | pending |
+| R7.2 | **Every listing endpoint has a query budget checked by exact equality**: one query more breaks it and one query less breaks it too. A budget that only has an upper bound stops noticing the day a read disappears because it started returning nothing | COST | `ShipmentListingQueryBudgetIT` · `TelemetrySeriesQueryBudgetIT` | yes | green |
 | R7.3 | **Aggregation is computed in the database, not by pulling rows into Java.** The compliance dashboard and the downsampled time series are `GROUP BY`, not streams | COST | `PersistenceFetchArchTest.aggregatesAreProjectedNotComputedInMemory` | yes | green |
-| R7.4 | **A batch write is one statement, not one per row.** Reading ingestion writes thousands of rows at a time with application-generated UUIDs precisely so there is no round trip per row | COST | `TelemetryIngestionQueryBudgetIT` | planned | pending |
+| R7.4 | **A batch write is one statement, not one per row.** Reading ingestion writes thousands of rows at a time with application-generated UUIDs precisely so there is no round trip per row | COST | `TelemetryIngestionQueryBudgetIT` | yes | green |
 | R7.5 | **Pagination is `OFFSET ... ROWS FETCH NEXT ... ROWS ONLY`**, never a nested `ROWNUM` | COST | `PersistenceFetchArchTest.paginationUsesTheAnsiOffsetSyntax` | yes | green |
 
 ---
@@ -241,7 +241,7 @@ client function can read either.
 | R8.9 | **One single `GlobalExceptionHandler`** translates every exception into a `ProblemDetail`. There is no second translator | CON | `HttpContractArchTest.oneAdviceTranslatesEveryException` | yes | green |
 | R8.10 | **The controller never assembles JSON by hand.** One line: `responseFactory.respond(code, mapper.toResponse(result))` | CON | `HttpContractArchTest.noControllerAssemblesItsOwnResponse` | yes | green |
 | R8.11 | **The success HTTP status is carried by the `SuccessCode`**, not by the controller. The code names the operation and declares a `SuccessOutcome` — `CREATED`, `RETRIEVED`, `UPDATED`, `DELETED`, `ACCEPTED` — and the status comes from that closed enum, mirroring how `ErrorCategory` decides an error's status. A per-module enum of constants that each named their own status would let two modules disagree about what a delete returns, which is the thing this rule exists to prevent | CON | `HttpContractArchTest.noControllerChoosesAnHttpStatusItself` | yes | green |
-| R8.12 | **Message keys follow a three-segment canon** in `snake_case`: `error.<module>.<reason>` and `success.<module>.<what>`. The key is the stable contract; the English text next to it is not | CON | `MessageKeyStyleTest.everyMessageKeyFollowsTheThreeSegmentCanon` | planned | pending |
+| R8.12 | **Message keys follow a three-segment canon** in `snake_case`: `error.<module>.<reason>` and `success.<module>.<what>`. The key is the stable contract; the English text next to it is not | CON | `MessageKeyStyleTest.everyMessageKeyFollowsTheThreeSegmentCanon` | yes | green |
 | R8.13 | **The problem `type` is derived, never written**: from the `messageKey`, dropping the prefix and swapping separators (`error.shipment.handoff_expired` → `.../problems/shipment/handoff-expired`). A URL nobody types is a URL that cannot drift from the code | CON | `HttpContractArchTest.theProblemTypeIsDerivedAndNeverWritten` | yes | green |
 | R8.14 | **A validation error adds `errors[]`** with field and reason; a rate-limit error adds `retryAfter` | CON | `HttpContractArchTest.validationAndRateLimitCarryTheirOwnExtensions` | yes | green |
 | R8.15 | **Lists go through `responseFactory.paginated(...)`**, which fills `meta.pagination`. Every paginating endpoint has the same shape | CON | `HttpContractArchTest.paginationMetadataComesFromTheFactory` | yes | green |
@@ -267,15 +267,15 @@ client function can read either.
 | R9.6 | **Every table holding organization data carries `ORGANIZATION_ID NOT NULL`** (N3.1). This is the deliberate exception to R4.10: tenancy carries a real foreign key even though it crosses a module, because it is the security property of the product and there declarative integrity beats decoupling | SEC | `SchemaStandardIT.n3_1_tenantColumnIsEnforced` | yes | green |
 | R9.7 | **`ORGANIZATION_ID` leads an index** on every table queried by organization (N3.2) | COST | `SchemaStandardIT.n3_2_tenantColumnLeadsAnIndex` | yes | green |
 | R9.8 | **Tenant filtering actually happens**, proven with data and not with structure. A structural test says the predicate is written somewhere; only data says a second organization gets nothing back | SEC | `TenantIsolationIT` | yes | green |
-| R9.9 | **Visibility of a shipment is participation, and it is decided in one place** ([ADR-003](../docs/adr/ADR-003-visibility-by-participation.md)). The predicate lives in the repository, not in the service, so a new query cannot forget it | SEC | `SecurityPostureArchTest.shipmentVisibilityIsResolvedInOnePlace` · `ShipmentVisibilityIT` | planned | pending |
-| R9.10 | **Asking for a resource you cannot see returns `404`, not `403`.** A `403` confirms the resource exists, and that is already leaking information to a third party | SEC | `ShipmentVisibilityIT` | planned | pending |
+| R9.9 | **Visibility of a shipment is participation, and it is decided in one place** ([ADR-003](../docs/adr/ADR-003-visibility-by-participation.md)). The predicate lives in the repository, not in the service, so a new query cannot forget it | SEC | `SecurityPostureArchTest.shipmentVisibilityIsResolvedInOnePlace` · `ShipmentVisibilityIT` | yes | green |
+| R9.10 | **Asking for a resource you cannot see returns `404`, not `403`.** A `403` confirms the resource exists, and that is already leaking information to a third party | SEC | `ShipmentVisibilityIT` | yes | green |
 | R9.11 | **Passwords and client secrets are hashed with Argon2id.** Never reversible, never a fast hash | SEC | `SecurityPostureArchTest.secretsAreHashedWithArgon2` | yes | green |
 | R9.12 | **Access token 15 minutes, refresh 7 days, and refresh rotation detects reuse**: using the same refresh token twice revokes the whole family | SEC | `SecurityPostureArchTest.theTokenLifetimesAreFifteenMinutesAndSevenDays` · `RefreshRotationIT` | yes | green |
 | R9.13 | **A machine credential carries only the ingestion scope.** A compromised gateway cannot read a single shipment, and it never chooses its own organization: that travels signed in the token | SEC | `SecurityPostureArchTest.aMachineClientCannotAskForATenant` | yes | green |
 | R9.14 | **Rate limiting on login, on token issuance and on ingestion** | SEC | `SecurityPostureArchTest.theUnauthenticatedEndpointsAreRateLimited` | yes | green |
 | R9.15 | **Security headers are mandatory**: CSP `default-src 'none'`, `frame-ancestors 'none'`, HSTS one year, `Referrer-Policy`, `Permissions-Policy` | SEC | `SecurityPostureArchTest.everySecurityHeaderIsDeclared` | yes | green |
 | R9.16 | **No secret is in the code or in a committed configuration file** | SEC | `SecurityPostureArchTest.noSecretIsWrittenIntoTheConfiguration` | yes | green |
-| R9.17 | **Every denial is audited**, distinguishing an unauthenticated call from a denied scope, and goes out as a translated `ProblemDetail` | SEC | `SecurityPostureArchTest.everyDenialIsAudited` | planned | pending |
+| R9.17 | **Every denial is audited**, distinguishing an unauthenticated call from a denied scope, and goes out as a translated `ProblemDetail` | SEC | `SecurityPostureArchTest.everyDenialIsAudited` | yes | green |
 | R9.18 | **Every write leaves an `AUDIT_ENTRY`** with actor, resource and payload, written in the same transaction. If the audit write fails, the operation fails: auditing is not best-effort | SEC | `AuditTrailIT.everyWriteLeavesItsEntry` | yes | green |
 
 ---
@@ -286,7 +286,7 @@ client function can read either.
 |---|---|---|---|---|---|
 | R10.1 | **The transaction is declared on the use case, never on the repository.** If the caller has no transaction, the missing use case gets created — the adapter does not get annotated | INT | `ArchitectureRulesArchTest.persistenceDeclaresNoTransactions` | yes | green |
 | R10.2 | **`@Transactional` on writes only.** A query is not transactional unless it genuinely needs a consistent read, and then it is `readOnly` | COST | `LayerContractArchTest.queriesAreReadOnlyWhenTransactional` | yes | green |
-| R10.3 | **Domain events run inside the publishing transaction.** If the reaction fails, the whole operation fails: there is no dispatched shipment with no monitoring window. The response is the last thing that happens | INT | `EventDeliveryArchTest.cascadesRunInsideThePublishingTransaction` | planned | pending |
+| R10.3 | **Domain events run inside the publishing transaction.** If the reaction fails, the whole operation fails: there is no dispatched shipment with no monitoring window. The response is the last thing that happens | INT | `EventDeliveryArchTest.cascadesRunInsideThePublishingTransaction` | yes | green |
 | R10.4 | **An event handler is idempotent.** **No machine:** idempotence is proven by running the handler twice, not by reading it | INT | — | none | — |
 | R10.5 | **An event lives in `api/event/`** and is part of the module's public contract | STYLE | `LayerContractArchTest.everyEventLivesInTheModulesApi` | yes | green |
 | R10.6 | **No external call happens inside a database transaction.** The transaction would last as long as the third party does, holding locks meanwhile | COST | `LayerContractArchTest.noExternalCallRunsInsideATransaction` | yes | green |
@@ -299,8 +299,8 @@ In force from day one. Every rule here describes a way of losing a value with no
 
 | Id | Rule | Sev | Enforcer | Machine | Status |
 |---|---|---|---|---|---|
-| R11.1 | **Every entity two users can write at the same time carries `@Version`.** Without optimistic locking the last write wins in silence and the first is lost without a trace | INT | `ConcurrencyArchTest.everyConcurrentlyWritableEntityIsVersioned` | planned | pending |
-| R11.2 | **No read-modify-write happens without a version or a lock.** `sequence_no` on the custody log is the canonical case: it is reserved inside the writing transaction with `SELECT MAX(...) + 1 FOR UPDATE`, never from an Oracle sequence, which would leave gaps on rollback | INT | `CustodySequenceConcurrencyIT.noTwoEventsShareASequenceNumber` | planned | pending |
+| R11.1 | **Every aggregate that changes state carries `@Version`, and one that never does carries none.** An aggregate changes state when it answers with a new version of itself, which is exactly what the machine looks for, so the list is read from the code instead of being kept by hand. Without optimistic locking the last write wins in silence and the first is lost without a trace | INT | `ConcurrencyArchTest.everyConcurrentlyWritableEntityIsVersioned` | yes | green |
+| R11.2 | **No read-modify-write happens without a version or a lock.** `sequence_no` on the custody log is the canonical case: it is reserved inside the writing transaction with `SELECT MAX(...) + 1 FOR UPDATE`, never from an Oracle sequence, which would leave gaps on rollback | INT | `CustodySequenceConcurrencyIT.noTwoEventsShareASequenceNumber` | yes | green |
 | R11.3 | **A write the client can repeat is idempotent by key.** Batch ingestion is the canonical case: the same `idempotency_key` returns the original result and writes nothing | INT | `TelemetryIngestionIT.resendingABatchWritesNothing` | yes | green |
 | R11.4 | **A concurrency conflict goes out as 409**, not as 500. It is an expected outcome, not a server failure | CON | `HttpContractArchTest.theHttpStatusOfAnErrorComesFromItsCategory` | yes | green |
 
@@ -312,12 +312,12 @@ In force from day one. A log is replicated, exported and retained longer than th
 
 | Id | Rule | Sev | Enforcer | Machine | Status |
 |---|---|---|---|---|---|
-| R12.1 | **No personal data and no secret goes into a log.** Not an email, not a token, not a password, not a document number — not even truncated | SEC | `ObservabilityArchTest.nothingSensitiveIsLogged` | planned | pending |
-| R12.2 | **Every log line carries the request `traceId`** and is structured, not concatenated text. Without it, correlating a failure across layers is done by eye | COST | `ObservabilityArchTest.everyLogCarriesTheTraceId` | planned | pending |
-| R12.3 | **`ERROR` is only what is actionable.** What obliges nobody to do anything is not an `ERROR`; an `ERROR` nobody attends to trains people not to look | COST | `ObservabilityArchTest.errorLevelIsReservedForTheActionable` | planned | pending |
-| R12.4 | **No exception is swallowed in silence.** Either it is handled and explained, or it propagates. An empty `catch` turns a failure into a wrong value | INT | `ObservabilityArchTest.noCatchBlockIsEmpty` | planned | pending |
-| R12.5 | **Log messages are constants in one place**, not string literals scattered at the call sites | STYLE | `ObservabilityArchTest.logMessagesComeFromOneCatalogue` | planned | pending |
-| R12.6 | **Health and metrics are exposed** through Actuator, and the health endpoint is the only unauthenticated one among them | COST | `ObservabilityArchTest.onlyHealthIsPublicAmongTheActuatorEndpoints` | planned | pending |
+| R12.1 | **No personal data and no secret goes into a log.** Not an email, not a token, not a password, not a document number — not even truncated | SEC | `ObservabilityArchTest.nothingSensitiveIsLogged` | yes | green |
+| R12.2 | **Every log line carries the request `traceId`** and is structured, not concatenated text. Without it, correlating a failure across layers is done by eye | COST | `ObservabilityArchTest.everyLogCarriesTheTraceId` | yes | green |
+| R12.3 | **`ERROR` is only what is actionable.** What obliges nobody to do anything is not an `ERROR`; an `ERROR` nobody attends to trains people not to look | COST | `ObservabilityArchTest.errorLevelIsReservedForTheActionable` | yes | green |
+| R12.4 | **No exception is swallowed in silence.** Either it is handled and explained, or it propagates. An empty `catch` turns a failure into a wrong value | INT | `ObservabilityArchTest.noCatchBlockIsEmpty` | yes | green |
+| R12.5 | **Log messages are constants in one place**, not string literals scattered at the call sites | STYLE | `ObservabilityArchTest.logMessagesComeFromOneCatalogue` | yes | green |
+| R12.6 | **Health and metrics are exposed** through Actuator, and the health endpoint is the only unauthenticated one among them | COST | `ObservabilityArchTest.onlyHealthIsPublicAmongTheActuatorEndpoints` | yes | green |
 
 ---
 
@@ -330,7 +330,7 @@ In force from day one. A log is replicated, exported and retained longer than th
 | R13.3 | **The dialect is pinned explicitly.** Without pinning it, the schema depends on the machine that produced it | INT | `SchemaLifecycleArchTest.theDialectIsPinnedExplicitly` | yes | green |
 | R13.4 | **Reference data ships in the migration that creates its table** ([ADR-008](../docs/adr/ADR-008-reference-data-in-flyway.md)). No `CommandLineRunner`, no `@PostConstruct` writes rows, ever | INT | `SchemaLifecycleArchTest.nothingSeedsRowsAtStartup` | yes | green |
 | R13.5 | **A catalogue that mirrors an enum is checked against it.** The code is the source of truth for the set, the migration for the rows, and a test asserts they agree. A mismatch fails the build; it is not silently repaired at boot | INT | `ScopeCatalogueIT.theSeededScopesMatchTheEnum` | yes | green |
-| R13.6 | **Every migration is idempotent to re-run and the full rebuild is exercised**: drop, migrate, start, run the integration suite. It runs in CI, so "it works on a fresh database" is a fact and not a belief | INT | `rebuild` (Gradle task) | planned | pending |
+| R13.6 | **Every migration is idempotent to re-run and the full rebuild is exercised**: drop, migrate, start, run the integration suite. It runs in CI, so "it works on a fresh database" is a fact and not a belief | INT | `rebuild` (Gradle task) | yes | green |
 
 ---
 
@@ -340,8 +340,8 @@ In force from day one. A log is replicated, exported and retained longer than th
 |---|---|---|---|---|---|
 | R14.1 | **A change that contradicts a rule corrects the rule in the same change.** A rule that lies is worse than no rule. **No machine:** whether a change contradicts a written rule is exactly what nobody knows how to automate | STYLE | — | none | — |
 | R14.2 | **Every module has its build plan** in `docs/plan-0N-<module>.md`, and the plan's closing criterion is a command somebody can run | STYLE | `LayerContractArchTest.everyModuleHasItsBuildPlan` | yes | green |
-| R14.3 | **A module is closed when** its rules in this catalogue are `green` or covered by a live waiver, and none of its area is still `pending`. Closure is a condition that is read from the repository, not a judgement — otherwise the bar moves with fatigue and the module built in week one is not held to what the one built in week four is | STYLE | `ModuleClosureTest.everyClosedModuleMeetsTheClosureConditions` | planned | pending |
-| R14.4 | **One module at a time.** A finding in another module is written down and not fixed on the way past. It is not a preference about method: fixing everything at once is the reason nothing finishes | STYLE | `ModuleClosureTest.atMostOneModuleIsInProgress` | planned | pending |
+| R14.3 | **A module is closed when** its rules in this catalogue are `green` or covered by a live waiver, and none of its area is still `pending`. The plan of each module says whether it is closed, and a closed one has to have its declared edges, its door and a test that exercises it against the database it writes to. Closure is a condition that is read from the repository, not a judgement — otherwise the bar moves with fatigue and the module built in week one is not held to what the one built in week four is | STYLE | `ModuleClosureTest.everyClosedModuleMeetsTheClosureConditions` | yes | green |
+| R14.4 | **One module at a time.** A finding in another module is written down and not fixed on the way past. It is not a preference about method: fixing everything at once is the reason nothing finishes | STYLE | `ModuleClosureTest.atMostOneModuleIsInProgress` | yes | green |
 | R14.5 | **Every public endpoint is described in OpenAPI**, generated from the code and not written by hand | CON | `HttpContractArchTest.everyEndpointIsDocumentedInOpenApi` | yes | green |
 
 ---
@@ -353,10 +353,10 @@ inside one.
 
 | Id | Rule | Sev | Enforcer | Machine | Status |
 |---|---|---|---|---|---|
-| R15.1 | **Within a version, the contract only grows.** Adding an optional field is legal; removing one, renaming it, changing its type or narrowing its range is not. This is the operational definition of "do not break the client" | CON | `ContractVersionArchTest.theContractOnlyGrowsWithinAVersion` | planned | pending |
+| R15.1 | **Within a version, the contract only grows.** Adding an optional field is legal; removing one, renaming it, changing its type or narrowing its range is not. This is the operational definition of "do not break the client" | CON | `ContractVersionArchTest.theContractOnlyGrowsWithinAVersion` | yes | green |
 | R15.2 | **A breaking change opens a new version**, and the previous one stays alive while it has a consumer. **No machine:** whether a change breaks a client is a judgement about what the contract means, and "while it has a consumer" is a fact about the world outside this repository | CON | — | none | — |
-| R15.3 | **Nothing is withdrawn without being announced first**: `@Deprecated` on the endpoint, a `Deprecation` header, and a declared sunset date | CON | `ContractVersionArchTest.everyDeprecatedEndpointAnnouncesItsSunset` | planned | pending |
-| R15.4 | **A published `ErrorCode` never changes meaning.** A new one may be added; an existing one is not recycled. The client branches on that value | CON | `ContractVersionArchTest.noPublishedErrorCodeChangesItsMeaning` | planned | pending |
+| R15.3 | **Nothing is withdrawn without being announced first**: `@Deprecated` on the endpoint, a `Deprecation` header, and a declared sunset date | CON | `ContractVersionArchTest.everyDeprecatedEndpointAnnouncesItsSunset` | yes | green |
+| R15.4 | **A published `ErrorCode` never changes meaning.** A new one may be added; an existing one is not recycled. The client branches on that value | CON | `ContractVersionArchTest.noPublishedErrorCodeChangesItsMeaning` | yes | green |
 
 ---
 
@@ -367,4 +367,4 @@ Every tolerated red and every green that proves nothing, with **who accepted it 
 
 | Id | Rule | What is tolerated | Owner | Expires |
 |---|---|---|---|---|
-| — | — | *Empty. The project has no code yet; the first waiver will be the first compromise, and it will have a name on it.* | — | — |
+| — | — | *Empty. Every rule has a machine and every machine is green, so nothing has had to be tolerated. The first waiver will be the first compromise, and it will have a name on it.* | — | — |

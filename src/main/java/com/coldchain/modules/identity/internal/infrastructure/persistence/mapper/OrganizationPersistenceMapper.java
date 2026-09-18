@@ -12,12 +12,12 @@ public class OrganizationPersistenceMapper {
     public OrganizationJpaEntity toEntity(Organization organization) {
         return new OrganizationJpaEntity(organization.id(), organization.taxId(), organization.legalName(),
                 organization.tradeName(), organization.kind().name(), organization.country(),
-                organization.status().name());
+                organization.status().name(), organization.lockVersion());
     }
 
     public Organization toDomain(OrganizationJpaEntity entity) {
         return Organization.restore(entity.getId(), entity.getTaxId(), entity.getLegalName(),
                 entity.getTradeName(), OrganizationKind.valueOf(entity.getKind()), entity.getCountry(),
-                OrganizationStatus.valueOf(entity.getStatus()));
+                OrganizationStatus.valueOf(entity.getStatus()), entity.getLockVersion());
     }
 }

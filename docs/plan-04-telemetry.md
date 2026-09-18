@@ -1,5 +1,7 @@
 # Build plan · 04 · telemetry
 
+> **Status:** closed
+
 The only module with real algorithmic logic: work out which shipment each reading belongs to,
 duplicate nothing even if the same batch arrives three times, and detect the stretches out of band.
 The milestone ends when the same batch sent twice answers the same thing without writing a single

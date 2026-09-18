@@ -17,13 +17,13 @@ public class TemperatureReadingRepositoryAdapter implements TemperatureReadingRe
 
     private static final String INSERT = """
             INSERT INTO TEMPERATURE_READING
-                (ID, ORGANIZATION_ID, DEVICE_ID, SHIPMENT_ID, BATCH_ID, CELSIUS, MEASURED_AT,
+                (ID, ORGANIZATION_ID, DEVICE_ID, SHIPMENT_ID, READING_BATCH_ID, CELSIUS, MEASURED_AT,
                  CREATED_AT, CREATED_BY)
             VALUES (?, ?, ?, ?, ?, ?, ?, SYSTIMESTAMP, ?)
             """;
 
     private static final String SELECT_SERIES = """
-            SELECT ID, ORGANIZATION_ID, DEVICE_ID, SHIPMENT_ID, BATCH_ID, CELSIUS, MEASURED_AT
+            SELECT ID, ORGANIZATION_ID, DEVICE_ID, SHIPMENT_ID, READING_BATCH_ID, CELSIUS, MEASURED_AT
             FROM TEMPERATURE_READING
             WHERE SHIPMENT_ID = ?
             ORDER BY MEASURED_AT
@@ -70,7 +70,7 @@ public class TemperatureReadingRepositoryAdapter implements TemperatureReadingRe
                         RawUuid.fromBytes(row.getBytes("ORGANIZATION_ID")),
                         RawUuid.fromBytes(row.getBytes("DEVICE_ID")),
                         RawUuid.fromBytes(row.getBytes("SHIPMENT_ID")),
-                        RawUuid.fromBytes(row.getBytes("BATCH_ID")),
+                        RawUuid.fromBytes(row.getBytes("READING_BATCH_ID")),
                         row.getBigDecimal("CELSIUS"),
                         row.getObject("MEASURED_AT", OffsetDateTime.class).toInstant()),
                 RawUuid.toBytes(shipmentId));

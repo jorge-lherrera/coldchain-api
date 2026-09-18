@@ -13,6 +13,7 @@ import com.coldchain.modules.shipment.internal.domain.model.Shipment;
 import com.coldchain.modules.shipment.internal.domain.model.ShipmentLine;
 import com.coldchain.modules.shipment.internal.domain.repository.ShipmentRepository;
 import com.coldchain.modules.shipment.internal.exception.ShipmentErrorCode;
+import com.coldchain.modules.telemetry.api.TelemetryApi;
 import com.coldchain.shared.application.UseCase;
 import com.coldchain.shared.error.DomainException;
 import com.coldchain.shared.security.CurrentActor;
@@ -28,6 +29,8 @@ public class DispatchShipmentUseCase {
 
     private final CatalogApi catalog;
 
+    private final TelemetryApi telemetry;
+
     private final CustodyLog custodyLog;
 
     private final ShipmentApiMapper mapper;
@@ -39,10 +42,11 @@ public class DispatchShipmentUseCase {
     private final Clock clock;
 
     public DispatchShipmentUseCase(ShipmentRepository shipments, CatalogApi catalog,
-            CustodyLog custodyLog, ShipmentApiMapper mapper, ApplicationEventPublisher events,
-            CurrentActor currentActor, Clock clock) {
+            TelemetryApi telemetry, CustodyLog custodyLog, ShipmentApiMapper mapper,
+            ApplicationEventPublisher events, CurrentActor currentActor, Clock clock) {
         this.shipments = shipments;
         this.catalog = catalog;
+        this.telemetry = telemetry;
         this.custodyLog = custodyLog;
         this.mapper = mapper;
         this.events = events;
@@ -61,6 +65,7 @@ public class DispatchShipmentUseCase {
         if (command.deviceId() == null) {
             throw DomainException.of(ShipmentErrorCode.NO_DEVICE);
         }
+        telemetry.deviceOf(command.deviceId());
         Instant now = clock.instant();
         Shipment dispatched;
         try {

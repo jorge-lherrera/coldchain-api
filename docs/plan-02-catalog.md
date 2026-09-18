@@ -1,5 +1,7 @@
 # Build plan · 02 · catalog
 
+> **Status:** closed
+
 Three tables and no surprises: this is the small module, and its value is nailing down the shape the
 other three repeat. **A reader who understands `catalog` understands the rest of the codebase**, so
 this is the plan that spells the shape out in full. The milestone ends when a profile already used by

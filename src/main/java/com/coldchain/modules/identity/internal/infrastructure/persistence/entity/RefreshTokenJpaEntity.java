@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -44,10 +45,14 @@ public class RefreshTokenJpaEntity extends AuditableEntity {
     @Column(name = "REVOKED_AT")
     private Instant revokedAt;
 
+    @Version
+    @Column(name = "LOCK_VERSION", nullable = false)
+    private long lockVersion;
+
     protected RefreshTokenJpaEntity() {
     }
 
-    public RefreshTokenJpaEntity(UUID id, UUID organizationId, UUID appUserId, UUID familyId, String tokenHash, Instant issuedAt, Instant expiresAt, Instant usedAt, Instant revokedAt) {
+    public RefreshTokenJpaEntity(UUID id, UUID organizationId, UUID appUserId, UUID familyId, String tokenHash, Instant issuedAt, Instant expiresAt, Instant usedAt, Instant revokedAt, long lockVersion) {
         this.id = id;
         this.organizationId = organizationId;
         this.appUserId = appUserId;
@@ -57,6 +62,7 @@ public class RefreshTokenJpaEntity extends AuditableEntity {
         this.expiresAt = expiresAt;
         this.usedAt = usedAt;
         this.revokedAt = revokedAt;
+        this.lockVersion = lockVersion;
     }
 
     public UUID getId() {
@@ -93,5 +99,9 @@ public class RefreshTokenJpaEntity extends AuditableEntity {
 
     public Instant getRevokedAt() {
         return revokedAt;
+    }
+
+    public long getLockVersion() {
+        return lockVersion;
     }
 }

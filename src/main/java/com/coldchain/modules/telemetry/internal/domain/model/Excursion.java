@@ -33,9 +33,11 @@ public final class Excursion {
 
     private final long durationMinutes;
 
+    private final long lockVersion;
+
     private Excursion(UUID id, UUID organizationId, UUID shipmentId, ExcursionKind kind,
             ExcursionStatus status, Instant openedAt, Instant closedAt, UUID openedByReadingId,
-            UUID closedByReadingId, BigDecimal peakCelsius, long durationMinutes) {
+            UUID closedByReadingId, BigDecimal peakCelsius, long durationMinutes, long lockVersion) {
         this.id = Objects.requireNonNull(id);
         this.organizationId = Objects.requireNonNull(organizationId);
         this.shipmentId = Objects.requireNonNull(shipmentId);
@@ -47,19 +49,20 @@ public final class Excursion {
         this.closedByReadingId = closedByReadingId;
         this.peakCelsius = Objects.requireNonNull(peakCelsius);
         this.durationMinutes = durationMinutes;
+        this.lockVersion = lockVersion;
     }
 
     public static Excursion open(UUID organizationId, UUID shipmentId, ExcursionKind kind,
             Instant openedAt, UUID openedByReadingId, BigDecimal peakCelsius) {
         return new Excursion(UuidV7.generate(), organizationId, shipmentId, kind,
-                ExcursionStatus.OPEN, openedAt, null, openedByReadingId, null, peakCelsius, 0L);
+                ExcursionStatus.OPEN, openedAt, null, openedByReadingId, null, peakCelsius, 0L, 0);
     }
 
     public static Excursion restore(UUID id, UUID organizationId, UUID shipmentId, ExcursionKind kind,
             ExcursionStatus status, Instant openedAt, Instant closedAt, UUID openedByReadingId,
-            UUID closedByReadingId, BigDecimal peakCelsius, long durationMinutes) {
+            UUID closedByReadingId, BigDecimal peakCelsius, long durationMinutes, long lockVersion) {
         return new Excursion(id, organizationId, shipmentId, kind, status, openedAt, closedAt,
-                openedByReadingId, closedByReadingId, peakCelsius, durationMinutes);
+                openedByReadingId, closedByReadingId, peakCelsius, durationMinutes, lockVersion);
     }
 
     public Excursion deepenedTo(BigDecimal celsius, Instant lastSeenAt) {
@@ -68,13 +71,13 @@ public final class Excursion {
                 : peakCelsius.min(celsius);
         return new Excursion(id, organizationId, shipmentId, kind, status, openedAt, closedAt,
                 openedByReadingId, closedByReadingId, peak,
-                Duration.between(openedAt, lastSeenAt).toMinutes());
+                Duration.between(openedAt, lastSeenAt).toMinutes(), lockVersion);
     }
 
     public Excursion close(Instant when, UUID closedByReading) {
         return new Excursion(id, organizationId, shipmentId, kind, ExcursionStatus.CLOSED, openedAt,
                 when, openedByReadingId, closedByReading, peakCelsius,
-                Duration.between(openedAt, when).toMinutes());
+                Duration.between(openedAt, when).toMinutes(), lockVersion);
     }
 
     public boolean open() {
@@ -123,5 +126,9 @@ public final class Excursion {
 
     public long durationMinutes() {
         return durationMinutes;
+    }
+
+    public long lockVersion() {
+        return lockVersion;
     }
 }

@@ -26,8 +26,10 @@ public final class StorageProfile {
 
     private final Instant deletedAt;
 
+    private final long lockVersion;
+
     private StorageProfile(UUID id, UUID organizationId, String code, String name, int version,
-            ProfileStatus status, Thresholds thresholds, Instant deletedAt) {
+            ProfileStatus status, Thresholds thresholds, Instant deletedAt, long lockVersion) {
         this.id = Objects.requireNonNull(id);
         this.organizationId = Objects.requireNonNull(organizationId);
         this.code = Objects.requireNonNull(code);
@@ -36,37 +38,38 @@ public final class StorageProfile {
         this.status = Objects.requireNonNull(status);
         this.thresholds = Objects.requireNonNull(thresholds);
         this.deletedAt = deletedAt;
+        this.lockVersion = lockVersion;
     }
 
     public static StorageProfile createDraft(UUID organizationId, String code, String name,
             Thresholds thresholds) {
         return new StorageProfile(UuidV7.generate(), organizationId, code, name, FIRST_VERSION,
-                ProfileStatus.DRAFT, thresholds, null);
+                ProfileStatus.DRAFT, thresholds, null, 0);
     }
 
     public static StorageProfile restore(UUID id, UUID organizationId, String code, String name,
-            int version, ProfileStatus status, Thresholds thresholds, Instant deletedAt) {
-        return new StorageProfile(id, organizationId, code, name, version, status, thresholds, deletedAt);
+            int version, ProfileStatus status, Thresholds thresholds, Instant deletedAt, long lockVersion) {
+        return new StorageProfile(id, organizationId, code, name, version, status, thresholds, deletedAt, lockVersion);
     }
 
     public StorageProfile activate() {
         return new StorageProfile(id, organizationId, code, name, version, ProfileStatus.ACTIVE,
-                thresholds, deletedAt);
+                thresholds, deletedAt, lockVersion);
     }
 
     public StorageProfile retire() {
         return new StorageProfile(id, organizationId, code, name, version, ProfileStatus.RETIRED,
-                thresholds, deletedAt);
+                thresholds, deletedAt, lockVersion);
     }
 
     public StorageProfile redraft(String newName, Thresholds newThresholds) {
         return new StorageProfile(id, organizationId, code, newName, version, status, newThresholds,
-                deletedAt);
+                deletedAt, lockVersion);
     }
 
     public StorageProfile nextVersion() {
         return new StorageProfile(UuidV7.generate(), organizationId, code, name, version + 1,
-                ProfileStatus.DRAFT, thresholds, null);
+                ProfileStatus.DRAFT, thresholds, null, lockVersion);
     }
 
     public boolean editable() {
@@ -107,5 +110,9 @@ public final class StorageProfile {
 
     public Instant deletedAt() {
         return deletedAt;
+    }
+
+    public long lockVersion() {
+        return lockVersion;
     }
 }

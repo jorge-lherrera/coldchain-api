@@ -15,7 +15,7 @@ public class StorageProfilePersistenceMapper {
                 profile.name(), profile.version(), profile.status().name(), thresholds.minCelsius(),
                 thresholds.maxCelsius(), thresholds.maxSingleExcursionMinutes(),
                 thresholds.maxCumulativeExcursionMinutes(), thresholds.minCoveragePercent(),
-                profile.deletedAt());
+                profile.deletedAt(), profile.lockVersion());
     }
 
     public StorageProfile toDomain(StorageProfileJpaEntity entity) {
@@ -25,6 +25,6 @@ public class StorageProfilePersistenceMapper {
                 new Thresholds(entity.getMinCelsius(), entity.getMaxCelsius(),
                         entity.getMaxSingleExcursionMinutes(), entity.getMaxCumulativeExcursionMinutes(),
                         entity.getMinCoveragePercent()),
-                entity.getDeletedAt());
+                entity.getDeletedAt(), entity.getLockVersion());
     }
 }

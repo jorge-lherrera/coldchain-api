@@ -12,12 +12,12 @@ public class ApiClientPersistenceMapper {
 
     public ApiClientJpaEntity toEntity(ApiClient client) {
         return new ApiClientJpaEntity(client.id(), client.organizationId(), client.clientId(),
-                client.secretHash(), client.label(), client.status().name(), client.lastUsedAt());
+                client.secretHash(), client.label(), client.status().name(), client.lastUsedAt(), client.lockVersion());
     }
 
     public ApiClient toDomain(ApiClientJpaEntity entity, Set<Scope> scopes) {
         return ApiClient.restore(entity.getId(), entity.getOrganizationId(), entity.getClientId(),
                 entity.getSecretHash(), entity.getLabel(), ApiClientStatus.valueOf(entity.getStatus()),
-                entity.getLastUsedAt(), scopes);
+                entity.getLastUsedAt(), scopes, entity.getLockVersion());
     }
 }

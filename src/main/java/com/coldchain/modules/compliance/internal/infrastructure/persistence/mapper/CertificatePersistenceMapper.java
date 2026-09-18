@@ -19,7 +19,7 @@ public class CertificatePersistenceMapper {
                 certificate.coveragePercent(), certificate.cumulativeExcursionMinutes(),
                 certificate.longestExcursionMinutes(), certificate.thresholdSnapshot(),
                 certificate.evaluatedFrom(), certificate.evaluatedTo(), certificate.issuedAt(),
-                certificate.contentHash(), certificate.supersededAt());
+                certificate.contentHash(), certificate.supersededAt(), certificate.lockVersion());
     }
 
     public CertificateFindingJpaEntity toEntity(Finding finding) {
@@ -36,7 +36,7 @@ public class CertificatePersistenceMapper {
                 entity.getCumulativeMinutes(), entity.getLongestMinutes(),
                 entity.getThresholdSnapshot(), entity.getEvaluatedFrom(), entity.getEvaluatedTo(),
                 entity.getIssuedAt(), entity.getContentHash(), entity.getSupersededAt(),
-                findings.stream().map(this::toDomain).toList());
+                findings.stream().map(this::toDomain).toList(), entity.getLockVersion());
     }
 
     public Finding toDomain(CertificateFindingJpaEntity entity) {

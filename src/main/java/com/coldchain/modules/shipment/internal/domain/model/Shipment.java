@@ -37,10 +37,12 @@ public final class Shipment {
 
     private final List<ShipmentLine> lines;
 
+    private final long lockVersion;
+
     private Shipment(UUID id, UUID organizationId, String reference, ShipmentStatus status,
             UUID originSiteId, UUID destinationSiteId, UUID consigneeOrganizationId,
             UUID currentCustodianOrganizationId, UUID deviceId, FrozenThresholds thresholds,
-            boolean openExcursion, Instant dispatchedAt, Instant closedAt, List<ShipmentLine> lines) {
+            boolean openExcursion, Instant dispatchedAt, Instant closedAt, List<ShipmentLine> lines, long lockVersion) {
         this.id = Objects.requireNonNull(id);
         this.organizationId = Objects.requireNonNull(organizationId);
         this.reference = Objects.requireNonNull(reference);
@@ -55,23 +57,24 @@ public final class Shipment {
         this.dispatchedAt = dispatchedAt;
         this.closedAt = closedAt;
         this.lines = List.copyOf(lines);
+        this.lockVersion = lockVersion;
     }
 
     public static Shipment createDraft(UUID organizationId, String reference, UUID originSiteId,
             UUID destinationSiteId, UUID consigneeOrganizationId) {
         return new Shipment(UuidV7.generate(), organizationId, reference, ShipmentStatus.DRAFT,
                 originSiteId, destinationSiteId, consigneeOrganizationId, organizationId, null, null,
-                false, null, null, List.of());
+                false, null, null, List.of(), 0);
     }
 
     public static Shipment restore(UUID id, UUID organizationId, String reference,
             ShipmentStatus status, UUID originSiteId, UUID destinationSiteId,
             UUID consigneeOrganizationId, UUID currentCustodianOrganizationId, UUID deviceId,
             FrozenThresholds thresholds, boolean openExcursion, Instant dispatchedAt,
-            Instant closedAt, List<ShipmentLine> lines) {
+            Instant closedAt, List<ShipmentLine> lines, long lockVersion) {
         return new Shipment(id, organizationId, reference, status, originSiteId, destinationSiteId,
                 consigneeOrganizationId, currentCustodianOrganizationId, deviceId, thresholds,
-                openExcursion, dispatchedAt, closedAt, lines);
+                openExcursion, dispatchedAt, closedAt, lines, lockVersion);
     }
 
     public Shipment withLines(List<ShipmentLine> newLines) {
@@ -140,7 +143,7 @@ public final class Shipment {
             List<ShipmentLine> newLines) {
         return new Shipment(id, organizationId, reference, newStatus, originSiteId, destinationSiteId,
                 consigneeOrganizationId, custodian, device, frozen, excursion, dispatched, closed,
-                newLines);
+                newLines, lockVersion);
     }
 
     public UUID id() {
@@ -197,5 +200,9 @@ public final class Shipment {
 
     public List<ShipmentLine> lines() {
         return lines;
+    }
+
+    public long lockVersion() {
+        return lockVersion;
     }
 }

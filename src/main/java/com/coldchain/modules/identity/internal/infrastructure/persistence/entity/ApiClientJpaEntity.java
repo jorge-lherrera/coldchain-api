@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -36,10 +37,14 @@ public class ApiClientJpaEntity extends AuditableEntity {
     @Column(name = "LAST_USED_AT")
     private Instant lastUsedAt;
 
+    @Version
+    @Column(name = "LOCK_VERSION", nullable = false)
+    private long lockVersion;
+
     protected ApiClientJpaEntity() {
     }
 
-    public ApiClientJpaEntity(UUID id, UUID organizationId, String clientId, String secretHash, String label, String status, Instant lastUsedAt) {
+    public ApiClientJpaEntity(UUID id, UUID organizationId, String clientId, String secretHash, String label, String status, Instant lastUsedAt, long lockVersion) {
         this.id = id;
         this.organizationId = organizationId;
         this.clientId = clientId;
@@ -47,6 +52,7 @@ public class ApiClientJpaEntity extends AuditableEntity {
         this.label = label;
         this.status = status;
         this.lastUsedAt = lastUsedAt;
+        this.lockVersion = lockVersion;
     }
 
     public UUID getId() {
@@ -75,5 +81,9 @@ public class ApiClientJpaEntity extends AuditableEntity {
 
     public Instant getLastUsedAt() {
         return lastUsedAt;
+    }
+
+    public long getLockVersion() {
+        return lockVersion;
     }
 }

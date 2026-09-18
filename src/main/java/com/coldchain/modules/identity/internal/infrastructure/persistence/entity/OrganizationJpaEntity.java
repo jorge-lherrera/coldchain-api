@@ -5,6 +5,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.util.UUID;
 
 @Entity
@@ -33,10 +34,14 @@ public class OrganizationJpaEntity extends AuditableEntity {
     @Column(name = "STATUS", nullable = false)
     private String status;
 
+    @Version
+    @Column(name = "LOCK_VERSION", nullable = false)
+    private long lockVersion;
+
     protected OrganizationJpaEntity() {
     }
 
-    public OrganizationJpaEntity(UUID id, String taxId, String legalName, String tradeName, String kind, String country, String status) {
+    public OrganizationJpaEntity(UUID id, String taxId, String legalName, String tradeName, String kind, String country, String status, long lockVersion) {
         this.id = id;
         this.taxId = taxId;
         this.legalName = legalName;
@@ -44,6 +49,7 @@ public class OrganizationJpaEntity extends AuditableEntity {
         this.kind = kind;
         this.country = country;
         this.status = status;
+        this.lockVersion = lockVersion;
     }
 
     public UUID getId() {
@@ -72,5 +78,9 @@ public class OrganizationJpaEntity extends AuditableEntity {
 
     public String getStatus() {
         return status;
+    }
+
+    public long getLockVersion() {
+        return lockVersion;
     }
 }

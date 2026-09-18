@@ -38,8 +38,8 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew test
 
-  integration:
-    name: integration tests
+  rebuild:
+    name: rebuild from nothing
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -48,7 +48,7 @@ jobs:
           distribution: temurin
           java-version: "25"
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew integrationTest
+      - run: ./gradlew rebuild
 
   image:
     name: production image

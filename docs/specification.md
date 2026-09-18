@@ -5,7 +5,8 @@ contradict each other, one of the two is wrong and it gets fixed in the same cha
 
 In the diagrams, `RAW(16)` is the UUID v7 in binary, `TIMESTAMP_TZ` is `TIMESTAMP WITH TIME ZONE` and
 `NUMBER "0/1"` is a boolean with a `CHECK`. Every table carries `created_at` and `updated_at`;
-`deleted_at` only appears where there is a soft delete.
+`deleted_at` only appears where there is a soft delete, and `lock_version` only on the aggregates that
+change state, where two writers would otherwise overwrite each other in silence.
 
 - [How the five fit together](#how-the-five-fit-together)
 - [01 · identity](#01--identity)
@@ -25,14 +26,14 @@ flowchart TB
   end
   catalog["catalog<br/><small>storage_profile · product · site</small>"]
   shipment["shipment<br/><small>shipment · shipment_line · custody_event<br/>participant · handoff</small>"]
-  telemetry["telemetry<br/><small>sensor_device · assignment<br/>reading · batch · excursion</small>"]
-  compliance["compliance<br/><small>compliance_certificate · certificate_finding</small>"]
+  telemetry["telemetry<br/><small>device · assignment<br/>reading · batch · excursion</small>"]
+  compliance["compliance<br/><small>certificate · certificate_finding</small>"]
 
   catalog -- "frozen thresholds" --> shipment
   shipment -- "dispatch" --> telemetry
   telemetry -- "excursion" --> shipment
-  shipment -- "shipment close" --> compliance
-  telemetry -- "backfill · version N+1" --> compliance
+  shipment -- "custody and thresholds" --> compliance
+  telemetry -- "series and excursions" --> compliance
 ```
 
 The shipment is the center: nothing moves without it. The two arrows that point back — the excursion
@@ -47,7 +48,6 @@ Communication happens through domain events, synchronous and in-process
 | `ExcursionOpened` | telemetry → shipment | The shipment flags an open excursion; the carrier sees it in their listing without querying telemetry. |
 | `ExcursionClosed` | telemetry → shipment | Closes the excursion with its final duration. |
 | `ShipmentClosed` | shipment → compliance | Delivery or rejection: triggers issuing version 1 of the certificate. |
-| `BackfillIngested` | telemetry → compliance | Readings arrived for an already closed shipment: the next version is issued. |
 
 ---
 
@@ -82,7 +82,7 @@ erDiagram
     NUMBER is_system "0/1"
   }
   user_role {
-    RAW(16) user_id PK
+    RAW(16) app_user_id PK
     RAW(16) role_id PK
     RAW(16) granted_by FK
     TIMESTAMP_TZ granted_at
@@ -184,9 +184,9 @@ erDiagram
     VARCHAR2 name
     NUMBER min_celsius "5,2"
     NUMBER max_celsius "5,2"
-    NUMBER max_cumulative_excursion_min
-    NUMBER max_single_excursion_min
-    NUMBER min_coverage_pct "5,2"
+    NUMBER max_cumulative_excursion_minutes
+    NUMBER max_single_excursion_minutes
+    NUMBER min_coverage_percent "5,2"
     NUMBER version
     VARCHAR2 status "DRAFT / ACTIVE / RETIRED"
   }
@@ -254,8 +254,8 @@ erDiagram
     RAW(16) organization_id FK
     RAW(16) origin_site_id FK
     RAW(16) destination_site_id FK
-    RAW(16) consignee_org_id FK
-    RAW(16) current_custodian_org_id FK
+    RAW(16) consignee_organization_id FK
+    RAW(16) current_custodian_organization_id FK
     VARCHAR2 status "6 states, see state machine"
     TIMESTAMP_TZ planned_departure_at
     TIMESTAMP_TZ planned_arrival_at
@@ -263,10 +263,10 @@ erDiagram
     TIMESTAMP_TZ actual_arrival_at
     NUMBER min_celsius "snapshot"
     NUMBER max_celsius "snapshot"
-    NUMBER max_cumulative_excursion_min "snapshot"
-    NUMBER max_single_excursion_min "snapshot"
-    NUMBER min_coverage_pct "snapshot"
-    NUMBER has_open_excursion "0/1"
+    NUMBER max_cumulative_excursion_minutes "snapshot"
+    NUMBER max_single_excursion_minutes "snapshot"
+    NUMBER min_coverage_percent "snapshot"
+    NUMBER open_excursion "0/1"
   }
   shipment_line {
     RAW(16) id PK
@@ -291,7 +291,7 @@ erDiagram
   custody_event {
     RAW(16) id PK
     RAW(16) shipment_id FK
-    NUMBER sequence_no UK
+    NUMBER sequence_number UK
     VARCHAR2 kind "CREATED, DISPATCHED, HANDOFF, CHECKPOINT, ARRIVED, DELIVERED, REJECTED"
     RAW(16) from_organization_id FK
     RAW(16) to_organization_id FK
@@ -363,7 +363,7 @@ stateDiagram-v2
   driver with no signal syncs two hours late, and that has to stay visible.
 - One pending handoff per shipment, guaranteed with a function-based unique index over the `PENDING`
   status. The code expires and is single-use.
-- `sequence_no` is unique per shipment and gap-free. The number is reserved inside the event's own
+- `sequence_number` is unique per shipment and gap-free. The number is reserved inside the event's own
   transaction, not with a global Oracle sequence.
 
 **Out of scope:** route planning, rates and invoicing, qualified electronic signature.
@@ -379,7 +379,7 @@ erDiagram
   shipment {
     RAW(16) id PK
   }
-  sensor_device {
+  device {
     RAW(16) id PK
     RAW(16) organization_id FK
     VARCHAR2 serial UK
@@ -412,7 +412,7 @@ erDiagram
     RAW(16) id PK
     RAW(16) shipment_id FK
     RAW(16) device_id FK
-    RAW(16) batch_id FK
+    RAW(16) reading_batch_id FK
     TIMESTAMP_TZ measured_at UK
     NUMBER celsius "5,2"
     NUMBER humidity_pct "5,2"
@@ -433,8 +433,8 @@ erDiagram
     VARCHAR2 status "OPEN / CLOSED"
   }
   shipment ||..o{ device_assignment : "ref by uuid"
-  sensor_device ||--o{ device_assignment : "one active at a time"
-  sensor_device ||--o{ temperature_reading : "measures"
+  device ||--o{ device_assignment : "one active at a time"
+  device ||--o{ temperature_reading : "measures"
   reading_batch ||--o{ temperature_reading : "idempotent ingestion"
   temperature_reading ||..o{ excursion : "opens and closes"
 ```
@@ -482,7 +482,7 @@ erDiagram
   shipment {
     RAW(16) id PK
   }
-  compliance_certificate {
+  certificate {
     RAW(16) id PK
     RAW(16) shipment_id FK
     NUMBER version UK
@@ -493,7 +493,7 @@ erDiagram
     TIMESTAMP_TZ evaluated_to
     NUMBER reading_count
     NUMBER expected_reading_count
-    NUMBER coverage_pct "5,2"
+    NUMBER coverage_percent "5,2"
     NUMBER cumulative_excursion_seconds
     NUMBER longest_excursion_seconds
     NUMBER peak_celsius "5,2"
@@ -514,8 +514,8 @@ erDiagram
     JSON detail
     TIMESTAMP_TZ occurred_at
   }
-  shipment ||..o{ compliance_certificate : "ref by uuid"
-  compliance_certificate ||--o{ certificate_finding : "backs the verdict"
+  shipment ||..o{ certificate : "ref by uuid"
+  certificate ||--o{ certificate_finding : "backs the verdict"
 ```
 
 ### How the verdict is decided

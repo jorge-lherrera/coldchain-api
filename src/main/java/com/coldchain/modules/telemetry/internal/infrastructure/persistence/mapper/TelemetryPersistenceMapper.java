@@ -33,13 +33,13 @@ public class TelemetryPersistenceMapper {
     public DeviceAssignmentJpaEntity toEntity(DeviceAssignment assignment) {
         return new DeviceAssignmentJpaEntity(assignment.id(), assignment.deviceId(),
                 assignment.shipmentId(), assignment.minCelsius(), assignment.maxCelsius(),
-                assignment.attachedAt(), assignment.detachedAt());
+                assignment.attachedAt(), assignment.detachedAt(), assignment.lockVersion());
     }
 
     public DeviceAssignment toDomain(DeviceAssignmentJpaEntity entity) {
         return DeviceAssignment.restore(entity.getId(), entity.getDeviceId(), entity.getShipmentId(),
                 entity.getMinCelsius(), entity.getMaxCelsius(), entity.getAttachedAt(),
-                entity.getDetachedAt());
+                entity.getDetachedAt(), entity.getLockVersion());
     }
 
     public ReadingBatchJpaEntity toEntity(ReadingBatch batch) {
@@ -59,13 +59,13 @@ public class TelemetryPersistenceMapper {
         return new ExcursionJpaEntity(excursion.id(), excursion.organizationId(),
                 excursion.shipmentId(), excursion.kind().name(), excursion.status().name(),
                 excursion.openedAt(), excursion.closedAt(), excursion.openedByReadingId(),
-                excursion.closedByReadingId(), excursion.peakCelsius(), excursion.durationMinutes());
+                excursion.closedByReadingId(), excursion.peakCelsius(), excursion.durationMinutes(), excursion.lockVersion());
     }
 
     public Excursion toDomain(ExcursionJpaEntity entity) {
         return Excursion.restore(entity.getId(), entity.getOrganizationId(), entity.getShipmentId(),
                 ExcursionKind.valueOf(entity.getKind()), ExcursionStatus.valueOf(entity.getStatus()),
                 entity.getOpenedAt(), entity.getClosedAt(), entity.getOpenedByReadingId(),
-                entity.getClosedByReadingId(), entity.getPeakCelsius(), entity.getDurationMinutes());
+                entity.getClosedByReadingId(), entity.getPeakCelsius(), entity.getDurationMinutes(), entity.getLockVersion());
     }
 }

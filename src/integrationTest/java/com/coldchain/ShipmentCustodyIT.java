@@ -24,9 +24,13 @@ import com.coldchain.modules.shipment.api.dto.OpenHandoffResult;
 import com.coldchain.modules.shipment.api.dto.ShipmentLineCommand;
 import com.coldchain.modules.shipment.api.dto.ShipmentResult;
 import com.coldchain.modules.shipment.api.dto.ShipmentTimelineResult;
+import com.coldchain.modules.telemetry.api.TelemetryApi;
+import com.coldchain.modules.telemetry.api.dto.DeviceResult;
+import com.coldchain.modules.telemetry.api.dto.RegisterDeviceCommand;
 import com.coldchain.shared.error.DomainException;
 import com.coldchain.shared.identifier.RawUuid;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -41,6 +45,9 @@ class ShipmentCustodyIT {
 
     @Autowired
     private ShipmentApi shipments;
+
+    @Autowired
+    private TelemetryApi telemetry;
 
     @Autowired
     private CatalogApi catalog;
@@ -188,6 +195,12 @@ class ShipmentCustodyIT {
                 .isEqualTo("NO_LINES");
     }
 
+    private DeviceResult deviceOf(RegisterOrganizationResult owner) {
+        return telemetry.registerDevice(new RegisterDeviceCommand(owner.organizationId(),
+                "SN-" + UUID.randomUUID().toString().substring(0, 8), "Tag-1", "1.4.2", 300,
+                Instant.parse("2026-03-01T08:00:00Z")));
+    }
+
     private ShipmentResult dispatchedShipment(RegisterOrganizationResult shipper,
             RegisterOrganizationResult consignee) {
         return ActingAs.user(shipper.administratorId(), shipper.organizationId(), () -> {
@@ -208,7 +221,7 @@ class ShipmentCustodyIT {
                     consignee.organizationId(),
                     List.of(new ShipmentLineCommand(product, new BigDecimal("10.000"), "BOX"))));
             ShipmentResult moved = shipments.dispatchShipment(
-                    new DispatchShipmentCommand(draft.id(), UUID.randomUUID()));
+                    new DispatchShipmentCommand(draft.id(), deviceOf(shipper).id()));
             assertThat(moved.status()).isEqualTo(ShipmentStatus.IN_TRANSIT);
             assertThat(moved.thresholds().minCelsius()).isEqualByComparingTo("2.00");
             return moved;

@@ -24,8 +24,10 @@ public final class HandoffRequest {
 
     private final Instant resolvedAt;
 
+    private final long lockVersion;
+
     private HandoffRequest(UUID id, UUID shipmentId, UUID fromOrganizationId, UUID toOrganizationId,
-            String codeHash, HandoffStatus status, Instant expiresAt, Instant resolvedAt) {
+            String codeHash, HandoffStatus status, Instant expiresAt, Instant resolvedAt, long lockVersion) {
         this.id = Objects.requireNonNull(id);
         this.shipmentId = Objects.requireNonNull(shipmentId);
         this.fromOrganizationId = Objects.requireNonNull(fromOrganizationId);
@@ -34,34 +36,35 @@ public final class HandoffRequest {
         this.status = Objects.requireNonNull(status);
         this.expiresAt = Objects.requireNonNull(expiresAt);
         this.resolvedAt = resolvedAt;
+        this.lockVersion = lockVersion;
     }
 
     public static HandoffRequest open(UUID shipmentId, UUID fromOrganizationId, UUID toOrganizationId,
             String codeHash, Instant expiresAt) {
         return new HandoffRequest(UuidV7.generate(), shipmentId, fromOrganizationId, toOrganizationId,
-                codeHash, HandoffStatus.PENDING, expiresAt, null);
+                codeHash, HandoffStatus.PENDING, expiresAt, null, 0);
     }
 
     public static HandoffRequest restore(UUID id, UUID shipmentId, UUID fromOrganizationId,
             UUID toOrganizationId, String codeHash, HandoffStatus status, Instant expiresAt,
-            Instant resolvedAt) {
+            Instant resolvedAt, long lockVersion) {
         return new HandoffRequest(id, shipmentId, fromOrganizationId, toOrganizationId, codeHash,
-                status, expiresAt, resolvedAt);
+                status, expiresAt, resolvedAt, lockVersion);
     }
 
     public HandoffRequest accept(Instant when) {
         return new HandoffRequest(id, shipmentId, fromOrganizationId, toOrganizationId, codeHash,
-                HandoffStatus.ACCEPTED, expiresAt, when);
+                HandoffStatus.ACCEPTED, expiresAt, when, lockVersion);
     }
 
     public HandoffRequest reject(Instant when) {
         return new HandoffRequest(id, shipmentId, fromOrganizationId, toOrganizationId, codeHash,
-                HandoffStatus.REJECTED, expiresAt, when);
+                HandoffStatus.REJECTED, expiresAt, when, lockVersion);
     }
 
     public HandoffRequest expire(Instant when) {
         return new HandoffRequest(id, shipmentId, fromOrganizationId, toOrganizationId, codeHash,
-                HandoffStatus.EXPIRED, expiresAt, when);
+                HandoffStatus.EXPIRED, expiresAt, when, lockVersion);
     }
 
     public boolean pending() {
@@ -102,5 +105,9 @@ public final class HandoffRequest {
 
     public Instant resolvedAt() {
         return resolvedAt;
+    }
+
+    public long lockVersion() {
+        return lockVersion;
     }
 }

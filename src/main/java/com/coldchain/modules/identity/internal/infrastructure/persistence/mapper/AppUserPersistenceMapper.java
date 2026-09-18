@@ -11,12 +11,12 @@ public class AppUserPersistenceMapper {
     public AppUserJpaEntity toEntity(AppUser user) {
         return new AppUserJpaEntity(user.id(), user.organizationId(), user.email(), user.passwordHash(),
                 user.fullName(), user.status().name(), user.activationTokenHash(), user.activationExpiresAt(),
-                user.lastLoginAt());
+                user.lastLoginAt(), user.lockVersion());
     }
 
     public AppUser toDomain(AppUserJpaEntity entity) {
         return AppUser.restore(entity.getId(), entity.getOrganizationId(), entity.getEmail(),
                 entity.getPasswordHash(), entity.getFullName(), UserStatus.valueOf(entity.getStatus()),
-                entity.getActivationTokenHash(), entity.getActivationExpiresAt(), entity.getLastLoginAt());
+                entity.getActivationTokenHash(), entity.getActivationExpiresAt(), entity.getLastLoginAt(), entity.getLockVersion());
     }
 }

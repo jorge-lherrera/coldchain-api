@@ -142,6 +142,7 @@ tasks.register('rules', Test) {
 	classpath = sourceSets.test.runtimeClasspath
 	useJUnitPlatform()
 	include 'com/coldchain/*.class'
+	systemProperty 'contract.snapshot', providers.systemProperty('contract.snapshot').getOrElse('')
 	reports.junitXml.outputLocation = layout.buildDirectory.dir('test-results/rules')
 	reports.html.outputLocation = layout.buildDirectory.dir('reports/rules')
 	finalizedBy 'rulesRan'
@@ -157,6 +158,12 @@ tasks.register('rulesDb', Test) {
 	reports.junitXml.outputLocation = layout.buildDirectory.dir('test-results/rulesDb')
 	reports.html.outputLocation = layout.buildDirectory.dir('reports/rulesDb')
 	finalizedBy 'rulesDbRan'
+}
+
+tasks.register('rebuild') {
+	group = 'verification'
+	description = 'A database from nothing: drop, migrate, start and run everything that needs one.'
+	dependsOn 'rulesDb', 'integrationTest'
 }
 
 tasks.named('check') {

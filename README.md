@@ -4,10 +4,11 @@ Cold chain custody and compliance API. A pharmaceutical shipment passes from han
 organizations, its temperature is measured for the entire journey, and when it closes it **either has
 a certificate or it doesn't**.
 
-> **Status:** under construction. The full specification is closed and lives in
-> [`docs/specification.md`](docs/specification.md); the decisions are in [`docs/adr/`](docs/adr/), and
-> the order of work in [`docs/branching-plan.md`](docs/branching-plan.md). The code starts with the
-> foundations and the `identity` module.
+> **Status:** the five modules are built and closed. Every rule in the catalogue has a machine that
+> checks it, and the integration suite runs against a real Oracle raised from nothing on every push.
+> The specification lives in [`docs/specification.md`](docs/specification.md), the decisions in
+> [`docs/adr/`](docs/adr/), and the order the work was done in
+> [`docs/branching-plan.md`](docs/branching-plan.md).
 
 ## The problem
 
@@ -47,11 +48,11 @@ They are numbered by dependency: that is also the build order.
 
 ```mermaid
 flowchart LR
-  catalog -- "thresholds" --> shipment
+  catalog -- "frozen thresholds" --> shipment
   shipment -- "ShipmentDispatched" --> telemetry
   telemetry -- "ExcursionOpened / Closed" --> shipment
   shipment -- "ShipmentClosed" --> compliance
-  telemetry -- "BackfillIngested" --> compliance
+  telemetry -- "series and excursions" --> compliance
   identity -. "org and scopes on every request" .-> shipment
 ```
 
@@ -82,13 +83,19 @@ The reasoning is in [ADR-001](docs/adr/ADR-001-oracle-23ai.md) and
 ## What this project enforces
 
 Everything from the folder down to the field is declared in
-**[`rules/project-rules.md`](rules/project-rules.md)** — around a hundred rules across sixteen groups,
-each with a severity, the test that checks it, and whether that test exists yet. It is not a style
-guide: `./gradlew rules` runs it on every push and every pull request, and it has no switch to turn it
-off.
+**[`rules/project-rules.md`](rules/project-rules.md)** — every rule across sixteen groups, each with a
+severity, the test that checks it, and the state that test is in. It is not a style guide:
+`./gradlew rules` runs it on every push and every pull request, and it has no switch to turn it off.
 
-The catalogue verifies itself, too: a rule that cites a test that does not exist fails the build, and
-so does a tolerated violation with no owner and no expiry date on it.
+The catalogue verifies itself, too: a rule that cites a test that does not exist fails the build, a
+rule still waiting for its test cannot quietly acquire one without moving its row, and a tolerated
+violation with no owner and no expiry date fails as well. Nothing is left `planned`: the day a rule
+was written without a machine is the day the build said so.
+
+Writing those machines is what found the defects worth finding — an audit entry that came back from
+the database with an identifier that was not its own, two concepts wearing two names each, four
+columns abbreviated past the point of being guessable, and thirteen aggregates where the second
+writer erased the first without a trace.
 
 ```bash
 ./gradlew rules      # the gate. Everything that does not need Oracle
@@ -112,11 +119,13 @@ docker compose up -d oracle      # only the database
 ```bash
 ./gradlew test                   # unit tests
 ./gradlew integrationTest        # with Testcontainers, requires Docker
+./gradlew rebuild                # a database from nothing: migrate, start, run everything
 ```
 
 ## The demo
 
-The walkthrough that exercises the whole system, meant to be watched in two minutes:
+The walkthrough that exercises the whole system, meant to be watched in two minutes. Every step of it
+runs in the integration suite against a real Oracle:
 
 1. A lab creates a shipment of 400 vials with the `2 – 8 °C` profile and dispatches it.
 2. A carrier accepts the handoff with a single-use code; custody changes hands.

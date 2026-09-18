@@ -39,6 +39,8 @@ class SecurityPostureArchTest {
 
     private static final String SCOPE_PREFIX = "SCOPE_";
 
+    private static final String PARTICIPATION_PREDICATE = "FROM ShipmentParticipantJpaEntity";
+
     private static final List<String> FAST_OR_REVERSIBLE_HASHES =
             List.of("BCryptPasswordEncoder", "NoOpPasswordEncoder", "SCryptPasswordEncoder",
                     "Pbkdf2PasswordEncoder", "StandardPasswordEncoder", "MD5", "SHA-1");
@@ -327,6 +329,39 @@ class SecurityPostureArchTest {
             index = expression.indexOf(SCOPE_PREFIX, end);
         }
         return scopes;
+    }
+
+    @Test
+    void shipmentVisibilityIsResolvedInOnePlace() {
+        List<Path> declaring = SourceTree.javaFiles(SourceTree.MAIN).stream()
+                .filter(file -> SourceTree.read(file).contains(PARTICIPATION_PREDICATE))
+                .toList();
+
+        assertThat(declaring)
+                .describedAs("visibility of a shipment is participation, and it is decided once: "
+                        + "a second copy of the predicate is a query that will forget it")
+                .hasSize(1);
+        assertThat(declaring.getFirst().toString())
+                .describedAs("the predicate lives in the repository, where a new query cannot get "
+                        + "around it, and not in a service somebody can bypass")
+                .contains("persistence")
+                .endsWith("ShipmentJpaRepository.java");
+    }
+
+    @Test
+    void everyDenialIsAudited() {
+        String responder = SourceTree.read(SourceTree.find("ProblemErrorResponder", SourceTree.MAIN)
+                .orElseThrow());
+
+        assertThat(responder)
+                .describedAs("a call with no credentials and a call with the wrong scope are two "
+                        + "different facts, and the log has to tell them apart")
+                .contains("LogMessage.DENIED_UNAUTHENTICATED")
+                .contains("LogMessage.DENIED_SCOPE");
+        assertThat(responder)
+                .describedAs("a denial leaves as a translated problem document, not as an empty body")
+                .contains("problemDetails.describe")
+                .contains("APPLICATION_PROBLEM_JSON_VALUE");
     }
 
     private record Endpoint(JavaClass controller, JavaMethod method, String route) {

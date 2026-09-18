@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -31,15 +32,20 @@ public class ShipmentParticipantJpaEntity extends AuditableEntity {
     @Column(name = "REVOKED_AT")
     private Instant revokedAt;
 
+    @Version
+    @Column(name = "LOCK_VERSION", nullable = false)
+    private long lockVersion;
+
     protected ShipmentParticipantJpaEntity() {
     }
 
-    public ShipmentParticipantJpaEntity(UUID id, UUID shipmentId, UUID organizationId, String participation, Instant revokedAt) {
+    public ShipmentParticipantJpaEntity(UUID id, UUID shipmentId, UUID organizationId, String participation, Instant revokedAt, long lockVersion) {
         this.id = id;
         this.shipmentId = shipmentId;
         this.organizationId = organizationId;
         this.participation = participation;
         this.revokedAt = revokedAt;
+        this.lockVersion = lockVersion;
     }
 
     public UUID getId() {
@@ -60,5 +66,9 @@ public class ShipmentParticipantJpaEntity extends AuditableEntity {
 
     public Instant getRevokedAt() {
         return revokedAt;
+    }
+
+    public long getLockVersion() {
+        return lockVersion;
     }
 }

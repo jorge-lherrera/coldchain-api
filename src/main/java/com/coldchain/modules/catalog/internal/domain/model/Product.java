@@ -19,31 +19,34 @@ public final class Product {
 
     private final Instant deletedAt;
 
+    private final long lockVersion;
+
     private Product(UUID id, UUID organizationId, UUID storageProfileId, String sku, String name,
-            Instant deletedAt) {
+            Instant deletedAt, long lockVersion) {
         this.id = Objects.requireNonNull(id);
         this.organizationId = Objects.requireNonNull(organizationId);
         this.storageProfileId = Objects.requireNonNull(storageProfileId);
         this.sku = Objects.requireNonNull(sku);
         this.name = Objects.requireNonNull(name);
         this.deletedAt = deletedAt;
+        this.lockVersion = lockVersion;
     }
 
     public static Product createNew(UUID organizationId, UUID storageProfileId, String sku, String name) {
-        return new Product(UuidV7.generate(), organizationId, storageProfileId, sku, name, null);
+        return new Product(UuidV7.generate(), organizationId, storageProfileId, sku, name, null, 0);
     }
 
     public static Product restore(UUID id, UUID organizationId, UUID storageProfileId, String sku,
-            String name, Instant deletedAt) {
-        return new Product(id, organizationId, storageProfileId, sku, name, deletedAt);
+            String name, Instant deletedAt, long lockVersion) {
+        return new Product(id, organizationId, storageProfileId, sku, name, deletedAt, lockVersion);
     }
 
     public Product describedAs(String newName, UUID newStorageProfileId) {
-        return new Product(id, organizationId, newStorageProfileId, sku, newName, deletedAt);
+        return new Product(id, organizationId, newStorageProfileId, sku, newName, deletedAt, lockVersion);
     }
 
     public Product retire(Instant when) {
-        return new Product(id, organizationId, storageProfileId, sku, name, when);
+        return new Product(id, organizationId, storageProfileId, sku, name, when, lockVersion);
     }
 
     public boolean retired() {
@@ -72,5 +75,9 @@ public final class Product {
 
     public Instant deletedAt() {
         return deletedAt;
+    }
+
+    public long lockVersion() {
+        return lockVersion;
     }
 }

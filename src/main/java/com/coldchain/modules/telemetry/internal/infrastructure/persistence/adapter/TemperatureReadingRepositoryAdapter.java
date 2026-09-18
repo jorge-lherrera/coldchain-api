@@ -3,9 +3,10 @@ package com.coldchain.modules.telemetry.internal.infrastructure.persistence.adap
 import com.coldchain.modules.telemetry.internal.domain.model.TemperatureReading;
 import com.coldchain.modules.telemetry.internal.domain.repository.TemperatureReadingRepository;
 import com.coldchain.shared.identifier.RawUuid;
-import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -55,7 +56,7 @@ public class TemperatureReadingRepositoryAdapter implements TemperatureReadingRe
                         RawUuid.toBytes(reading.shipmentId()),
                         RawUuid.toBytes(reading.batchId()),
                         reading.celsius(),
-                        Timestamp.from(reading.measuredAt()),
+                        reading.measuredAt().atOffset(ZoneOffset.UTC),
                         RawUuid.toBytes(reading.organizationId())})
                 .toList();
         return jdbc.batchUpdate(INSERT, rows, INSERT_TYPES).length;
@@ -71,14 +72,14 @@ public class TemperatureReadingRepositoryAdapter implements TemperatureReadingRe
                         RawUuid.fromBytes(row.getBytes("SHIPMENT_ID")),
                         RawUuid.fromBytes(row.getBytes("BATCH_ID")),
                         row.getBigDecimal("CELSIUS"),
-                        row.getTimestamp("MEASURED_AT").toInstant()),
+                        row.getObject("MEASURED_AT", OffsetDateTime.class).toInstant()),
                 RawUuid.toBytes(shipmentId));
     }
 
     @Override
     public List<Instant> findMeasuredAtOf(UUID deviceId, Instant from, Instant to) {
         return jdbc.query(SELECT_SAMPLES,
-                (row, index) -> row.getTimestamp("MEASURED_AT").toInstant(),
-                RawUuid.toBytes(deviceId), Timestamp.from(from), Timestamp.from(to));
+                (row, index) -> row.getObject("MEASURED_AT", OffsetDateTime.class).toInstant(),
+                RawUuid.toBytes(deviceId), from.atOffset(ZoneOffset.UTC), to.atOffset(ZoneOffset.UTC));
     }
 }

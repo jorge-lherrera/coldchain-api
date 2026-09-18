@@ -31,7 +31,7 @@ public class ComplianceCertificateJpaEntity extends AuditableEntity {
     @Column(name = "VERDICT", nullable = false)
     private String verdict;
 
-    @Column(name = "COVERAGE_PCT", nullable = false)
+    @Column(name = "COVERAGE_PERCENT", nullable = false)
     private BigDecimal coveragePercent;
 
     @Column(name = "CUMULATIVE_MINUTES", nullable = false)

@@ -10,5 +10,5 @@ public record StorageProfileResult(
         String name,
         int version,
         ProfileStatus status,
-        ThresholdsView thresholds) {
+        StorageThresholds thresholds) {
 }

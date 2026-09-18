@@ -9,7 +9,7 @@ import com.coldchain.modules.catalog.api.dto.CreateProductCommand;
 import com.coldchain.modules.catalog.api.dto.CreateSiteCommand;
 import com.coldchain.modules.catalog.api.dto.CreateStorageProfileCommand;
 import com.coldchain.modules.catalog.api.dto.StorageProfileResult;
-import com.coldchain.modules.catalog.api.dto.ThresholdsView;
+import com.coldchain.modules.catalog.api.dto.StorageThresholds;
 import com.coldchain.modules.identity.api.IdentityApi;
 import com.coldchain.modules.identity.api.OrganizationKind;
 import com.coldchain.modules.identity.api.dto.RegisterOrganizationCommand;
@@ -36,7 +36,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 @IntegrationTest
 class ShipmentCustodyIT {
 
-    private static final ThresholdsView FRIDGE = new ThresholdsView(
+    private static final StorageThresholds FRIDGE = new StorageThresholds(
             new BigDecimal("2.00"), new BigDecimal("8.00"), 30, 120, new BigDecimal("95.00"));
 
     @Autowired

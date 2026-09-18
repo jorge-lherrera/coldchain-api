@@ -58,7 +58,7 @@ public class ShipmentWebMapper {
         return new ShipmentResponse(result.id(), result.reference(), result.status(),
                 result.originSiteId(), result.destinationSiteId(), result.consigneeOrganizationId(),
                 result.currentCustodianOrganizationId(), result.deviceId(), result.thresholds(),
-                result.hasOpenExcursion(), result.dispatchedAt(), result.closedAt(),
+                result.openExcursion(), result.dispatchedAt(), result.closedAt(),
                 result.lines().stream().map(this::toResponse).toList());
     }
 

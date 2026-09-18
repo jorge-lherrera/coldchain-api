@@ -12,6 +12,6 @@ public class RolePersistenceMapper {
 
     public Role toDomain(RoleJpaEntity entity, Set<Scope> scopes) {
         return Role.restore(entity.getId(), RoleCode.valueOf(entity.getCode()), entity.getName(),
-                entity.isBuiltIn(), scopes);
+                entity.builtIn(), scopes);
     }
 }

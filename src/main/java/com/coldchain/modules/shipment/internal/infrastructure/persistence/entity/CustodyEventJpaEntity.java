@@ -21,16 +21,16 @@ public class CustodyEventJpaEntity extends AuditableEntity {
     @Column(name = "SHIPMENT_ID", nullable = false)
     private UUID shipmentId;
 
-    @Column(name = "SEQUENCE_NO", nullable = false)
+    @Column(name = "SEQUENCE_NUMBER", nullable = false)
     private int sequenceNumber;
 
     @Column(name = "KIND", nullable = false)
     private String kind;
 
-    @Column(name = "FROM_ORG_ID")
+    @Column(name = "FROM_ORGANIZATION_ID")
     private UUID fromOrganizationId;
 
-    @Column(name = "TO_ORG_ID")
+    @Column(name = "TO_ORGANIZATION_ID")
     private UUID toOrganizationId;
 
     @Column(name = "SITE_ID")

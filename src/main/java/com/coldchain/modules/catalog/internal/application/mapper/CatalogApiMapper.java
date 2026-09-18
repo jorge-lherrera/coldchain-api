@@ -3,7 +3,7 @@ package com.coldchain.modules.catalog.internal.application.mapper;
 import com.coldchain.modules.catalog.api.dto.ProductResult;
 import com.coldchain.modules.catalog.api.dto.SiteResult;
 import com.coldchain.modules.catalog.api.dto.StorageProfileResult;
-import com.coldchain.modules.catalog.api.dto.ThresholdsView;
+import com.coldchain.modules.catalog.api.dto.StorageThresholds;
 import com.coldchain.modules.catalog.internal.domain.model.Product;
 import com.coldchain.modules.catalog.internal.domain.model.Site;
 import com.coldchain.modules.catalog.internal.domain.model.StorageProfile;
@@ -28,13 +28,13 @@ public class CatalogApiMapper {
                 site.latitude(), site.longitude(), site.timeZone());
     }
 
-    public ThresholdsView toView(Thresholds thresholds) {
-        return new ThresholdsView(thresholds.minCelsius(), thresholds.maxCelsius(),
+    public StorageThresholds toView(Thresholds thresholds) {
+        return new StorageThresholds(thresholds.minCelsius(), thresholds.maxCelsius(),
                 thresholds.maxSingleExcursionMinutes(), thresholds.maxCumulativeExcursionMinutes(),
                 thresholds.minCoveragePercent());
     }
 
-    public Thresholds toDomain(ThresholdsView view) {
+    public Thresholds toDomain(StorageThresholds view) {
         return new Thresholds(view.minCelsius(), view.maxCelsius(), view.maxSingleExcursionMinutes(),
                 view.maxCumulativeExcursionMinutes(), view.minCoveragePercent());
     }

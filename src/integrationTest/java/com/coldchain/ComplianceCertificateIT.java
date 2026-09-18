@@ -8,7 +8,7 @@ import com.coldchain.modules.catalog.api.dto.CreateProductCommand;
 import com.coldchain.modules.catalog.api.dto.CreateSiteCommand;
 import com.coldchain.modules.catalog.api.dto.CreateStorageProfileCommand;
 import com.coldchain.modules.catalog.api.dto.StorageProfileResult;
-import com.coldchain.modules.catalog.api.dto.ThresholdsView;
+import com.coldchain.modules.catalog.api.dto.StorageThresholds;
 import com.coldchain.modules.compliance.api.ComplianceApi;
 import com.coldchain.modules.compliance.api.FindingCode;
 import com.coldchain.modules.compliance.api.Verdict;
@@ -42,7 +42,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 @IntegrationTest
 class ComplianceCertificateIT {
 
-    private static final ThresholdsView FRIDGE = new ThresholdsView(
+    private static final StorageThresholds FRIDGE = new StorageThresholds(
             new BigDecimal("2.00"), new BigDecimal("8.00"), 30, 120, new BigDecimal("80.00"));
 
     @Autowired

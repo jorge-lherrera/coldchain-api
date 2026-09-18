@@ -33,7 +33,7 @@ public class SensorDeviceJpaEntity extends AuditableEntity {
     @Column(name = "STATUS", nullable = false)
     private String status;
 
-    @Column(name = "SAMPLING_INTERVAL_SEC", nullable = false)
+    @Column(name = "SAMPLING_INTERVAL_SECONDS", nullable = false)
     private int samplingIntervalSeconds;
 
     @Column(name = "CALIBRATED_AT", nullable = false)

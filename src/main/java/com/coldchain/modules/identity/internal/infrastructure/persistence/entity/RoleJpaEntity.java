@@ -46,7 +46,7 @@ public class RoleJpaEntity extends AuditableEntity {
         return name;
     }
 
-    public boolean isBuiltIn() {
+    public boolean builtIn() {
         return builtIn;
     }
 }

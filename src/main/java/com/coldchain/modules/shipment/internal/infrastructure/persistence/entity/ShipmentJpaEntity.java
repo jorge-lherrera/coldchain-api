@@ -34,10 +34,10 @@ public class ShipmentJpaEntity extends AuditableEntity {
     @Column(name = "DESTINATION_SITE_ID", nullable = false)
     private UUID destinationSiteId;
 
-    @Column(name = "CONSIGNEE_ORG_ID", nullable = false)
+    @Column(name = "CONSIGNEE_ORGANIZATION_ID", nullable = false)
     private UUID consigneeOrganizationId;
 
-    @Column(name = "CURRENT_CUSTODIAN_ORG_ID", nullable = false)
+    @Column(name = "CURRENT_CUSTODIAN_ORGANIZATION_ID", nullable = false)
     private UUID currentCustodianOrganizationId;
 
     @Column(name = "DEVICE_ID")
@@ -49,17 +49,17 @@ public class ShipmentJpaEntity extends AuditableEntity {
     @Column(name = "MAX_CELSIUS")
     private BigDecimal maxCelsius;
 
-    @Column(name = "MAX_SINGLE_EXCURSION_MIN")
+    @Column(name = "MAX_SINGLE_EXCURSION_MINUTES")
     private Integer maxSingleExcursionMinutes;
 
-    @Column(name = "MAX_CUMULATIVE_EXCURSION_MIN")
+    @Column(name = "MAX_CUMULATIVE_EXCURSION_MINUTES")
     private Integer maxCumulativeExcursionMinutes;
 
-    @Column(name = "MIN_COVERAGE_PCT")
+    @Column(name = "MIN_COVERAGE_PERCENT")
     private BigDecimal minCoveragePercent;
 
-    @Column(name = "HAS_OPEN_EXCURSION", nullable = false)
-    private Integer hasOpenExcursion;
+    @Column(name = "OPEN_EXCURSION", nullable = false)
+    private Integer openExcursion;
 
     @Column(name = "DISPATCHED_AT")
     private Instant dispatchedAt;
@@ -70,7 +70,7 @@ public class ShipmentJpaEntity extends AuditableEntity {
     protected ShipmentJpaEntity() {
     }
 
-    public ShipmentJpaEntity(UUID id, UUID organizationId, String reference, String status, UUID originSiteId, UUID destinationSiteId, UUID consigneeOrganizationId, UUID currentCustodianOrganizationId, UUID deviceId, BigDecimal minCelsius, BigDecimal maxCelsius, Integer maxSingleExcursionMinutes, Integer maxCumulativeExcursionMinutes, BigDecimal minCoveragePercent, Integer hasOpenExcursion, Instant dispatchedAt, Instant closedAt) {
+    public ShipmentJpaEntity(UUID id, UUID organizationId, String reference, String status, UUID originSiteId, UUID destinationSiteId, UUID consigneeOrganizationId, UUID currentCustodianOrganizationId, UUID deviceId, BigDecimal minCelsius, BigDecimal maxCelsius, Integer maxSingleExcursionMinutes, Integer maxCumulativeExcursionMinutes, BigDecimal minCoveragePercent, Integer openExcursion, Instant dispatchedAt, Instant closedAt) {
         this.id = id;
         this.organizationId = organizationId;
         this.reference = reference;
@@ -85,7 +85,7 @@ public class ShipmentJpaEntity extends AuditableEntity {
         this.maxSingleExcursionMinutes = maxSingleExcursionMinutes;
         this.maxCumulativeExcursionMinutes = maxCumulativeExcursionMinutes;
         this.minCoveragePercent = minCoveragePercent;
-        this.hasOpenExcursion = hasOpenExcursion;
+        this.openExcursion = openExcursion;
         this.dispatchedAt = dispatchedAt;
         this.closedAt = closedAt;
     }
@@ -146,8 +146,8 @@ public class ShipmentJpaEntity extends AuditableEntity {
         return minCoveragePercent;
     }
 
-    public Integer getHasOpenExcursion() {
-        return hasOpenExcursion;
+    public Integer getOpenExcursion() {
+        return openExcursion;
     }
 
     public Instant getDispatchedAt() {

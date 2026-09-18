@@ -68,7 +68,10 @@ class ModuleEdgeDeclarationArchTest {
         Set<String> edges = new TreeSet<>();
         Matcher quoted = QUOTED.matcher(block.group(1));
         while (quoted.find()) {
-            edges.add(quoted.group(1));
+            String declared = quoted.group(1);
+            edges.add(declared.contains("::")
+                    ? declared.substring(0, declared.indexOf("::"))
+                    : declared);
         }
         return edges;
     }

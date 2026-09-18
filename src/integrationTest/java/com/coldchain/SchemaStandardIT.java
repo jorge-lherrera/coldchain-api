@@ -2,6 +2,7 @@ package com.coldchain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -19,6 +20,25 @@ class SchemaStandardIT {
 
     private static final List<String> LINK_TABLES =
             List.of("USER_ROLE", "ROLE_SCOPE", "API_CLIENT_SCOPE");
+
+    private static final Map<String, String> MODULE_OF = Map.ofEntries(
+            Map.entry("ORGANIZATION", "identity"),
+            Map.entry("APP_USER", "identity"),
+            Map.entry("ROLE", "identity"),
+            Map.entry("ROLE_SCOPE", "identity"),
+            Map.entry("USER_ROLE", "identity"),
+            Map.entry("API_CLIENT", "identity"),
+            Map.entry("API_CLIENT_SCOPE", "identity"),
+            Map.entry("REFRESH_TOKEN", "identity"),
+            Map.entry("AUDIT_ENTRY", "identity"),
+            Map.entry("STORAGE_PROFILE", "catalog"),
+            Map.entry("PRODUCT", "catalog"),
+            Map.entry("SITE", "catalog"),
+            Map.entry("SHIPMENT", "shipment"),
+            Map.entry("SHIPMENT_LINE", "shipment"),
+            Map.entry("SHIPMENT_PARTICIPANT", "shipment"),
+            Map.entry("CUSTODY_EVENT", "shipment"),
+            Map.entry("HANDOFF_REQUEST", "shipment"));
 
     private static final List<String> TENANT_TABLES =
             List.of("APP_USER", "API_CLIENT", "REFRESH_TOKEN", "AUDIT_ENTRY");
@@ -72,26 +92,31 @@ class SchemaStandardIT {
 
     @Test
     void n2_1_intraModuleReferencesCarryAForeignKey() {
-        List<String> unreferenced = jdbc.queryForList("""
-                SELECT c.table_name || '.' || c.column_name
-                FROM user_tab_columns c
-                WHERE %s
-                  AND c.data_type = 'RAW'
-                  AND c.column_name <> 'ID'
-                  AND c.table_name <> 'AUDIT_ENTRY'
-                  AND c.column_name <> 'FAMILY_ID'
-                  AND c.column_name NOT IN ('CREATED_BY', 'UPDATED_BY')
-                  AND NOT EXISTS (
-                        SELECT 1
-                        FROM user_cons_columns cc
-                        JOIN user_constraints k ON k.constraint_name = cc.constraint_name
-                        WHERE cc.table_name = c.table_name
-                          AND cc.column_name = c.column_name
-                          AND k.constraint_type = 'R')
-                """.formatted(OURS), String.class);
+        List<String> missing = new ArrayList<>();
+        List<String> crossing = new ArrayList<>();
+        for (Map<String, Object> reference : referenceColumns()) {
+            String table = (String) reference.get("TABLE_NAME");
+            String column = (String) reference.get("COLUMN_NAME");
+            String parent = column.substring(0, column.length() - 3);
+            if (!MODULE_OF.containsKey(parent)) {
+                continue;
+            }
+            boolean declared = ((Number) reference.get("FOREIGN_KEYS")).intValue() > 0;
+            boolean sameModule = MODULE_OF.get(table).equals(MODULE_OF.get(parent));
+            if (sameModule && !declared) {
+                missing.add(table + "." + column);
+            }
+            if (!sameModule && declared && !parent.equals("ORGANIZATION")) {
+                crossing.add(table + "." + column);
+            }
+        }
 
-        assertThat(unreferenced)
+        assertThat(missing)
                 .describedAs("a reference inside the module is declared, so the database keeps it true")
+                .isEmpty();
+        assertThat(crossing)
+                .describedAs("a reference that crosses a module carries no foreign key, or the two "
+                        + "modules can never be deployed apart; tenancy is the one exception")
                 .isEmpty();
     }
 
@@ -335,6 +360,23 @@ class SchemaStandardIT {
                 .isEmpty();
     }
 
+    private List<Map<String, Object>> referenceColumns() {
+        return jdbc.queryForList("""
+                SELECT c.table_name, c.column_name,
+                       (SELECT COUNT(*)
+                        FROM user_cons_columns cc
+                        JOIN user_constraints k ON k.constraint_name = cc.constraint_name
+                        WHERE cc.table_name = c.table_name
+                          AND cc.column_name = c.column_name
+                          AND k.constraint_type = 'R') AS foreign_keys
+                FROM user_tab_columns c
+                WHERE %s
+                  AND c.data_type = 'RAW'
+                  AND c.column_name <> 'ID'
+                  AND c.column_name NOT IN ('CREATED_BY', 'UPDATED_BY')
+                """.formatted(OURS));
+    }
+
     private List<String> tables() {
         return jdbc.queryForList(
                 "SELECT table_name FROM user_tables WHERE " + OURS, String.class);
@@ -360,12 +402,22 @@ class SchemaStandardIT {
                 """, String.class, table);
     }
 
+    private static String compact(String condition) {
+        StringBuilder compacted = new StringBuilder(condition.length());
+        for (char character : condition.toCharArray()) {
+            if (!Character.isWhitespace(character) && character != '"') {
+                compacted.append(character);
+            }
+        }
+        return compacted.toString();
+    }
+
     private List<String> checkConditions() {
         return jdbc.queryForList("""
                 SELECT search_condition_vc FROM user_constraints WHERE constraint_type = 'C'
                 """, String.class).stream()
                 .filter(condition -> condition != null)
-                .map(condition -> condition.replace("\"", "").replace(" ", ""))
+                .map(SchemaStandardIT::compact)
                 .collect(Collectors.toList());
     }
 }

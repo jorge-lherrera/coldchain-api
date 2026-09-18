@@ -1,0 +1,160 @@
+package com.coldchain.modules.shipment.internal.infrastructure.persistence.entity;
+
+import com.coldchain.shared.persistence.AuditableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.UUID;
+
+@Entity
+@Table(name = "SHIPMENT", indexes = {
+        @Index(name = "IX_SHIPMENT_ORGANIZATION_ID", columnList = "ORGANIZATION_ID")})
+public class ShipmentJpaEntity extends AuditableEntity {
+
+    @Id
+    @Column(name = "ID", nullable = false, updatable = false)
+    private UUID id;
+
+    @Column(name = "ORGANIZATION_ID", nullable = false)
+    private UUID organizationId;
+
+    @Column(name = "REFERENCE", nullable = false)
+    private String reference;
+
+    @Column(name = "STATUS", nullable = false)
+    private String status;
+
+    @Column(name = "ORIGIN_SITE_ID", nullable = false)
+    private UUID originSiteId;
+
+    @Column(name = "DESTINATION_SITE_ID", nullable = false)
+    private UUID destinationSiteId;
+
+    @Column(name = "CONSIGNEE_ORG_ID", nullable = false)
+    private UUID consigneeOrganizationId;
+
+    @Column(name = "CURRENT_CUSTODIAN_ORG_ID", nullable = false)
+    private UUID currentCustodianOrganizationId;
+
+    @Column(name = "DEVICE_ID")
+    private UUID deviceId;
+
+    @Column(name = "MIN_CELSIUS")
+    private BigDecimal minCelsius;
+
+    @Column(name = "MAX_CELSIUS")
+    private BigDecimal maxCelsius;
+
+    @Column(name = "MAX_SINGLE_EXCURSION_MIN")
+    private Integer maxSingleExcursionMinutes;
+
+    @Column(name = "MAX_CUMULATIVE_EXCURSION_MIN")
+    private Integer maxCumulativeExcursionMinutes;
+
+    @Column(name = "MIN_COVERAGE_PCT")
+    private BigDecimal minCoveragePercent;
+
+    @Column(name = "HAS_OPEN_EXCURSION", nullable = false)
+    private Integer hasOpenExcursion;
+
+    @Column(name = "DISPATCHED_AT")
+    private Instant dispatchedAt;
+
+    @Column(name = "CLOSED_AT")
+    private Instant closedAt;
+
+    protected ShipmentJpaEntity() {
+    }
+
+    public ShipmentJpaEntity(UUID id, UUID organizationId, String reference, String status, UUID originSiteId, UUID destinationSiteId, UUID consigneeOrganizationId, UUID currentCustodianOrganizationId, UUID deviceId, BigDecimal minCelsius, BigDecimal maxCelsius, Integer maxSingleExcursionMinutes, Integer maxCumulativeExcursionMinutes, BigDecimal minCoveragePercent, Integer hasOpenExcursion, Instant dispatchedAt, Instant closedAt) {
+        this.id = id;
+        this.organizationId = organizationId;
+        this.reference = reference;
+        this.status = status;
+        this.originSiteId = originSiteId;
+        this.destinationSiteId = destinationSiteId;
+        this.consigneeOrganizationId = consigneeOrganizationId;
+        this.currentCustodianOrganizationId = currentCustodianOrganizationId;
+        this.deviceId = deviceId;
+        this.minCelsius = minCelsius;
+        this.maxCelsius = maxCelsius;
+        this.maxSingleExcursionMinutes = maxSingleExcursionMinutes;
+        this.maxCumulativeExcursionMinutes = maxCumulativeExcursionMinutes;
+        this.minCoveragePercent = minCoveragePercent;
+        this.hasOpenExcursion = hasOpenExcursion;
+        this.dispatchedAt = dispatchedAt;
+        this.closedAt = closedAt;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public UUID getOrganizationId() {
+        return organizationId;
+    }
+
+    public String getReference() {
+        return reference;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public UUID getOriginSiteId() {
+        return originSiteId;
+    }
+
+    public UUID getDestinationSiteId() {
+        return destinationSiteId;
+    }
+
+    public UUID getConsigneeOrganizationId() {
+        return consigneeOrganizationId;
+    }
+
+    public UUID getCurrentCustodianOrganizationId() {
+        return currentCustodianOrganizationId;
+    }
+
+    public UUID getDeviceId() {
+        return deviceId;
+    }
+
+    public BigDecimal getMinCelsius() {
+        return minCelsius;
+    }
+
+    public BigDecimal getMaxCelsius() {
+        return maxCelsius;
+    }
+
+    public Integer getMaxSingleExcursionMinutes() {
+        return maxSingleExcursionMinutes;
+    }
+
+    public Integer getMaxCumulativeExcursionMinutes() {
+        return maxCumulativeExcursionMinutes;
+    }
+
+    public BigDecimal getMinCoveragePercent() {
+        return minCoveragePercent;
+    }
+
+    public Integer getHasOpenExcursion() {
+        return hasOpenExcursion;
+    }
+
+    public Instant getDispatchedAt() {
+        return dispatchedAt;
+    }
+
+    public Instant getClosedAt() {
+        return closedAt;
+    }
+}

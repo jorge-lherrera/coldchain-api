@@ -56,6 +56,8 @@ coldchain:
     access-token-lifetime: 15m
     refresh-token-lifetime: 7d
     activation-lifetime: 48h
+  handoff:
+    code-lifetime: 30m
   rate-limit:
     enabled: true
     capacity: 20

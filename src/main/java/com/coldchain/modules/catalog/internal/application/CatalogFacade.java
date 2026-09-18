@@ -20,6 +20,7 @@ import com.coldchain.modules.catalog.internal.application.usecase.command.Update
 import com.coldchain.modules.catalog.internal.application.usecase.command.UpdateSiteUseCase;
 import com.coldchain.modules.catalog.internal.application.usecase.command.UpdateStorageProfileUseCase;
 import com.coldchain.modules.catalog.internal.application.usecase.query.GetProductProfileUseCase;
+import com.coldchain.modules.catalog.internal.application.usecase.query.GetProductUseCase;
 import com.coldchain.modules.catalog.internal.application.usecase.query.GetSiteUseCase;
 import com.coldchain.modules.catalog.internal.application.usecase.query.ListProductsUseCase;
 import com.coldchain.modules.catalog.internal.application.usecase.query.ListSitesUseCase;
@@ -58,6 +59,8 @@ public class CatalogFacade implements CatalogApi {
 
     private final ListSitesUseCase listSites;
 
+    private final GetProductUseCase getProduct;
+
     private final GetSiteUseCase getSite;
 
     public CatalogFacade(CreateStorageProfileUseCase createProfile,
@@ -66,7 +69,7 @@ public class CatalogFacade implements CatalogApi {
             GetProductProfileUseCase productProfile, CreateProductUseCase createProduct,
             UpdateProductUseCase updateProduct, RetireProductUseCase retireProduct,
             ListProductsUseCase listProducts, CreateSiteUseCase createSite, UpdateSiteUseCase updateSite,
-            ListSitesUseCase listSites, GetSiteUseCase getSite) {
+            ListSitesUseCase listSites, GetProductUseCase getProduct, GetSiteUseCase getSite) {
         this.createProfile = createProfile;
         this.updateProfile = updateProfile;
         this.activateProfile = activateProfile;
@@ -80,6 +83,7 @@ public class CatalogFacade implements CatalogApi {
         this.createSite = createSite;
         this.updateSite = updateSite;
         this.listSites = listSites;
+        this.getProduct = getProduct;
         this.getSite = getSite;
     }
 
@@ -122,6 +126,11 @@ public class CatalogFacade implements CatalogApi {
     @Override
     public ProductResult updateProduct(UpdateProductCommand command) {
         return updateProduct.execute(command);
+    }
+
+    @Override
+    public ProductResult productOf(UUID productId) {
+        return getProduct.execute(productId);
     }
 
     @Override

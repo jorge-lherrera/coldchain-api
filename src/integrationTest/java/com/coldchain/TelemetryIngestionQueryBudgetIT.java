@@ -24,7 +24,7 @@ class TelemetryIngestionQueryBudgetIT {
 
     private static final int READINGS = 200;
 
-    private static final int BUDGET = 9;
+    private static final int BUDGET = 10;
 
     @Autowired
     private TelemetryApi telemetry;

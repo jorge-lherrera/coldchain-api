@@ -3,6 +3,7 @@ package com.coldchain.modules.shipment.internal.infrastructure.persistence.adapt
 import com.coldchain.modules.shipment.internal.domain.model.Shipment;
 import com.coldchain.modules.shipment.internal.domain.model.ShipmentLine;
 import com.coldchain.modules.shipment.internal.domain.repository.ShipmentRepository;
+import com.coldchain.modules.shipment.internal.infrastructure.persistence.entity.ShipmentJpaEntity;
 import com.coldchain.modules.shipment.internal.infrastructure.persistence.entity.ShipmentLineJpaEntity;
 import com.coldchain.modules.shipment.internal.infrastructure.persistence.jpa.ShipmentJpaRepository;
 import com.coldchain.modules.shipment.internal.infrastructure.persistence.jpa.ShipmentLineJpaRepository;
@@ -11,9 +12,12 @@ import com.coldchain.shared.paging.PageCriteria;
 import com.coldchain.shared.paging.PagedResult;
 import com.coldchain.shared.paging.SpringDataPaging;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -60,9 +64,20 @@ public class ShipmentRepositoryAdapter implements ShipmentRepository {
 
     @Override
     public PagedResult<Shipment> findVisibleTo(UUID viewerOrganizationId, PageCriteria criteria) {
+        Page<ShipmentJpaEntity> page =
+                shipments.findVisibleTo(viewerOrganizationId, SpringDataPaging.toPageable(criteria));
+        Map<UUID, List<ShipmentLineJpaEntity>> linesOfThePage = linesOf(page.getContent());
         return SpringDataPaging.toPagedResult(
-                shipments.findVisibleTo(viewerOrganizationId, SpringDataPaging.toPageable(criteria))
-                        .map(entity -> mapper.toDomain(entity, lines.findByShipmentId(entity.getId()))),
+                page.map(entity -> mapper.toDomain(entity,
+                        linesOfThePage.getOrDefault(entity.getId(), List.of()))),
                 criteria);
+    }
+
+    private Map<UUID, List<ShipmentLineJpaEntity>> linesOf(List<ShipmentJpaEntity> page) {
+        if (page.isEmpty()) {
+            return Map.of();
+        }
+        return lines.findByShipmentIdIn(page.stream().map(ShipmentJpaEntity::getId).toList()).stream()
+                .collect(Collectors.groupingBy(ShipmentLineJpaEntity::getShipmentId));
     }
 }

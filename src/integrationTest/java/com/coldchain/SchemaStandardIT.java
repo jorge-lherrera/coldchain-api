@@ -519,15 +519,26 @@ class SchemaStandardIT {
 
         assertThat(unsearchable).isNotEmpty();
         assertThat(queries).isNotEmpty();
-        assertThat(queries)
-                .describedAs("Oracle refuses a CLOB in a DISTINCT with ORA-22848, at runtime and "
-                        + "not at compile time")
-                .allSatisfy(query -> assertThat(query.toUpperCase()).doesNotContain("SELECT DISTINCT"));
+        assertThat(queries).allSatisfy(query -> {
+            if (!query.toUpperCase().contains("SELECT DISTINCT")) {
+                return;
+            }
+            assertThat(unsearchable)
+                    .describedAs("a document column inside a DISTINCT is ORA-22848, at runtime and "
+                            + "not at compile time")
+                    .allSatisfy(column -> assertThat(query).doesNotContain(
+                            fieldNameOf(column.substring(column.indexOf('.') + 1))));
+        });
         assertThat(unsearchable).allSatisfy(column -> assertThat(queries)
                 .describedAs("%s is a document, and a document is read by key, never compared",
                         column)
                 .allSatisfy(query -> assertThat(query).doesNotContain(
                         "By" + pascalCaseOf(column.substring(column.indexOf('.') + 1)))));
+    }
+
+    private static String fieldNameOf(String columnName) {
+        String pascalCase = pascalCaseOf(columnName);
+        return Character.toLowerCase(pascalCase.charAt(0)) + pascalCase.substring(1);
     }
 
     private static String pascalCaseOf(String columnName) {

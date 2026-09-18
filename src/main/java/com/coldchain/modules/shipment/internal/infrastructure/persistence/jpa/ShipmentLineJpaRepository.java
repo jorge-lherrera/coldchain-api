@@ -8,4 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface ShipmentLineJpaRepository extends JpaRepository<ShipmentLineJpaEntity, UUID> {
 
     List<ShipmentLineJpaEntity> findByShipmentId(UUID shipmentId);
+
+    List<ShipmentLineJpaEntity> findByShipmentIdIn(List<UUID> shipmentIds);
 }

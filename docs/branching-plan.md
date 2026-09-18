@@ -235,7 +235,6 @@ travel in this branch too.
 ```
 refactor(core): spell out what the schema had been abbreviating
 test(core): enforce the naming canon on identifiers, columns and constraints
-refactor(core): one name per concept, and an id that survives a read
 ```
 
 **Done when:** no name in the schema has to be guessed, and `./gradlew rules` is green.
@@ -248,6 +247,7 @@ a named factory, a table has exactly one owning module, and the schema belongs t
 ```
 feat(core): seal the events shipment and telemetry publish
 test(core): enforce where each role lives and what the contract may say
+refactor(core): one name per concept, and an id that survives a read
 test(core): enforce how a class is built and who owns each table
 ```
 
@@ -264,6 +264,8 @@ concurrent writers.
 feat(core): stop the second writer from erasing the first
 test(core): close the catalogue — no rule is left without a machine
 docs: the documentation the five modules actually built
+fix(telemetry): point every reading at the batch that actually brought it
+fix(shipment): refuse to dispatch behind a device that does not exist
 ```
 
 **Done when:** the catalogue has no `planned` row left and `./gradlew rebuild` is green from nothing.

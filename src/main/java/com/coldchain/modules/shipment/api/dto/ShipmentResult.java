@@ -16,7 +16,7 @@ public record ShipmentResult(
         UUID currentCustodianOrganizationId,
         UUID deviceId,
         ShipmentThresholds thresholds,
-        boolean hasOpenExcursion,
+        boolean openExcursion,
         Instant dispatchedAt,
         Instant closedAt,
         List<ShipmentLineResult> lines) {

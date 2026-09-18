@@ -17,7 +17,7 @@ public class ShipmentApiMapper {
         return new ShipmentResult(shipment.id(), shipment.organizationId(), shipment.reference(),
                 shipment.status(), shipment.originSiteId(), shipment.destinationSiteId(),
                 shipment.consigneeOrganizationId(), shipment.currentCustodianOrganizationId(),
-                shipment.deviceId(), toThresholds(shipment.thresholds()), shipment.hasOpenExcursion(),
+                shipment.deviceId(), toThresholds(shipment.thresholds()), shipment.openExcursion(),
                 shipment.dispatchedAt(), shipment.closedAt(),
                 shipment.lines().stream().map(this::toResult).toList());
     }

@@ -34,7 +34,7 @@ public interface ShipmentJpaRepository extends JpaRepository<ShipmentJpaEntity, 
             Pageable pageable);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("UPDATE ShipmentJpaEntity s SET s.hasOpenExcursion = :flag WHERE s.id = :shipmentId")
+    @Query("UPDATE ShipmentJpaEntity s SET s.openExcursion = :flag WHERE s.id = :shipmentId")
     int markOpenExcursion(@Param("shipmentId") UUID shipmentId, @Param("flag") Integer flag);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)

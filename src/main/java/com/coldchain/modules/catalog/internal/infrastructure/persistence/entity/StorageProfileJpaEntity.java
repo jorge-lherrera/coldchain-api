@@ -40,13 +40,13 @@ public class StorageProfileJpaEntity extends AuditableEntity {
     @Column(name = "MAX_CELSIUS", nullable = false)
     private BigDecimal maxCelsius;
 
-    @Column(name = "MAX_SINGLE_EXCURSION_MIN", nullable = false)
+    @Column(name = "MAX_SINGLE_EXCURSION_MINUTES", nullable = false)
     private int maxSingleExcursionMinutes;
 
-    @Column(name = "MAX_CUMULATIVE_EXCURSION_MIN", nullable = false)
+    @Column(name = "MAX_CUMULATIVE_EXCURSION_MINUTES", nullable = false)
     private int maxCumulativeExcursionMinutes;
 
-    @Column(name = "MIN_COVERAGE_PCT", nullable = false)
+    @Column(name = "MIN_COVERAGE_PERCENT", nullable = false)
     private BigDecimal minCoveragePercent;
 
     @Column(name = "DELETED_AT")

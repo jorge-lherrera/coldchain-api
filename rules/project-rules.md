@@ -99,7 +99,7 @@ live in.
 | R2.9 | `<X>Request` / `<X>Response` — HTTP and only HTTP, in `delivery/web/<x>/dto/` | STYLE | `ModuleFileLayoutArchTest.httpVocabularyStaysInDelivery` | planned | pending |
 | R2.10 | `<X>WebMapper` — Request↔Command, Result↔Response, in the delivery channel | STYLE | `ModuleFileLayoutArchTest.everyChannelMapperSitsInItsChannel` | planned | pending |
 | R2.11 | `<X>ApiMapper` — domain model ↔ `api/` DTO | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | planned | pending |
-| R2.12 | `<X>JpaEntity` — persistence entity | STYLE | `NamingStandardsArchTest.jpaEntitiesUseJpaEntitySuffix` | planned | pending |
+| R2.12 | `<X>JpaEntity` — persistence entity | STYLE | `NamingStandardsArchTest.jpaEntitiesUseJpaEntitySuffix` | yes | green |
 | R2.13 | `<X>JpaRepository` — Spring Data repository, next to the entity | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | planned | pending |
 | R2.14 | `<X>Repository` — **the port**, always an interface, in `internal/domain/repository/` | STYLE | `ArchitectureRulesArchTest.repositoryPortsAreInterfaces` | yes | green |
 | R2.15 | `<X>RepositoryAdapter` — implementation of the port | STYLE | `ModuleFileLayoutArchTest.everySuffixLivesWhereItsRoleSays` | planned | pending |
@@ -121,11 +121,11 @@ notices. The canon is the other way round — a whitelist.
 
 | Id | Rule | Sev | Enforcer | Machine | Status |
 |---|---|---|---|---|---|
-| R2.21 | **Packages lowercase, no separators** (JLS §6.1). No underscores, no camelCase | STYLE | `JavaIdentifierCanonArchTest.packagesAreLowercaseAndUnseparated` | planned | pending |
-| R2.22 | **Classes, interfaces, records and enums in `PascalCase`** | STYLE | `JavaIdentifierCanonArchTest.typesArePascalCase` | planned | pending |
-| R2.23 | **Methods, variables and fields in `camelCase`; `static final` constants in `UPPER_SNAKE_CASE`** | STYLE | `JavaIdentifierCanonArchTest.membersAreCamelCaseAndConstantsAreUpperSnake` | planned | pending |
-| R2.24 | **Enum constants in `UPPER_SNAKE_CASE`**, the type in `PascalCase` (`Scope.SHIPMENT_WRITE`) | STYLE | `JavaIdentifierCanonArchTest.enumConstantsAreUpperSnakeCase` | planned | pending |
-| R2.25 | **Generic type parameters, one capital letter** (`<T>`, `<K, V>`) | STYLE | `JavaIdentifierCanonArchTest.genericParametersAreSingleCapitalLetters` | planned | pending |
+| R2.21 | **Packages lowercase, no separators** (JLS §6.1). No underscores, no camelCase | STYLE | `JavaIdentifierCanonArchTest.packagesAreLowercaseAndUnseparated` | yes | green |
+| R2.22 | **Classes, interfaces, records and enums in `PascalCase`** | STYLE | `JavaIdentifierCanonArchTest.typesArePascalCase` | yes | green |
+| R2.23 | **Methods, variables and fields in `camelCase`; `static final` constants in `UPPER_SNAKE_CASE`** | STYLE | `JavaIdentifierCanonArchTest.membersAreCamelCaseAndConstantsAreUpperSnake` | yes | green |
+| R2.24 | **Enum constants in `UPPER_SNAKE_CASE`**, the type in `PascalCase` (`Scope.SHIPMENT_WRITE`) | STYLE | `JavaIdentifierCanonArchTest.enumConstantsAreUpperSnakeCase` | yes | green |
+| R2.25 | **Generic type parameters, one capital letter** (`<T>`, `<K, V>`) | STYLE | `JavaIdentifierCanonArchTest.genericParametersAreSingleCapitalLetters` | yes | green |
 | R2.26 | **All code in English**: names, types, log messages, commit subjects. **No machine:** telling an English identifier from a Spanish one needs a dictionary, and the false positives would kill the rule | STYLE | — | none | — |
 
 ---
@@ -154,13 +154,13 @@ notices. The canon is the other way round — a whitelist.
 
 | Id | Rule | Sev | Enforcer | Machine | Status |
 |---|---|---|---|---|---|
-| R4.1 | **A boolean carries no verb prefix.** `active`, never `isActive`. The JSON comes out `active` | CON | `NamingStandardsArchTest.booleanFieldsHaveNoVerbPrefix` | planned | pending |
-| R4.2 | **An instant is `Instant`.** Never `Date`, never `LocalDateTime` (N4.3) | INT | `NamingStandardsArchTest.timestampsAvoidLegacyDateTypes` | planned | pending |
+| R4.1 | **A boolean carries no verb prefix.** `active`, never `isActive`. The JSON comes out `active` | CON | `NamingStandardsArchTest.booleanFieldsHaveNoVerbPrefix` | yes | green |
+| R4.2 | **An instant is `Instant`.** Never `Date`, never `LocalDateTime` (N4.3) | INT | `NamingStandardsArchTest.timestampsAvoidLegacyDateTypes` | yes | green |
 | R4.3 | **A key is a `UUID`** in Java and `RAW(16)` in Oracle, with no `length` and no `@JdbcTypeCode`, and it is a **UUID v7** generated in the application (N1.2, [ADR-002](../docs/adr/ADR-002-uuid-v7-raw16.md)) | INT | `SchemaStandardIT.n1_2_uuidKeysAreStoredAsRaw16` · `UuidRawBindingIT.theSixteenBytesAreTheSameOnesHibernateWrites` | yes | green |
-| R4.4 | **Column names in `UPPER_SNAKE_CASE`** in `@Column` and `@JoinColumn`; **table names in `UPPER_SNAKE_CASE` and singular** in `@Table` | STYLE | `NamingStandardsArchTest.persistenceNamesAreUpperSnakeCase` · `PersistenceNamingCanonArchTest.tableNamesAreSingular` | planned | pending |
+| R4.4 | **Column names in `UPPER_SNAKE_CASE`** in `@Column` and `@JoinColumn`; **table names in `UPPER_SNAKE_CASE` and singular** in `@Table` | STYLE | `NamingStandardsArchTest.persistenceNamesAreUpperSnakeCase` · `PersistenceNamingCanonArchTest.tableNamesAreSingular` | yes | green |
 | R4.5 | **A reference to another table is `<TARGET_TABLE>_ID`** (`SHIPMENT_ID`, not `SHIPMENT` nor `ID_SHIPMENT`) | STYLE | `EntityCanonArchTest.everyReferenceColumnIsNamedAfterItsTarget` | planned | pending |
-| R4.6 | **Every declared index and constraint carries a canonical name**: `IX_<TABLE>_<COLUMNS>`, `UQ_<TABLE>_<COLUMNS>`, `PK_<TABLE>`, `FK_<CHILD>_<PARENT>`, `CK_<TABLE>_<WHAT>`. A `SYS_C0015138` does not say what it guarantees, so an integrity failure in production is not diagnosed, it is investigated (N9.1) | STYLE | `PersistenceNamingCanonArchTest.everyDeclaredConstraintCarriesACanonicalName` | planned | pending |
-| R4.7 | **The same concept is named the same across the whole schema.** The machine is partial and always will be: it catches the synonym somebody already wrote and banned, never the one invented tomorrow | STYLE | `NamingSynonymArchTest.fieldsAndColumnsDoNotUseBannedSynonyms` | planned | pending |
+| R4.6 | **Every declared index and constraint carries a canonical name**: `PK_<TABLE>`, `FK_<CHILD>_<PARENT>`, `UQ_<TABLE>_<COLUMNS>`, `CK_<TABLE>_<WHAT>` for constraints, and `IX_<TABLE>_<COLUMNS>` / `UX_<TABLE>_<COLUMNS>` for plain and unique indexes. A `SYS_C0015138` does not say what it guarantees, so an integrity failure in production is not diagnosed, it is investigated (N9.1) | STYLE | `PersistenceNamingCanonArchTest.everyDeclaredConstraintCarriesACanonicalName` | yes | green |
+| R4.7 | **The same concept is named the same across the whole schema.** The machine is partial and always will be: it catches the synonym somebody already wrote and banned, never the one invented tomorrow | STYLE | `NamingSynonymArchTest.fieldsAndColumnsDoNotUseBannedSynonyms` | partial | green |
 | R4.8 | **The tenancy column declares its index on the entity**, not only in the DDL (N3.2) | COST | `SchemaDeclarationArchTest.tenantColumnIndexIsDeclaredOnTheEntity` | planned | pending |
 | R4.9 | **A quantity that is summed or compared is `NUMBER(p,s)`.** Never `BINARY_DOUBLE`, never text. A temperature is `NUMBER(5,2)` and a duration is whole seconds (N4.1) | INT | `SchemaStandardIT.n4_1_measurableQuantitiesAreExactDecimals` | yes | green |
 | R4.10 | **An identifier from another bounded context is a `UUID` column with no foreign key**, never an embedded object ([ADR-006](../docs/adr/ADR-006-modules-and-events.md)). The single deliberate exception is the tenancy column, R10.6 | INT | `EntityCanonArchTest.noEntityHoldsAnotherModulesEntity` | planned | pending |

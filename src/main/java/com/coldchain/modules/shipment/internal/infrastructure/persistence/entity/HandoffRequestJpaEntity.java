@@ -12,7 +12,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "HANDOFF_REQUEST", indexes = {
         @Index(name = "IX_HANDOFF_REQUEST_SHIPMENT_ID", columnList = "SHIPMENT_ID"), 
-        @Index(name = "IX_HANDOFF_REQUEST_TO_ORG_ID", columnList = "TO_ORG_ID")})
+        @Index(name = "IX_HANDOFF_REQUEST_TO_ORGANIZATION_ID", columnList = "TO_ORGANIZATION_ID")})
 public class HandoffRequestJpaEntity extends AuditableEntity {
 
     @Id
@@ -22,10 +22,10 @@ public class HandoffRequestJpaEntity extends AuditableEntity {
     @Column(name = "SHIPMENT_ID", nullable = false)
     private UUID shipmentId;
 
-    @Column(name = "FROM_ORG_ID", nullable = false)
+    @Column(name = "FROM_ORGANIZATION_ID", nullable = false)
     private UUID fromOrganizationId;
 
-    @Column(name = "TO_ORG_ID", nullable = false)
+    @Column(name = "TO_ORGANIZATION_ID", nullable = false)
     private UUID toOrganizationId;
 
     @Column(name = "CODE_HASH", nullable = false)

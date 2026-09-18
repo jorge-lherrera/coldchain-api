@@ -29,7 +29,7 @@ public final class Shipment {
 
     private final FrozenThresholds thresholds;
 
-    private final boolean hasOpenExcursion;
+    private final boolean openExcursion;
 
     private final Instant dispatchedAt;
 
@@ -40,7 +40,7 @@ public final class Shipment {
     private Shipment(UUID id, UUID organizationId, String reference, ShipmentStatus status,
             UUID originSiteId, UUID destinationSiteId, UUID consigneeOrganizationId,
             UUID currentCustodianOrganizationId, UUID deviceId, FrozenThresholds thresholds,
-            boolean hasOpenExcursion, Instant dispatchedAt, Instant closedAt, List<ShipmentLine> lines) {
+            boolean openExcursion, Instant dispatchedAt, Instant closedAt, List<ShipmentLine> lines) {
         this.id = Objects.requireNonNull(id);
         this.organizationId = Objects.requireNonNull(organizationId);
         this.reference = Objects.requireNonNull(reference);
@@ -51,7 +51,7 @@ public final class Shipment {
         this.currentCustodianOrganizationId = Objects.requireNonNull(currentCustodianOrganizationId);
         this.deviceId = deviceId;
         this.thresholds = thresholds;
-        this.hasOpenExcursion = hasOpenExcursion;
+        this.openExcursion = openExcursion;
         this.dispatchedAt = dispatchedAt;
         this.closedAt = closedAt;
         this.lines = List.copyOf(lines);
@@ -67,15 +67,15 @@ public final class Shipment {
     public static Shipment restore(UUID id, UUID organizationId, String reference,
             ShipmentStatus status, UUID originSiteId, UUID destinationSiteId,
             UUID consigneeOrganizationId, UUID currentCustodianOrganizationId, UUID deviceId,
-            FrozenThresholds thresholds, boolean hasOpenExcursion, Instant dispatchedAt,
+            FrozenThresholds thresholds, boolean openExcursion, Instant dispatchedAt,
             Instant closedAt, List<ShipmentLine> lines) {
         return new Shipment(id, organizationId, reference, status, originSiteId, destinationSiteId,
                 consigneeOrganizationId, currentCustodianOrganizationId, deviceId, thresholds,
-                hasOpenExcursion, dispatchedAt, closedAt, lines);
+                openExcursion, dispatchedAt, closedAt, lines);
     }
 
     public Shipment withLines(List<ShipmentLine> newLines) {
-        return copyWith(status, currentCustodianOrganizationId, deviceId, thresholds, hasOpenExcursion,
+        return copyWith(status, currentCustodianOrganizationId, deviceId, thresholds, openExcursion,
                 dispatchedAt, closedAt, newLines);
     }
 
@@ -88,38 +88,38 @@ public final class Shipment {
             throw new IllegalStateException("A shipment with no device cannot be monitored");
         }
         return copyWith(ShipmentStatus.IN_TRANSIT, currentCustodianOrganizationId, assignedDeviceId,
-                frozen, hasOpenExcursion, when, closedAt, lines);
+                frozen, openExcursion, when, closedAt, lines);
     }
 
     public Shipment arrive() {
         requireTransitionTo(ShipmentStatus.AT_DESTINATION);
         return copyWith(ShipmentStatus.AT_DESTINATION, currentCustodianOrganizationId, deviceId,
-                thresholds, hasOpenExcursion, dispatchedAt, closedAt, lines);
+                thresholds, openExcursion, dispatchedAt, closedAt, lines);
     }
 
     public Shipment deliver(Instant when) {
         requireTransitionTo(ShipmentStatus.DELIVERED);
         return copyWith(ShipmentStatus.DELIVERED, consigneeOrganizationId, deviceId, thresholds,
-                hasOpenExcursion, dispatchedAt, when, lines);
+                openExcursion, dispatchedAt, when, lines);
     }
 
     public Shipment reject(Instant when) {
         requireTransitionTo(ShipmentStatus.REJECTED);
         return copyWith(ShipmentStatus.REJECTED, currentCustodianOrganizationId, deviceId, thresholds,
-                hasOpenExcursion, dispatchedAt, when, lines);
+                openExcursion, dispatchedAt, when, lines);
     }
 
     public Shipment cancel(Instant when) {
         requireTransitionTo(ShipmentStatus.CANCELLED);
         return copyWith(ShipmentStatus.CANCELLED, currentCustodianOrganizationId, deviceId, thresholds,
-                hasOpenExcursion, dispatchedAt, when, lines);
+                openExcursion, dispatchedAt, when, lines);
     }
 
     public Shipment handOverTo(UUID organization) {
         if (status != ShipmentStatus.IN_TRANSIT) {
             throw new IllegalStateException("Custody only moves while the shipment is in transit");
         }
-        return copyWith(status, organization, deviceId, thresholds, hasOpenExcursion, dispatchedAt,
+        return copyWith(status, organization, deviceId, thresholds, openExcursion, dispatchedAt,
                 closedAt, lines);
     }
 
@@ -183,8 +183,8 @@ public final class Shipment {
         return thresholds;
     }
 
-    public boolean hasOpenExcursion() {
-        return hasOpenExcursion;
+    public boolean openExcursion() {
+        return openExcursion;
     }
 
     public Instant dispatchedAt() {

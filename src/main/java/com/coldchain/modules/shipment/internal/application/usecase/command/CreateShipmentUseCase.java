@@ -58,8 +58,10 @@ public class CreateShipmentUseCase {
         Shipment saved = shipments.save(draft.withLines(lines));
         participants.save(ShipmentParticipant.createNew(saved.id(), command.organizationId(),
                 Participation.SHIPPER));
-        participants.save(ShipmentParticipant.createNew(saved.id(), command.consigneeOrganizationId(),
-                Participation.CONSIGNEE));
+        if (!command.consigneeOrganizationId().equals(command.organizationId())) {
+            participants.save(ShipmentParticipant.createNew(saved.id(),
+                    command.consigneeOrganizationId(), Participation.CONSIGNEE));
+        }
         custodyLog.append(saved.id(), CustodyEventKind.CREATED, null, command.organizationId(),
                 command.originSiteId(), currentActor.requireId(), clock.instant());
         return mapper.toResult(saved);

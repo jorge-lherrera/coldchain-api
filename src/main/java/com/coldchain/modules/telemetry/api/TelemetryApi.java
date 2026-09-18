@@ -20,6 +20,8 @@ public interface TelemetryApi {
 
     AssignmentResult detachDevice(UUID deviceId, Instant detachedAt);
 
+    DeviceResult deviceOf(UUID deviceId);
+
     IngestBatchResult ingestBatch(IngestBatchCommand command);
 
     PagedResult<DeviceResult> listDevices(UUID organizationId, PageCriteria criteria);

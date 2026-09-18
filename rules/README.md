@@ -47,7 +47,9 @@ known outstanding work; the second is an unknown risk.
 `planned` / `pending` is this project's third state, and it exists because the catalogue was written
 **before** the code. It means: the rule is in force, the enforcer is named, and the branch that builds
 that area is the one that must deliver it. A module does not close while a rule of its area is still
-`pending` (R14.3).
+`pending` (R14.3), and no row carries that state today: the last of them was closed in
+`feat/rules-runtime`. It stays documented because the next rule written before its machine will use it,
+and because `everyPlannedEnforcerIsStillMissing` turns it red the moment the machine appears.
 
 ### Severity
 

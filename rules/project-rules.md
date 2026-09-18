@@ -340,7 +340,7 @@ In force from day one. A log is replicated, exported and retained longer than th
 |---|---|---|---|---|---|
 | R14.1 | **A change that contradicts a rule corrects the rule in the same change.** A rule that lies is worse than no rule. **No machine:** whether a change contradicts a written rule is exactly what nobody knows how to automate | STYLE | — | none | — |
 | R14.2 | **Every module has its build plan** in `docs/plan-0N-<module>.md`, and the plan's closing criterion is a command somebody can run | STYLE | `LayerContractArchTest.everyModuleHasItsBuildPlan` | yes | green |
-| R14.3 | **A module is closed when** its rules in this catalogue are `green` or covered by a live waiver, and none of its area is still `pending`. Closure is a condition that is read from the repository, not a judgement — otherwise the bar moves with fatigue and the module built in week one is not held to what the one built in week four is | STYLE | `ModuleClosureTest.everyClosedModuleMeetsTheClosureConditions` | yes | green |
+| R14.3 | **A module is closed when** its rules in this catalogue are `green` or covered by a live waiver, and none of its area is still `pending`. The plan of each module says whether it is closed, and a closed one has to have its declared edges, its door and a test that exercises it against the database it writes to. Closure is a condition that is read from the repository, not a judgement — otherwise the bar moves with fatigue and the module built in week one is not held to what the one built in week four is | STYLE | `ModuleClosureTest.everyClosedModuleMeetsTheClosureConditions` | yes | green |
 | R14.4 | **One module at a time.** A finding in another module is written down and not fixed on the way past. It is not a preference about method: fixing everything at once is the reason nothing finishes | STYLE | `ModuleClosureTest.atMostOneModuleIsInProgress` | yes | green |
 | R14.5 | **Every public endpoint is described in OpenAPI**, generated from the code and not written by hand | CON | `HttpContractArchTest.everyEndpointIsDocumentedInOpenApi` | yes | green |
 
@@ -367,4 +367,4 @@ Every tolerated red and every green that proves nothing, with **who accepted it 
 
 | Id | Rule | What is tolerated | Owner | Expires |
 |---|---|---|---|---|
-| — | — | *Empty. The project has no code yet; the first waiver will be the first compromise, and it will have a name on it.* | — | — |
+| — | — | *Empty. Every rule has a machine and every machine is green, so nothing has had to be tolerated. The first waiver will be the first compromise, and it will have a name on it.* | — | — |

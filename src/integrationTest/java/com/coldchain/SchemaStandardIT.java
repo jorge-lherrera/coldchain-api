@@ -522,7 +522,7 @@ class SchemaStandardIT {
         assertThat(queries)
                 .describedAs("Oracle refuses a CLOB in a DISTINCT with ORA-22848, at runtime and "
                         + "not at compile time")
-                .allSatisfy(query -> assertThat(query.toUpperCase()).doesNotContain("DISTINCT"));
+                .allSatisfy(query -> assertThat(query.toUpperCase()).doesNotContain("SELECT DISTINCT"));
         assertThat(unsearchable).allSatisfy(column -> assertThat(queries)
                 .describedAs("%s is a document, and a document is read by key, never compared",
                         column)

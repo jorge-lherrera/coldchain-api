@@ -1,7 +1,6 @@
 package com.coldchain.modules.telemetry.internal.domain.model;
 
 import com.coldchain.modules.telemetry.api.BatchStatus;
-import com.coldchain.shared.identifier.UuidV7;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
@@ -40,9 +39,10 @@ public final class ReadingBatch {
         this.receivedAt = Objects.requireNonNull(receivedAt);
     }
 
-    public static ReadingBatch record(UUID organizationId, UUID deviceId, String idempotencyKey,
-            int receivedCount, int acceptedCount, int discardedCount, Instant receivedAt) {
-        return new ReadingBatch(UuidV7.generate(), organizationId, deviceId, idempotencyKey,
+    public static ReadingBatch createNew(UUID id, UUID organizationId, UUID deviceId,
+            String idempotencyKey, int receivedCount, int acceptedCount, int discardedCount,
+            Instant receivedAt) {
+        return new ReadingBatch(id, organizationId, deviceId, idempotencyKey,
                 statusOf(receivedCount, acceptedCount), receivedCount, acceptedCount, discardedCount,
                 receivedAt);
     }

@@ -32,26 +32,36 @@ class TelemetrySeriesQueryBudgetIT {
 
     @Test
     void readingThirtySamplesCostsTheSameAsReadingOne() {
-        RegisterOrganizationResult owner = fixtures.organization("series");
-        DeviceResult device = fixtures.device(owner);
-        ShipmentResult shipment = fixtures.dispatchedShipment(owner, device);
-        telemetry.ingestBatch(new IngestBatchCommand(owner.organizationId(), device.id(),
-                "batch-" + UUID.randomUUID(), samples(shipment)));
+        int spentOnFive = spentReadingSeries("five", 5);
+        int spentOnThirty = spentReadingSeries("thirty", 30);
 
-        QueryCounter.reset();
-        SeriesResult series = telemetry.seriesOf(shipment.id(), owner.organizationId());
-        int spent = QueryCounter.counted();
-
-        assertThat(series.points()).hasSize(30);
-        assertThat(spent)
+        assertThat(spentOnThirty)
+                .describedAs("the cost of reading the series grew with the number of samples")
+                .isEqualTo(spentOnFive);
+        assertThat(spentOnThirty)
                 .describedAs("the series is one read of the readings and one of the excursions, "
                         + "and it stays that way however many samples there are")
                 .isEqualTo(BUDGET);
     }
 
-    private List<ReadingCommand> samples(ShipmentResult shipment) {
+    private int spentReadingSeries(String name, int howMany) {
+        RegisterOrganizationResult owner = fixtures.organization(name);
+        DeviceResult device = fixtures.device(owner);
+        ShipmentResult shipment = fixtures.dispatchedShipment(owner, device);
+        telemetry.ingestBatch(new IngestBatchCommand(owner.organizationId(), device.id(),
+                "batch-" + UUID.randomUUID(), samples(shipment, howMany)));
+
+        QueryCounter.reset();
+        SeriesResult series = telemetry.seriesOf(shipment.id(), owner.organizationId());
+        int spent = QueryCounter.counted();
+
+        assertThat(series.points()).hasSize(howMany);
+        return spent;
+    }
+
+    private List<ReadingCommand> samples(ShipmentResult shipment, int howMany) {
         List<ReadingCommand> readings = new ArrayList<>();
-        for (int minute = 0; minute < 30; minute++) {
+        for (int minute = 0; minute < howMany; minute++) {
             readings.add(new ReadingCommand(shipment.dispatchedAt().plus(minute, ChronoUnit.MINUTES),
                     new BigDecimal("4.50")));
         }

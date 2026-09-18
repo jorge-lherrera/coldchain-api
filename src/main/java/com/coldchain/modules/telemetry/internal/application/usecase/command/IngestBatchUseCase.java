@@ -108,10 +108,10 @@ public class IngestBatchUseCase {
                     window.get().shipmentId(), batchId, reading.celsius(), measuredAt));
         }
 
-        readings.saveAll(accepted);
-        ReadingBatch batch = batches.save(ReadingBatch.record(command.organizationId(), device.id(),
-                command.idempotencyKey(), command.readings().size(), accepted.size(),
+        ReadingBatch batch = batches.save(ReadingBatch.createNew(batchId, command.organizationId(),
+                device.id(), command.idempotencyKey(), command.readings().size(), accepted.size(),
                 discarded.size(), clock.instant()));
+        readings.saveAll(accepted);
         excursionReview.reviewShipmentsTouchedBy(accepted, windows);
         return new IngestBatchResult(batch.id(), batch.status(), batch.receivedCount(),
                 batch.acceptedCount(), batch.discardedCount(), List.copyOf(discarded));

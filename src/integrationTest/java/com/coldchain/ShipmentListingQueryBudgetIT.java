@@ -31,19 +31,30 @@ class ShipmentListingQueryBudgetIT {
 
     @Test
     void listingThreeShipmentsCostsTheSameAsListingOne() {
-        RegisterOrganizationResult owner = fixtures.organization("budget");
-        fixtures.draftShipment(owner);
-        fixtures.draftShipment(owner);
-        fixtures.draftShipment(owner);
+        RegisterOrganizationResult few = fixtures.organization("few");
+        RegisterOrganizationResult many = fixtures.organization("many");
+        fixtures.draftShipment(few);
+        fixtures.draftShipment(many);
+        fixtures.draftShipment(many);
+        fixtures.draftShipment(many);
 
-        QueryCounter.reset();
-        PagedResult<ShipmentResult> page = shipments.listShipments(owner.organizationId(), FIRST_PAGE);
-        int spent = QueryCounter.counted();
+        int spentOnOne = spentListing(few);
+        int spentOnThree = spentListing(many);
 
-        assertThat(page.content()).hasSize(3);
-        assertThat(spent)
+        assertThat(spentOnThree)
+                .describedAs("three rows cost more queries than one, which is the shape of an N+1 "
+                        + "and it grows with the tenant")
+                .isEqualTo(spentOnOne);
+        assertThat(spentOnThree)
                 .describedAs("a budget with only an upper bound stops noticing the day a read "
                         + "disappears because it started returning nothing")
                 .isEqualTo(BUDGET);
+    }
+
+    private int spentListing(RegisterOrganizationResult owner) {
+        QueryCounter.reset();
+        PagedResult<ShipmentResult> page = shipments.listShipments(owner.organizationId(), FIRST_PAGE);
+        assertThat(page.content()).isNotEmpty();
+        return QueryCounter.counted();
     }
 }

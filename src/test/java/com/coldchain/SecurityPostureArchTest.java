@@ -199,6 +199,16 @@ class SecurityPostureArchTest {
     }
 
     @Test
+    void theTokenLifetimesAreFifteenMinutesAndSevenDays() {
+        String configuration = SourceTree.read(RESOURCES.resolve("application.yml"));
+
+        assertThat(configuration)
+                .describedAs("a short access token is what makes a stolen one worth little")
+                .contains("access-token-lifetime: 15m")
+                .contains("refresh-token-lifetime: 7d");
+    }
+
+    @Test
     void everySecurityHeaderIsDeclared() {
         assertThat(securityConfig)
                 .describedAs("the headers a browser-facing API cannot ship without")

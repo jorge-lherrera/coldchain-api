@@ -5,5 +5,10 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record ShipmentClosed(UUID shipmentId, UUID organizationId, ShipmentStatus status,
-        Instant closedAt) {
+        Instant closedAt) implements ShipmentEvent {
+
+    @Override
+    public Instant occurredAt() {
+        return closedAt;
+    }
 }

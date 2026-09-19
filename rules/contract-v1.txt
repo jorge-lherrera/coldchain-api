@@ -5,9 +5,9 @@ com.coldchain.modules.catalog.api.CatalogApi#cloneStorageProfileToNextVersion(ja
 com.coldchain.modules.catalog.api.CatalogApi#createProduct(com.coldchain.modules.catalog.api.dto.CreateProductCommand):com.coldchain.modules.catalog.api.dto.ProductResult
 com.coldchain.modules.catalog.api.CatalogApi#createSite(com.coldchain.modules.catalog.api.dto.CreateSiteCommand):com.coldchain.modules.catalog.api.dto.SiteResult
 com.coldchain.modules.catalog.api.CatalogApi#createStorageProfile(com.coldchain.modules.catalog.api.dto.CreateStorageProfileCommand):com.coldchain.modules.catalog.api.dto.StorageProfileResult
-com.coldchain.modules.catalog.api.CatalogApi#listProducts(java.util.UUID,com.coldchain.shared.paging.PageCriteria):com.coldchain.shared.paging.PagedResult
-com.coldchain.modules.catalog.api.CatalogApi#listSites(java.util.UUID,com.coldchain.shared.paging.PageCriteria):com.coldchain.shared.paging.PagedResult
-com.coldchain.modules.catalog.api.CatalogApi#listStorageProfiles(java.util.UUID,com.coldchain.shared.paging.PageCriteria):com.coldchain.shared.paging.PagedResult
+com.coldchain.modules.catalog.api.CatalogApi#listProducts(java.util.UUID,com.coldchain.shared.pagination.PageCriteria):com.coldchain.shared.pagination.PagedResult
+com.coldchain.modules.catalog.api.CatalogApi#listSites(java.util.UUID,com.coldchain.shared.pagination.PageCriteria):com.coldchain.shared.pagination.PagedResult
+com.coldchain.modules.catalog.api.CatalogApi#listStorageProfiles(java.util.UUID,com.coldchain.shared.pagination.PageCriteria):com.coldchain.shared.pagination.PagedResult
 com.coldchain.modules.catalog.api.CatalogApi#productOf(java.util.UUID):com.coldchain.modules.catalog.api.dto.ProductResult
 com.coldchain.modules.catalog.api.CatalogApi#retireProduct(java.util.UUID):void
 com.coldchain.modules.catalog.api.CatalogApi#siteOf(java.util.UUID):com.coldchain.modules.catalog.api.dto.SiteResult
@@ -126,7 +126,7 @@ com.coldchain.modules.identity.api.IdentityApi#createApiClient(com.coldchain.mod
 com.coldchain.modules.identity.api.IdentityApi#effectiveScopesOf(java.util.UUID):com.coldchain.modules.identity.api.dto.EffectiveScopesResult
 com.coldchain.modules.identity.api.IdentityApi#inviteUser(com.coldchain.modules.identity.api.dto.InviteUserCommand):com.coldchain.modules.identity.api.dto.InviteUserResult
 com.coldchain.modules.identity.api.IdentityApi#issueClientToken(com.coldchain.modules.identity.api.dto.IssueClientTokenCommand):com.coldchain.modules.identity.api.dto.TokenResult
-com.coldchain.modules.identity.api.IdentityApi#listUsers(java.util.UUID,com.coldchain.shared.paging.PageCriteria):com.coldchain.shared.paging.PagedResult
+com.coldchain.modules.identity.api.IdentityApi#listUsers(java.util.UUID,com.coldchain.shared.pagination.PageCriteria):com.coldchain.shared.pagination.PagedResult
 com.coldchain.modules.identity.api.IdentityApi#refreshAccess(com.coldchain.modules.identity.api.dto.RefreshAccessCommand):com.coldchain.modules.identity.api.dto.TokenResult
 com.coldchain.modules.identity.api.IdentityApi#registerOrganization(com.coldchain.modules.identity.api.dto.RegisterOrganizationCommand):com.coldchain.modules.identity.api.dto.RegisterOrganizationResult
 com.coldchain.modules.identity.api.IdentityApi#revokeRole(com.coldchain.modules.identity.api.dto.RevokeRoleCommand):void
@@ -317,7 +317,7 @@ com.coldchain.modules.shipment.api.ShipmentApi#cancelShipment(java.util.UUID):co
 com.coldchain.modules.shipment.api.ShipmentApi#createShipment(com.coldchain.modules.shipment.api.dto.CreateShipmentCommand):com.coldchain.modules.shipment.api.dto.ShipmentResult
 com.coldchain.modules.shipment.api.ShipmentApi#deliverShipment(java.util.UUID):com.coldchain.modules.shipment.api.dto.ShipmentResult
 com.coldchain.modules.shipment.api.ShipmentApi#dispatchShipment(com.coldchain.modules.shipment.api.dto.DispatchShipmentCommand):com.coldchain.modules.shipment.api.dto.ShipmentResult
-com.coldchain.modules.shipment.api.ShipmentApi#listShipments(java.util.UUID,com.coldchain.shared.paging.PageCriteria):com.coldchain.shared.paging.PagedResult
+com.coldchain.modules.shipment.api.ShipmentApi#listShipments(java.util.UUID,com.coldchain.shared.pagination.PageCriteria):com.coldchain.shared.pagination.PagedResult
 com.coldchain.modules.shipment.api.ShipmentApi#openHandoff(com.coldchain.modules.shipment.api.dto.OpenHandoffCommand):com.coldchain.modules.shipment.api.dto.OpenHandoffResult
 com.coldchain.modules.shipment.api.ShipmentApi#rejectHandoff(java.util.UUID):void
 com.coldchain.modules.shipment.api.ShipmentApi#rejectShipment(java.util.UUID):com.coldchain.modules.shipment.api.dto.ShipmentResult
@@ -441,7 +441,7 @@ com.coldchain.modules.telemetry.api.TelemetryApi#assignDevice(com.coldchain.modu
 com.coldchain.modules.telemetry.api.TelemetryApi#detachDevice(java.util.UUID,java.time.Instant):com.coldchain.modules.telemetry.api.dto.AssignmentResult
 com.coldchain.modules.telemetry.api.TelemetryApi#deviceOf(java.util.UUID):com.coldchain.modules.telemetry.api.dto.DeviceResult
 com.coldchain.modules.telemetry.api.TelemetryApi#ingestBatch(com.coldchain.modules.telemetry.api.dto.IngestBatchCommand):com.coldchain.modules.telemetry.api.dto.IngestBatchResult
-com.coldchain.modules.telemetry.api.TelemetryApi#listDevices(java.util.UUID,com.coldchain.shared.paging.PageCriteria):com.coldchain.shared.paging.PagedResult
+com.coldchain.modules.telemetry.api.TelemetryApi#listDevices(java.util.UUID,com.coldchain.shared.pagination.PageCriteria):com.coldchain.shared.pagination.PagedResult
 com.coldchain.modules.telemetry.api.TelemetryApi#registerDevice(com.coldchain.modules.telemetry.api.dto.RegisterDeviceCommand):com.coldchain.modules.telemetry.api.dto.DeviceResult
 com.coldchain.modules.telemetry.api.TelemetryApi#seriesOf(java.util.UUID,java.util.UUID):com.coldchain.modules.telemetry.api.dto.SeriesResult
 com.coldchain.modules.telemetry.api.dto.AssignDeviceCommand

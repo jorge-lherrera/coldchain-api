@@ -1,0 +1,75 @@
+package com.coldchain.shared.config.web.exception;
+
+import com.coldchain.shared.exception.CoreErrorCode;
+import com.coldchain.shared.exception.DomainException;
+import com.coldchain.shared.exception.ErrorCategory;
+import com.coldchain.shared.exception.ErrorCode;
+import com.coldchain.shared.exception.FieldError;
+import com.coldchain.shared.exception.ProblemDetails;
+import com.coldchain.shared.exception.ProblemType;
+import com.coldchain.shared.infrastructure.log.LogMessages;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
+import org.springframework.http.ProblemDetail;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.stereotype.Component;
+import tools.jackson.databind.ObjectMapper;
+
+@Component
+public class ProblemErrorResponder implements AuthenticationEntryPoint, AccessDeniedHandler {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ProblemErrorResponder.class);
+
+    private final ProblemDetails problemDetails;
+
+    private final ObjectMapper objectMapper;
+
+    public ProblemErrorResponder(ProblemDetails problemDetails, ObjectMapper objectMapper) {
+        this.problemDetails = problemDetails;
+        this.objectMapper = objectMapper;
+    }
+
+    @Override
+    public void commence(HttpServletRequest request, HttpServletResponse response,
+            AuthenticationException exception) throws IOException {
+        LOG.warn(LogMessages.DENIED_UNAUTHENTICATED, request.getMethod(), request.getRequestURI(),
+                CoreErrorCode.NOT_AUTHENTICATED.messageKey());
+        respond(request, response, CoreErrorCode.NOT_AUTHENTICATED, exception.getMessage());
+    }
+
+    @Override
+    public void handle(HttpServletRequest request, HttpServletResponse response,
+            AccessDeniedException exception) throws IOException {
+        LOG.warn(LogMessages.DENIED_SCOPE, request.getMethod(), request.getRequestURI(),
+                CoreErrorCode.NOT_AUTHORIZED.messageKey());
+        respond(request, response, CoreErrorCode.NOT_AUTHORIZED, exception.getMessage());
+    }
+
+    public void respond(HttpServletRequest request, HttpServletResponse response, ErrorCode errorCode,
+            String detail) throws IOException {
+        respond(request, response, errorCode, detail, Map.of());
+    }
+
+    public void respond(HttpServletRequest request, HttpServletResponse response, ErrorCode errorCode,
+            String detail, Map<String, Object> extensions) throws IOException {
+        ProblemDetail problem = problemDetails.describe(errorCode, detail, request.getRequestURI());
+        extensions.forEach(problem::setProperty);
+        write(response, problem);
+    }
+
+    private void write(HttpServletResponse response, ProblemDetail problem) throws IOException {
+        response.setStatus(problem.getStatus());
+        response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        response.getWriter().write(objectMapper.writeValueAsString(problem));
+    }
+}

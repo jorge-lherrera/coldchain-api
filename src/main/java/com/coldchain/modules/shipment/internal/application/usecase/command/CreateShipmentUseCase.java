@@ -15,7 +15,7 @@ import com.coldchain.modules.shipment.internal.domain.model.ShipmentLine;
 import com.coldchain.modules.shipment.internal.domain.model.ShipmentParticipant;
 import com.coldchain.modules.shipment.internal.domain.repository.ShipmentParticipantRepository;
 import com.coldchain.modules.shipment.internal.domain.repository.ShipmentRepository;
-import com.coldchain.shared.application.UseCase;
+import com.coldchain.shared.annotation.UseCase;
 import com.coldchain.shared.security.CurrentActor;
 import java.time.Clock;
 import java.util.List;

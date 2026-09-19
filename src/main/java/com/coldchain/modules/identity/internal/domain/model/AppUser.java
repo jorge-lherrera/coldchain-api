@@ -1,7 +1,7 @@
 package com.coldchain.modules.identity.internal.domain.model;
 
 import com.coldchain.modules.identity.api.UserStatus;
-import com.coldchain.shared.identifier.UuidV7;
+import com.coldchain.shared.util.UuidV7;
 import java.time.Instant;
 import java.util.Locale;
 import java.util.Objects;

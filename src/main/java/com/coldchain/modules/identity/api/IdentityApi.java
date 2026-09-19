@@ -17,8 +17,8 @@ import com.coldchain.modules.identity.api.dto.RevokeRoleCommand;
 import com.coldchain.modules.identity.api.dto.RoleGrantResult;
 import com.coldchain.modules.identity.api.dto.TokenResult;
 import com.coldchain.modules.identity.api.dto.UserResult;
-import com.coldchain.shared.paging.PageCriteria;
-import com.coldchain.shared.paging.PagedResult;
+import com.coldchain.shared.pagination.PageCriteria;
+import com.coldchain.shared.pagination.PagedResult;
 import java.util.UUID;
 
 public interface IdentityApi {

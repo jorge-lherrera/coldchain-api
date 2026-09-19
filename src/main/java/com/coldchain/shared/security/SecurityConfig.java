@@ -1,9 +1,9 @@
 package com.coldchain.shared.security;
 
-import com.coldchain.shared.error.ProblemErrorResponder;
-import com.coldchain.shared.ratelimit.ClientAddress;
-import com.coldchain.shared.ratelimit.RateLimitFilter;
-import com.coldchain.shared.ratelimit.RateLimitProperties;
+import com.coldchain.shared.config.web.exception.ProblemErrorResponder;
+import com.coldchain.shared.config.web.ratelimit.ClientAddress;
+import com.coldchain.shared.config.web.ratelimit.RateLimitFilter;
+import com.coldchain.shared.config.web.ratelimit.RateLimitProperties;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.nimbusds.jose.proc.SecurityContext;
 import java.nio.charset.StandardCharsets;

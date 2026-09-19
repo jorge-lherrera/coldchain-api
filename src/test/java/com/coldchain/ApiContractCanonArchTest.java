@@ -2,7 +2,7 @@ package com.coldchain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.coldchain.shared.application.UseCase;
+import com.coldchain.shared.annotation.UseCase;
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;

@@ -4,9 +4,10 @@ import com.coldchain.delivery.web.identity.dto.ApiClientResponse;
 import com.coldchain.delivery.web.identity.dto.CreateApiClientRequest;
 import com.coldchain.delivery.web.identity.dto.RegisterOrganizationRequest;
 import com.coldchain.delivery.web.identity.dto.RegisterOrganizationResponse;
+import com.coldchain.delivery.web.identity.mapper.IdentityWebMapper;
 import com.coldchain.modules.identity.api.IdentityApi;
 import com.coldchain.shared.response.ApiResponse;
-import com.coldchain.shared.response.ResponseFactory;
+import com.coldchain.shared.response.ApiResponseFactory;
 import com.coldchain.shared.security.CurrentActor;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,11 +28,11 @@ public class OrganizationController {
 
     private final IdentityWebMapper mapper;
 
-    private final ResponseFactory responses;
+    private final ApiResponseFactory responses;
 
     private final CurrentActor currentActor;
 
-    public OrganizationController(IdentityApi identity, IdentityWebMapper mapper, ResponseFactory responses,
+    public OrganizationController(IdentityApi identity, IdentityWebMapper mapper, ApiResponseFactory responses,
             CurrentActor currentActor) {
         this.identity = identity;
         this.mapper = mapper;

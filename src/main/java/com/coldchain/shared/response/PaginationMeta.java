@@ -1,7 +1,7 @@
 package com.coldchain.shared.response;
 
-import com.coldchain.shared.paging.PagedResult;
-import com.coldchain.shared.paging.SortOrder;
+import com.coldchain.shared.pagination.PagedResult;
+import com.coldchain.shared.pagination.SortOrder;
 import java.util.List;
 import java.util.stream.Collectors;
 

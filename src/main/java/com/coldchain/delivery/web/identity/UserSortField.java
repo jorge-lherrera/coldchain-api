@@ -1,6 +1,6 @@
 package com.coldchain.delivery.web.identity;
 
-import com.coldchain.shared.paging.SortField;
+import com.coldchain.shared.pagination.SortField;
 
 public enum UserSortField implements SortField {
 

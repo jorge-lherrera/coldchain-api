@@ -1,6 +1,6 @@
 package com.coldchain.modules.telemetry.internal.domain.model;
 
-import com.coldchain.shared.identifier.UuidV7;
+import com.coldchain.shared.util.UuidV7;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Objects;

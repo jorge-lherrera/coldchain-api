@@ -4,7 +4,7 @@ import com.coldchain.modules.identity.api.ActorType;
 import com.coldchain.modules.identity.api.event.RefreshTokenReuseDetected;
 import com.coldchain.modules.identity.internal.domain.model.RefreshToken;
 import com.coldchain.modules.identity.internal.domain.repository.RefreshTokenRepository;
-import com.coldchain.shared.application.UseCase;
+import com.coldchain.shared.annotation.UseCase;
 import java.time.Clock;
 import java.time.Instant;
 import org.springframework.context.ApplicationEventPublisher;

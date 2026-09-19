@@ -8,10 +8,11 @@ import com.coldchain.delivery.web.shipment.dto.OpenHandoffRequest;
 import com.coldchain.delivery.web.shipment.dto.OpenHandoffResponse;
 import com.coldchain.delivery.web.shipment.dto.ShipmentResponse;
 import com.coldchain.delivery.web.shipment.dto.ShipmentTimelineResponse;
+import com.coldchain.delivery.web.shipment.mapper.ShipmentWebMapper;
 import com.coldchain.modules.shipment.api.ShipmentApi;
-import com.coldchain.shared.paging.SortCatalog;
+import com.coldchain.shared.pagination.SortCatalog;
 import com.coldchain.shared.response.ApiResponse;
-import com.coldchain.shared.response.ResponseFactory;
+import com.coldchain.shared.response.ApiResponseFactory;
 import com.coldchain.shared.security.CurrentActor;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -42,12 +43,12 @@ public class ShipmentController {
 
     private final ShipmentWebMapper mapper;
 
-    private final ResponseFactory responses;
+    private final ApiResponseFactory responses;
 
     private final CurrentActor currentActor;
 
     public ShipmentController(ShipmentApi shipments, ShipmentWebMapper mapper,
-            ResponseFactory responses, CurrentActor currentActor) {
+            ApiResponseFactory responses, CurrentActor currentActor) {
         this.shipments = shipments;
         this.mapper = mapper;
         this.responses = responses;

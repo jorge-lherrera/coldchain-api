@@ -1,5 +1,6 @@
 package com.coldchain.shared.response;
 
+import com.coldchain.shared.config.web.i18n.Messages;
 import com.coldchain.shared.infrastructure.RequestTrace;
 import com.coldchain.shared.pagination.PagedResult;
 import java.time.Clock;
@@ -19,9 +20,12 @@ public class ApiResponseFactory {
             SuccessOutcome.DELETED, HttpStatus.OK,
             SuccessOutcome.ACCEPTED, HttpStatus.ACCEPTED);
 
+    private final Messages messages;
+
     private final Clock clock;
 
-    public ApiResponseFactory(Clock clock) {
+    public ApiResponseFactory(Messages messages, Clock clock) {
+        this.messages = messages;
         this.clock = clock;
     }
 
@@ -43,7 +47,7 @@ public class ApiResponseFactory {
                 status.value(),
                 code.name(),
                 code.messageKey(),
-                code.message(),
+                messages.of(code.messageKey(), code.message()),
                 data,
                 RequestTrace.current(),
                 clock.instant(),

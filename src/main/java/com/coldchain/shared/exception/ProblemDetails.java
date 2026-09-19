@@ -1,5 +1,6 @@
 package com.coldchain.shared.exception;
 
+import com.coldchain.shared.config.web.i18n.Messages;
 import com.coldchain.shared.infrastructure.RequestTrace;
 import java.net.URI;
 import java.time.Clock;
@@ -23,9 +24,12 @@ public class ProblemDetails {
             ErrorCategory.INTEGRATION, HttpStatus.BAD_GATEWAY,
             ErrorCategory.INTERNAL, HttpStatus.INTERNAL_SERVER_ERROR);
 
+    private final Messages messages;
+
     private final Clock clock;
 
-    public ProblemDetails(Clock clock) {
+    public ProblemDetails(Messages messages, Clock clock) {
+        this.messages = messages;
         this.clock = clock;
     }
 
@@ -37,8 +41,9 @@ public class ProblemDetails {
         HttpStatus status = statusOf(errorCode.category());
         ProblemDetail problem = ProblemDetail.forStatus(status);
         problem.setType(ProblemType.from(errorCode.messageKey()));
-        problem.setTitle(errorCode.title());
-        problem.setDetail(detail == null ? errorCode.title() : detail);
+        String title = messages.of(errorCode.messageKey(), errorCode.title());
+        problem.setTitle(title);
+        problem.setDetail(detail == null ? title : detail);
         problem.setInstance(URI.create(path));
         problem.setProperty("errorCode", errorCode.name());
         problem.setProperty("messageKey", errorCode.messageKey());

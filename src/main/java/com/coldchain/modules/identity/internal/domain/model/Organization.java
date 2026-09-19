@@ -2,7 +2,7 @@ package com.coldchain.modules.identity.internal.domain.model;
 
 import com.coldchain.modules.identity.api.OrganizationKind;
 import com.coldchain.modules.identity.api.OrganizationStatus;
-import com.coldchain.shared.identifier.UuidV7;
+import com.coldchain.shared.util.UuidV7;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.UUID;

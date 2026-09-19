@@ -4,7 +4,7 @@ import com.coldchain.modules.telemetry.api.dto.SeriesResult;
 import com.coldchain.modules.telemetry.internal.application.mapper.TelemetryApiMapper;
 import com.coldchain.modules.telemetry.internal.domain.repository.ExcursionRepository;
 import com.coldchain.modules.telemetry.internal.domain.repository.TemperatureReadingRepository;
-import com.coldchain.shared.application.UseCase;
+import com.coldchain.shared.annotation.UseCase;
 import java.util.UUID;
 
 @UseCase

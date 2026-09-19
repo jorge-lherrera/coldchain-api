@@ -1,8 +1,8 @@
 package com.coldchain;
 
-import com.coldchain.shared.paging.PageCriteria;
-import com.coldchain.shared.paging.SortDirection;
-import com.coldchain.shared.paging.SortOrder;
+import com.coldchain.shared.pagination.PageCriteria;
+import com.coldchain.shared.pagination.SortDirection;
+import com.coldchain.shared.pagination.SortOrder;
 import java.util.List;
 
 final class Pages {

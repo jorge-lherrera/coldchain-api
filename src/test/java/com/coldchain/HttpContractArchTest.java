@@ -2,10 +2,10 @@ package com.coldchain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.coldchain.shared.error.ErrorCategory;
-import com.coldchain.shared.error.ProblemDetails;
+import com.coldchain.shared.exception.ErrorCategory;
+import com.coldchain.shared.exception.ProblemDetails;
 import com.coldchain.shared.response.ApiResponse;
-import com.coldchain.shared.response.ResponseFactory;
+import com.coldchain.shared.response.ApiResponseFactory;
 import com.coldchain.shared.response.SuccessOutcome;
 import java.lang.reflect.RecordComponent;
 import java.nio.file.Path;
@@ -168,9 +168,9 @@ class HttpContractArchTest {
 
         assertThat(Arrays.stream(SuccessOutcome.values()).toList())
                 .describedAs("every outcome decides a status")
-                .allSatisfy(outcome -> assertThat(ResponseFactory.statusOf(outcome)).isNotNull());
-        assertThat(ResponseFactory.statusOf(SuccessOutcome.CREATED)).isEqualTo(HttpStatus.CREATED);
-        assertThat(ResponseFactory.statusOf(SuccessOutcome.ACCEPTED)).isEqualTo(HttpStatus.ACCEPTED);
+                .allSatisfy(outcome -> assertThat(ApiResponseFactory.statusOf(outcome)).isNotNull());
+        assertThat(ApiResponseFactory.statusOf(SuccessOutcome.CREATED)).isEqualTo(HttpStatus.CREATED);
+        assertThat(ApiResponseFactory.statusOf(SuccessOutcome.ACCEPTED)).isEqualTo(HttpStatus.ACCEPTED);
     }
 
     @Test
@@ -232,7 +232,7 @@ class HttpContractArchTest {
 
     @Test
     void bothShapesCarryTheSameTraceId() {
-        assertThat(SourceTree.read(SourceTree.find("ResponseFactory", SourceTree.MAIN).orElseThrow()))
+        assertThat(SourceTree.read(SourceTree.find("ApiResponseFactory", SourceTree.MAIN).orElseThrow()))
                 .describedAs("the success envelope carries the request identifier")
                 .contains("RequestTrace.current()");
         assertThat(SourceTree.read(SourceTree.find("ProblemDetails", SourceTree.MAIN).orElseThrow()))

@@ -1,7 +1,7 @@
 package com.coldchain.modules.telemetry.internal.infrastructure.persistence.adapter;
 
 import com.coldchain.modules.telemetry.internal.exception.TelemetryErrorCode;
-import com.coldchain.shared.error.DomainException;
+import com.coldchain.shared.exception.DomainException;
 import java.util.Locale;
 import java.util.Map;
 import org.springframework.dao.DataIntegrityViolationException;

@@ -2,7 +2,7 @@ package com.coldchain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.coldchain.shared.paging.PageCriteria;
+import com.coldchain.shared.pagination.PageCriteria;
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;

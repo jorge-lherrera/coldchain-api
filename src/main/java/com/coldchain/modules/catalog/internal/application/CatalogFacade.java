@@ -25,8 +25,8 @@ import com.coldchain.modules.catalog.internal.application.usecase.query.GetSiteU
 import com.coldchain.modules.catalog.internal.application.usecase.query.ListProductsUseCase;
 import com.coldchain.modules.catalog.internal.application.usecase.query.ListSitesUseCase;
 import com.coldchain.modules.catalog.internal.application.usecase.query.ListStorageProfilesUseCase;
-import com.coldchain.shared.paging.PageCriteria;
-import com.coldchain.shared.paging.PagedResult;
+import com.coldchain.shared.pagination.PageCriteria;
+import com.coldchain.shared.pagination.PagedResult;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 

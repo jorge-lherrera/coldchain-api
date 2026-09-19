@@ -2,7 +2,7 @@ package com.coldchain.modules.telemetry.internal.domain.model;
 
 import com.coldchain.modules.telemetry.api.ExcursionKind;
 import com.coldchain.modules.telemetry.api.ExcursionStatus;
-import com.coldchain.shared.identifier.UuidV7;
+import com.coldchain.shared.util.UuidV7;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;

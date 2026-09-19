@@ -19,7 +19,7 @@ import com.coldchain.modules.telemetry.api.dto.MonitoringThresholds;
 import com.coldchain.modules.telemetry.api.dto.ReadingCommand;
 import com.coldchain.modules.telemetry.api.dto.RegisterDeviceCommand;
 import com.coldchain.modules.telemetry.api.dto.SeriesResult;
-import com.coldchain.shared.identifier.RawUuid;
+import com.coldchain.shared.util.RawUuid;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;

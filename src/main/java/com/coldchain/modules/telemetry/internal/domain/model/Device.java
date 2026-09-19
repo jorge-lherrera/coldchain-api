@@ -1,7 +1,7 @@
 package com.coldchain.modules.telemetry.internal.domain.model;
 
 import com.coldchain.modules.telemetry.api.DeviceStatus;
-import com.coldchain.shared.identifier.UuidV7;
+import com.coldchain.shared.util.UuidV7;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;

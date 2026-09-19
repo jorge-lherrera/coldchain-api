@@ -3,9 +3,9 @@ package com.coldchain.modules.identity.internal.application.usecase.query;
 import com.coldchain.modules.identity.api.dto.UserResult;
 import com.coldchain.modules.identity.internal.application.mapper.IdentityApiMapper;
 import com.coldchain.modules.identity.internal.domain.repository.AppUserRepository;
-import com.coldchain.shared.application.UseCase;
-import com.coldchain.shared.paging.PageCriteria;
-import com.coldchain.shared.paging.PagedResult;
+import com.coldchain.shared.annotation.UseCase;
+import com.coldchain.shared.pagination.PageCriteria;
+import com.coldchain.shared.pagination.PagedResult;
 import java.util.UUID;
 
 @UseCase

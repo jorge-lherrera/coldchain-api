@@ -10,7 +10,7 @@ import com.coldchain.modules.identity.api.dto.RefreshAccessCommand;
 import com.coldchain.modules.identity.api.dto.RegisterOrganizationCommand;
 import com.coldchain.modules.identity.api.dto.RegisterOrganizationResult;
 import com.coldchain.modules.identity.api.dto.TokenResult;
-import com.coldchain.shared.error.DomainException;
+import com.coldchain.shared.exception.DomainException;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

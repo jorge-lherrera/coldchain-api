@@ -1,6 +1,6 @@
 package com.coldchain.delivery.web.catalog;
 
-import com.coldchain.shared.paging.SortField;
+import com.coldchain.shared.pagination.SortField;
 
 public enum SiteSortField implements SortField {
 

@@ -1,6 +1,6 @@
 package com.coldchain.modules.identity.internal.infrastructure.persistence.entity;
 
-import com.coldchain.shared.persistence.AuditableEntity;
+import com.coldchain.shared.domain.AuditableEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

@@ -71,12 +71,14 @@ else hidden. See [ADR-006](../docs/adr/ADR-006-modules-and-events.md).
 | R1.13 | **A query does not name tables outside its module.** Not native SQL, not JPQL, not `JdbcTemplate` | INT | `SchemaOwnershipArchTest.nativeSqlStaysInsideItsOwnModule` | yes | green |
 | R1.14 | **A module does not write to another module's tables** — not even when seeding, which is one of the reasons reference data ships in migrations ([ADR-008](../docs/adr/ADR-008-reference-data-in-flyway.md)) | INT | `SchemaOwnershipArchTest.nativeSqlStaysInsideItsOwnModule` | yes | green |
 
-### R1.c — The two packages that are not modules
+### R1.c — The packages that are not modules
 
 | Id | Rule | Sev | Enforcer | Machine | Status |
 |---|---|---|---|---|---|
 | R1.15 | **`shared/` holds no business logic.** Value types, domain-free utilities and cross-cutting contracts only | STYLE | `ModuleShapeArchTest.sharedHoldsNoBusiness` | yes | green |
 | R1.16 | **`delivery/` is an adapter, not part of the module.** `delivery.web.shipment` does not belong to module `shipment`, and R1.9 applies to it just the same | INT | `ModuleBoundariesArchTest.moduleInternalsAreOnlyAccessedWithinTheirModule` | yes | green |
+| R1.18 | **A module enters the application through the composition root and nowhere else.** The application scans `bootstrap/`, `shared/` and `delivery/`; `modules/` is not scanned. Each module carries its own `<Name>ModuleConfig` that scans itself, and `bootstrap/BootstrapConfiguration` imports them in dependency order. Without this, a module is in the application because a package happened to sit under the scanned root, and turning one off is a hunt through the classpath instead of a line deleted from one list | INT | `CompositionRootArchTest.theApplicationScansTheRootTheSharedKernelAndDeliveryAndNothingElse` · `CompositionRootArchTest.everyModuleEntersTheApplicationThroughTheCompositionRoot` | yes | green |
+| R1.19 | **The import list of the composition root is the list of modules**, complete and in dependency order. A module missing from it is not deployed; one in the wrong place hides which way the arrows go | INT | `CompositionRootArchTest.theCompositionRootImportsNothingItDoesNotDeclare` | yes | green |
 | R1.17 | A type moves up into `shared/` only when **more than one module** consumes it. **No machine:** "more than one module consumes it" is measurable, but "it should move up" is a judgement about the future | STYLE | — | none | — |
 
 ---
@@ -246,12 +248,9 @@ client function can read either.
 | R8.14 | **A validation error adds `errors[]`** with field and reason; a rate-limit error adds `retryAfter` | CON | `HttpContractArchTest.validationAndRateLimitCarryTheirOwnExtensions` | yes | green |
 | R8.15 | **Lists go through `responseFactory.paginated(...)`**, which fills `meta.pagination`. Every paginating endpoint has the same shape | CON | `HttpContractArchTest.paginationMetadataComesFromTheFactory` | yes | green |
 | R8.16 | **One request identifier** (`traceId`) at the root of both shapes, and the `message`/`detail` asymmetry is the only one permitted — that name is fixed by RFC 9457 | CON | `HttpContractArchTest.bothShapesCarryTheSameTraceId` · `HttpContractArchTest.thereIsNoSuccessFlagAndOnlyOneAsymmetry` | yes | green |
-
-### Proposals
-
-| Id | Rule | Sev | Why |
-|---|---|---|---|
-| R8.17 | **Message keys resolve in English and Spanish** | CON | The project ships English only on purpose: the key is the contract and the text is not, so adding a locale later is additive. Promoting this needs a decision that the audience is bilingual, not a technical one |
+| R8.17 | **Every message key resolves in every language the API declares** — English, Spanish and Portuguese — and the language comes from `Accept-Language`. Carrying a key with nothing behind it in two of the three is worse than carrying no key at all: the envelope promises a translation the client never gets | CON | `MessageCatalogueTest.everyKeyTheCodeCarriesIsWrittenInEveryLanguage` · `MessageLocaleIT.theAnswerComesBackInTheLanguageTheCallerAsksFor` | yes | green |
+| R8.18 | **The catalogue and the code say the same thing.** The English text next to a key in the code is the English text in the catalogue, and a key nothing uses any more is deleted. Two sources for one sentence means the answer depends on which one replied | CON | `MessageCatalogueTest.theEnglishCatalogueSaysWhatTheCodeSays` · `MessageCatalogueTest.theCatalogueCarriesNoKeyTheCodeNoLongerUses` | yes | green |
+| R8.19 | **A module's messages travel with the module**, in `resources/modules/<module>/i18n/`; only the errors the whole application shares live in `resources/i18n/` | CON | `MessageCatalogueTest.everyModuleKeepsItsOwnMessagesAndTheSharedOnesAreOnlyTheCoreOnes` | yes | green |
 
 ---
 
@@ -344,6 +343,8 @@ In force from day one. A log is replicated, exported and retained longer than th
 | R14.4 | **One module at a time.** A finding in another module is written down and not fixed on the way past. It is not a preference about method: fixing everything at once is the reason nothing finishes | STYLE | `ModuleClosureTest.atMostOneModuleIsInProgress` | yes | green |
 | R14.5 | **Every public endpoint is described in OpenAPI**, generated from the code and not written by hand | CON | `HttpContractArchTest.everyEndpointIsDocumentedInOpenApi` | yes | green |
 | R14.6 | **Every published endpoint answers at least once over real HTTP.** Being described is not being exercised: the tests enter through the module APIs, so a scope annotation, a path or a field name can change with nobody noticing until a client does. The journey test walks the routing table the application itself publishes, and fails naming whatever it never called | CON | `HttpContractIT.everyPublishedEndpointAnswersOverHttp` | yes | green |
+| R14.7 | **Every domain calculator is exercised without infrastructure.** A pure domain is paid for in three classes per concept — model, entity and mapper — and the only thing that money buys is being able to test the rule in milliseconds. If nothing exercises it that way, the architecture was imitated and not reasoned | INT | `DomainUnitTestArchTest.everyDomainServiceIsExercisedOnItsOwn` · `DomainUnitTestArchTest.theDomainSuiteNeedsNeitherSpringNorADatabase` | yes | green |
+| R14.8 | **What the README names, the suite carries.** The document says the state machine, the verdict arithmetic and the excursion detection are unit-tested; deleting any of those three test classes has to break the build rather than quietly turn the README into a claim | STYLE | `DomainUnitTestArchTest.theStateMachineAndTheVerdictAreCoveredByName` | yes | green |
 
 ---
 

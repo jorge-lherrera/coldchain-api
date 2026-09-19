@@ -5,8 +5,8 @@ import com.coldchain.modules.compliance.internal.application.mapper.ComplianceAp
 import com.coldchain.modules.compliance.internal.domain.repository.CertificateRepository;
 import com.coldchain.modules.compliance.internal.exception.ComplianceErrorCode;
 import com.coldchain.modules.shipment.api.ShipmentApi;
-import com.coldchain.shared.application.UseCase;
-import com.coldchain.shared.error.DomainException;
+import com.coldchain.shared.annotation.UseCase;
+import com.coldchain.shared.exception.DomainException;
 import java.util.UUID;
 
 @UseCase

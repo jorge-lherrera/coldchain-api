@@ -9,8 +9,8 @@ import com.coldchain.modules.identity.internal.domain.repository.ApiClientReposi
 import com.coldchain.modules.identity.internal.domain.service.AccessTokenIssuer;
 import com.coldchain.modules.identity.internal.domain.service.SecretHasher;
 import com.coldchain.modules.identity.internal.exception.IdentityErrorCode;
-import com.coldchain.shared.application.UseCase;
-import com.coldchain.shared.error.DomainException;
+import com.coldchain.shared.annotation.UseCase;
+import com.coldchain.shared.exception.DomainException;
 import java.time.Clock;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;

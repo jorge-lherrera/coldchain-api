@@ -3,9 +3,9 @@ package com.coldchain.modules.telemetry.internal.application.usecase.query;
 import com.coldchain.modules.telemetry.api.dto.DeviceResult;
 import com.coldchain.modules.telemetry.internal.application.mapper.TelemetryApiMapper;
 import com.coldchain.modules.telemetry.internal.domain.repository.DeviceRepository;
-import com.coldchain.shared.application.UseCase;
-import com.coldchain.shared.paging.PageCriteria;
-import com.coldchain.shared.paging.PagedResult;
+import com.coldchain.shared.annotation.UseCase;
+import com.coldchain.shared.pagination.PageCriteria;
+import com.coldchain.shared.pagination.PagedResult;
 import java.util.UUID;
 
 @UseCase

@@ -9,8 +9,8 @@ import com.coldchain.modules.shipment.internal.domain.repository.CustodyEventRep
 import com.coldchain.modules.shipment.internal.domain.repository.ShipmentRepository;
 import com.coldchain.modules.shipment.internal.domain.service.CustodyDigest;
 import com.coldchain.modules.shipment.internal.exception.ShipmentErrorCode;
-import com.coldchain.shared.application.UseCase;
-import com.coldchain.shared.error.DomainException;
+import com.coldchain.shared.annotation.UseCase;
+import com.coldchain.shared.exception.DomainException;
 import java.util.List;
 import java.util.UUID;
 

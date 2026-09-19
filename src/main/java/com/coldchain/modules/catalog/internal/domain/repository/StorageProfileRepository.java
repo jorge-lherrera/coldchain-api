@@ -1,8 +1,8 @@
 package com.coldchain.modules.catalog.internal.domain.repository;
 
 import com.coldchain.modules.catalog.internal.domain.model.StorageProfile;
-import com.coldchain.shared.paging.PageCriteria;
-import com.coldchain.shared.paging.PagedResult;
+import com.coldchain.shared.pagination.PageCriteria;
+import com.coldchain.shared.pagination.PagedResult;
 import java.util.Optional;
 import java.util.UUID;
 

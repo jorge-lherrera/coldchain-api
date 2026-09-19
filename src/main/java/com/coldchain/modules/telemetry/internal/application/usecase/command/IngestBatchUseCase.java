@@ -17,9 +17,9 @@ import com.coldchain.modules.telemetry.internal.domain.repository.ReadingBatchRe
 import com.coldchain.modules.telemetry.internal.domain.repository.TemperatureReadingRepository;
 import com.coldchain.modules.telemetry.internal.domain.service.AssignmentWindowResolver;
 import com.coldchain.modules.telemetry.internal.exception.TelemetryErrorCode;
-import com.coldchain.shared.application.UseCase;
-import com.coldchain.shared.error.DomainException;
-import com.coldchain.shared.identifier.UuidV7;
+import com.coldchain.shared.annotation.UseCase;
+import com.coldchain.shared.exception.DomainException;
+import com.coldchain.shared.util.UuidV7;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;

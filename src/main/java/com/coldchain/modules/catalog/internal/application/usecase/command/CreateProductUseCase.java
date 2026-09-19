@@ -8,8 +8,8 @@ import com.coldchain.modules.catalog.internal.domain.model.StorageProfile;
 import com.coldchain.modules.catalog.internal.domain.repository.ProductRepository;
 import com.coldchain.modules.catalog.internal.domain.repository.StorageProfileRepository;
 import com.coldchain.modules.catalog.internal.exception.CatalogErrorCode;
-import com.coldchain.shared.application.UseCase;
-import com.coldchain.shared.error.DomainException;
+import com.coldchain.shared.annotation.UseCase;
+import com.coldchain.shared.exception.DomainException;
 import org.springframework.transaction.annotation.Transactional;
 
 @UseCase

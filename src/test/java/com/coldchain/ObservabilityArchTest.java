@@ -13,10 +13,10 @@ class ObservabilityArchTest {
     private static final Path CONFIGURATION = Path.of("src", "main", "resources", "application.yml");
 
     private static final Path CATALOGUE = SourceTree.MAIN.resolve(
-            Path.of("com", "coldchain", "shared", "observability", "LogMessage.java"));
+            Path.of("com", "coldchain", "shared", "infrastructure", "log", "LogMessages.java"));
 
     private static final Path TRACE = SourceTree.MAIN.resolve(
-            Path.of("com", "coldchain", "shared", "trace", "RequestTrace.java"));
+            Path.of("com", "coldchain", "shared", "infrastructure", "RequestTrace.java"));
 
     private static final Path SECURITY = SourceTree.MAIN.resolve(
             Path.of("com", "coldchain", "shared", "security", "SecurityConfig.java"));
@@ -93,7 +93,7 @@ class ObservabilityArchTest {
         assertThat(calls).allSatisfy(call -> assertThat(call.trim())
                 .describedAs("a message written at the call site cannot be found, counted or "
                         + "changed anywhere else")
-                .startsWith("LogMessage."));
+                .startsWith("LogMessages."));
         assertThat(SourceTree.read(CATALOGUE))
                 .describedAs("the catalogue is where the messages live")
                 .contains("public static final String");

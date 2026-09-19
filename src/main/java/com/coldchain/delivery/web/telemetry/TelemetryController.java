@@ -8,9 +8,9 @@ import com.coldchain.delivery.web.telemetry.dto.IngestBatchResponse;
 import com.coldchain.delivery.web.telemetry.dto.RegisterDeviceRequest;
 import com.coldchain.modules.telemetry.api.TelemetryApi;
 import com.coldchain.modules.telemetry.api.dto.SeriesResult;
-import com.coldchain.shared.paging.SortCatalog;
+import com.coldchain.shared.pagination.SortCatalog;
 import com.coldchain.shared.response.ApiResponse;
-import com.coldchain.shared.response.ResponseFactory;
+import com.coldchain.shared.response.ApiResponseFactory;
 import com.coldchain.shared.security.CurrentActor;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -42,14 +42,14 @@ public class TelemetryController {
 
     private final TelemetryWebMapper mapper;
 
-    private final ResponseFactory responses;
+    private final ApiResponseFactory responses;
 
     private final CurrentActor currentActor;
 
     private final Clock clock;
 
     public TelemetryController(TelemetryApi telemetry, TelemetryWebMapper mapper,
-            ResponseFactory responses, CurrentActor currentActor, Clock clock) {
+            ApiResponseFactory responses, CurrentActor currentActor, Clock clock) {
         this.telemetry = telemetry;
         this.mapper = mapper;
         this.responses = responses;

@@ -1,7 +1,7 @@
 package com.coldchain.modules.identity.internal.exception;
 
-import com.coldchain.shared.error.ErrorCategory;
-import com.coldchain.shared.error.ErrorCode;
+import com.coldchain.shared.exception.ErrorCategory;
+import com.coldchain.shared.exception.ErrorCode;
 
 public enum IdentityErrorCode implements ErrorCode {
 

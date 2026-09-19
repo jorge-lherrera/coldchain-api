@@ -2,7 +2,7 @@ package com.coldchain.modules.compliance.internal.domain.model;
 
 import com.coldchain.modules.compliance.api.FindingCode;
 import com.coldchain.modules.compliance.api.Severity;
-import com.coldchain.shared.identifier.UuidV7;
+import com.coldchain.shared.util.UuidV7;
 import java.util.Objects;
 import java.util.UUID;
 

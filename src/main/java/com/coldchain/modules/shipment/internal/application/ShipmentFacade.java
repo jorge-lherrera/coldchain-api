@@ -23,8 +23,8 @@ import com.coldchain.modules.shipment.internal.application.usecase.command.Revok
 import com.coldchain.modules.shipment.internal.application.usecase.query.GetShipmentUseCase;
 import com.coldchain.modules.shipment.internal.application.usecase.query.ListShipmentsUseCase;
 import com.coldchain.modules.shipment.internal.application.usecase.query.ShipmentTimelineUseCase;
-import com.coldchain.shared.paging.PageCriteria;
-import com.coldchain.shared.paging.PagedResult;
+import com.coldchain.shared.pagination.PageCriteria;
+import com.coldchain.shared.pagination.PagedResult;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 

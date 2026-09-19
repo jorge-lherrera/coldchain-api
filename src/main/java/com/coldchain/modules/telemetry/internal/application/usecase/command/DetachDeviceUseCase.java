@@ -5,8 +5,8 @@ import com.coldchain.modules.telemetry.internal.application.mapper.TelemetryApiM
 import com.coldchain.modules.telemetry.internal.domain.model.DeviceAssignment;
 import com.coldchain.modules.telemetry.internal.domain.repository.DeviceAssignmentRepository;
 import com.coldchain.modules.telemetry.internal.exception.TelemetryErrorCode;
-import com.coldchain.shared.application.UseCase;
-import com.coldchain.shared.error.DomainException;
+import com.coldchain.shared.annotation.UseCase;
+import com.coldchain.shared.exception.DomainException;
 import java.time.Instant;
 import java.util.UUID;
 import org.springframework.transaction.annotation.Transactional;

@@ -9,8 +9,8 @@ import com.coldchain.modules.shipment.internal.domain.repository.ShipmentReposit
 import com.coldchain.modules.shipment.internal.domain.service.HandoffCodeFactory;
 import com.coldchain.modules.shipment.internal.domain.service.IssuedCode;
 import com.coldchain.modules.shipment.internal.exception.ShipmentErrorCode;
-import com.coldchain.shared.application.UseCase;
-import com.coldchain.shared.error.DomainException;
+import com.coldchain.shared.annotation.UseCase;
+import com.coldchain.shared.exception.DomainException;
 import com.coldchain.shared.security.CurrentActor;
 import java.time.Clock;
 import java.time.Instant;

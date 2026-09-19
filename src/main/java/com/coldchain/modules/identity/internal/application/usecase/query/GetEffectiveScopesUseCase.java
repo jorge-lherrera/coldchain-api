@@ -6,8 +6,8 @@ import com.coldchain.modules.identity.internal.domain.model.AppUser;
 import com.coldchain.modules.identity.internal.domain.repository.AppUserRepository;
 import com.coldchain.modules.identity.internal.domain.repository.RoleRepository;
 import com.coldchain.modules.identity.internal.exception.IdentityErrorCode;
-import com.coldchain.shared.application.UseCase;
-import com.coldchain.shared.error.DomainException;
+import com.coldchain.shared.annotation.UseCase;
+import com.coldchain.shared.exception.DomainException;
 import java.util.Set;
 import java.util.UUID;
 

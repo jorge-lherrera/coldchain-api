@@ -6,7 +6,7 @@ import com.coldchain.modules.identity.api.IdentityApi;
 import com.coldchain.modules.identity.api.OrganizationKind;
 import com.coldchain.modules.identity.api.dto.RegisterOrganizationCommand;
 import com.coldchain.modules.identity.api.dto.RegisterOrganizationResult;
-import com.coldchain.shared.identifier.RawUuid;
+import com.coldchain.shared.util.RawUuid;
 import java.util.HexFormat;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;

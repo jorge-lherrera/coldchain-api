@@ -4,8 +4,8 @@ import com.coldchain.modules.telemetry.api.dto.DeviceResult;
 import com.coldchain.modules.telemetry.internal.application.mapper.TelemetryApiMapper;
 import com.coldchain.modules.telemetry.internal.domain.repository.DeviceRepository;
 import com.coldchain.modules.telemetry.internal.exception.TelemetryErrorCode;
-import com.coldchain.shared.application.UseCase;
-import com.coldchain.shared.error.DomainException;
+import com.coldchain.shared.annotation.UseCase;
+import com.coldchain.shared.exception.DomainException;
 import java.util.UUID;
 
 @UseCase

@@ -1,7 +1,7 @@
 package com.coldchain.modules.compliance.internal.domain.model;
 
 import com.coldchain.modules.compliance.api.Verdict;
-import com.coldchain.shared.identifier.UuidV7;
+import com.coldchain.shared.util.UuidV7;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;

@@ -8,9 +8,9 @@ import com.coldchain.modules.shipment.internal.infrastructure.persistence.entity
 import com.coldchain.modules.shipment.internal.infrastructure.persistence.jpa.ShipmentJpaRepository;
 import com.coldchain.modules.shipment.internal.infrastructure.persistence.jpa.ShipmentLineJpaRepository;
 import com.coldchain.modules.shipment.internal.infrastructure.persistence.mapper.ShipmentPersistenceMapper;
-import com.coldchain.shared.paging.PageCriteria;
-import com.coldchain.shared.paging.PagedResult;
-import com.coldchain.shared.paging.SpringDataPaging;
+import com.coldchain.shared.pagination.PageCriteria;
+import com.coldchain.shared.pagination.PagedResult;
+import com.coldchain.shared.pagination.SpringDataPaging;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;

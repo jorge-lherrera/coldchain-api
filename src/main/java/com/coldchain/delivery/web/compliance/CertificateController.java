@@ -3,7 +3,7 @@ package com.coldchain.delivery.web.compliance;
 import com.coldchain.modules.compliance.api.ComplianceApi;
 import com.coldchain.modules.compliance.api.dto.CertificateResult;
 import com.coldchain.shared.response.ApiResponse;
-import com.coldchain.shared.response.ResponseFactory;
+import com.coldchain.shared.response.ApiResponseFactory;
 import com.coldchain.shared.security.CurrentActor;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,11 +23,11 @@ public class CertificateController {
 
     private final ComplianceApi compliance;
 
-    private final ResponseFactory responses;
+    private final ApiResponseFactory responses;
 
     private final CurrentActor currentActor;
 
-    public CertificateController(ComplianceApi compliance, ResponseFactory responses,
+    public CertificateController(ComplianceApi compliance, ApiResponseFactory responses,
             CurrentActor currentActor) {
         this.compliance = compliance;
         this.responses = responses;

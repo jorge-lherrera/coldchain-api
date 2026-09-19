@@ -7,8 +7,8 @@ import com.coldchain.modules.telemetry.api.dto.IngestBatchCommand;
 import com.coldchain.modules.telemetry.api.dto.IngestBatchResult;
 import com.coldchain.modules.telemetry.api.dto.RegisterDeviceCommand;
 import com.coldchain.modules.telemetry.api.dto.SeriesResult;
-import com.coldchain.shared.paging.PageCriteria;
-import com.coldchain.shared.paging.PagedResult;
+import com.coldchain.shared.pagination.PageCriteria;
+import com.coldchain.shared.pagination.PagedResult;
 import java.time.Instant;
 import java.util.UUID;
 

@@ -15,8 +15,8 @@ import com.coldchain.modules.telemetry.internal.application.usecase.command.Regi
 import com.coldchain.modules.telemetry.internal.application.usecase.query.GetDeviceUseCase;
 import com.coldchain.modules.telemetry.internal.application.usecase.query.ListDevicesUseCase;
 import com.coldchain.modules.telemetry.internal.application.usecase.query.QuerySeriesUseCase;
-import com.coldchain.shared.paging.PageCriteria;
-import com.coldchain.shared.paging.PagedResult;
+import com.coldchain.shared.pagination.PageCriteria;
+import com.coldchain.shared.pagination.PagedResult;
 import java.time.Instant;
 import java.util.UUID;
 import org.springframework.stereotype.Component;

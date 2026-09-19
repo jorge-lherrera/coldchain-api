@@ -8,9 +8,9 @@ import com.coldchain.modules.identity.internal.infrastructure.persistence.entity
 import com.coldchain.modules.identity.internal.infrastructure.persistence.jpa.ApiClientJpaRepository;
 import com.coldchain.modules.identity.internal.infrastructure.persistence.jpa.ApiClientScopeJpaRepository;
 import com.coldchain.modules.identity.internal.infrastructure.persistence.mapper.ApiClientPersistenceMapper;
-import com.coldchain.shared.paging.PageCriteria;
-import com.coldchain.shared.paging.PagedResult;
-import com.coldchain.shared.paging.SpringDataPaging;
+import com.coldchain.shared.pagination.PageCriteria;
+import com.coldchain.shared.pagination.PagedResult;
+import com.coldchain.shared.pagination.SpringDataPaging;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;

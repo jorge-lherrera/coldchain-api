@@ -1,6 +1,6 @@
 package com.coldchain.modules.shipment.internal.domain.model;
 
-import com.coldchain.shared.identifier.UuidV7;
+import com.coldchain.shared.util.UuidV7;
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.UUID;

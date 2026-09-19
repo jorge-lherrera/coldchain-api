@@ -9,8 +9,8 @@ import com.coldchain.modules.catalog.api.dto.StorageProfileResult;
 import com.coldchain.modules.catalog.api.dto.UpdateProductCommand;
 import com.coldchain.modules.catalog.api.dto.UpdateSiteCommand;
 import com.coldchain.modules.catalog.api.dto.UpdateStorageProfileCommand;
-import com.coldchain.shared.paging.PageCriteria;
-import com.coldchain.shared.paging.PagedResult;
+import com.coldchain.shared.pagination.PageCriteria;
+import com.coldchain.shared.pagination.PagedResult;
 import java.util.UUID;
 
 public interface CatalogApi {

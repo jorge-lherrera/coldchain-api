@@ -4,9 +4,9 @@ import com.coldchain.delivery.web.catalog.dto.CreateStorageProfileRequest;
 import com.coldchain.delivery.web.catalog.dto.StorageProfileResponse;
 import com.coldchain.delivery.web.catalog.dto.UpdateStorageProfileRequest;
 import com.coldchain.modules.catalog.api.CatalogApi;
-import com.coldchain.shared.paging.SortCatalog;
+import com.coldchain.shared.pagination.SortCatalog;
 import com.coldchain.shared.response.ApiResponse;
-import com.coldchain.shared.response.ResponseFactory;
+import com.coldchain.shared.response.ApiResponseFactory;
 import com.coldchain.shared.security.CurrentActor;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,12 +38,12 @@ public class StorageProfileController {
 
     private final CatalogWebMapper mapper;
 
-    private final ResponseFactory responses;
+    private final ApiResponseFactory responses;
 
     private final CurrentActor currentActor;
 
     public StorageProfileController(CatalogApi catalog, CatalogWebMapper mapper,
-            ResponseFactory responses, CurrentActor currentActor) {
+            ApiResponseFactory responses, CurrentActor currentActor) {
         this.catalog = catalog;
         this.mapper = mapper;
         this.responses = responses;

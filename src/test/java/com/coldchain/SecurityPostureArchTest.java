@@ -356,8 +356,8 @@ class SecurityPostureArchTest {
         assertThat(responder)
                 .describedAs("a call with no credentials and a call with the wrong scope are two "
                         + "different facts, and the log has to tell them apart")
-                .contains("LogMessage.DENIED_UNAUTHENTICATED")
-                .contains("LogMessage.DENIED_SCOPE");
+                .contains("LogMessages.DENIED_UNAUTHENTICATED")
+                .contains("LogMessages.DENIED_SCOPE");
         assertThat(responder)
                 .describedAs("a denial leaves as a translated problem document, not as an empty body")
                 .contains("problemDetails.describe")

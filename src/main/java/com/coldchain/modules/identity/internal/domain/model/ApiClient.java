@@ -2,7 +2,7 @@ package com.coldchain.modules.identity.internal.domain.model;
 
 import com.coldchain.modules.identity.api.ApiClientStatus;
 import com.coldchain.modules.identity.api.Scope;
-import com.coldchain.shared.identifier.UuidV7;
+import com.coldchain.shared.util.UuidV7;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.Set;

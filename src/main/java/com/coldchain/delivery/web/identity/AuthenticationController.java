@@ -9,7 +9,7 @@ import com.coldchain.delivery.web.identity.dto.RefreshRequest;
 import com.coldchain.delivery.web.identity.dto.TokenResponse;
 import com.coldchain.modules.identity.api.IdentityApi;
 import com.coldchain.shared.response.ApiResponse;
-import com.coldchain.shared.response.ResponseFactory;
+import com.coldchain.shared.response.ApiResponseFactory;
 import com.coldchain.shared.security.CurrentActor;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,12 +31,12 @@ public class AuthenticationController {
 
     private final IdentityWebMapper mapper;
 
-    private final ResponseFactory responses;
+    private final ApiResponseFactory responses;
 
     private final CurrentActor currentActor;
 
     public AuthenticationController(IdentityApi identity, IdentityWebMapper mapper,
-            ResponseFactory responses, CurrentActor currentActor) {
+            ApiResponseFactory responses, CurrentActor currentActor) {
         this.identity = identity;
         this.mapper = mapper;
         this.responses = responses;

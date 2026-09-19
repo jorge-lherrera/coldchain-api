@@ -8,8 +8,8 @@ import com.coldchain.modules.shipment.api.dto.OpenHandoffCommand;
 import com.coldchain.modules.shipment.api.dto.OpenHandoffResult;
 import com.coldchain.modules.shipment.api.dto.ShipmentResult;
 import com.coldchain.modules.shipment.api.dto.ShipmentTimelineResult;
-import com.coldchain.shared.paging.PageCriteria;
-import com.coldchain.shared.paging.PagedResult;
+import com.coldchain.shared.pagination.PageCriteria;
+import com.coldchain.shared.pagination.PagedResult;
 import java.util.UUID;
 
 public interface ShipmentApi {

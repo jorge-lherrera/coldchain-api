@@ -2,7 +2,7 @@ package com.coldchain.modules.telemetry.internal.infrastructure.persistence.adap
 
 import com.coldchain.modules.telemetry.internal.domain.model.TemperatureReading;
 import com.coldchain.modules.telemetry.internal.domain.repository.TemperatureReadingRepository;
-import com.coldchain.shared.identifier.RawUuid;
+import com.coldchain.shared.util.RawUuid;
 import java.sql.Types;
 import java.time.Instant;
 import java.time.OffsetDateTime;

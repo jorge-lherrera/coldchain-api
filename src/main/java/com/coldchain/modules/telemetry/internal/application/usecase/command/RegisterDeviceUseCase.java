@@ -5,7 +5,7 @@ import com.coldchain.modules.telemetry.api.dto.RegisterDeviceCommand;
 import com.coldchain.modules.telemetry.internal.application.mapper.TelemetryApiMapper;
 import com.coldchain.modules.telemetry.internal.domain.model.Device;
 import com.coldchain.modules.telemetry.internal.domain.repository.DeviceRepository;
-import com.coldchain.shared.application.UseCase;
+import com.coldchain.shared.annotation.UseCase;
 import org.springframework.transaction.annotation.Transactional;
 
 @UseCase

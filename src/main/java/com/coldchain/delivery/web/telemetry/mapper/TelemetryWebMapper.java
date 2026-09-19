@@ -1,4 +1,4 @@
-package com.coldchain.delivery.web.telemetry;
+package com.coldchain.delivery.web.telemetry.mapper;
 
 import com.coldchain.delivery.web.telemetry.dto.AssignDeviceRequest;
 import com.coldchain.delivery.web.telemetry.dto.AssignmentResponse;

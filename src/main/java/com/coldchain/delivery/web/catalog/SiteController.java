@@ -3,6 +3,7 @@ package com.coldchain.delivery.web.catalog;
 import com.coldchain.delivery.web.catalog.dto.CreateSiteRequest;
 import com.coldchain.delivery.web.catalog.dto.SiteResponse;
 import com.coldchain.delivery.web.catalog.dto.UpdateSiteRequest;
+import com.coldchain.delivery.web.catalog.mapper.CatalogWebMapper;
 import com.coldchain.modules.catalog.api.CatalogApi;
 import com.coldchain.shared.pagination.SortCatalog;
 import com.coldchain.shared.response.ApiResponse;

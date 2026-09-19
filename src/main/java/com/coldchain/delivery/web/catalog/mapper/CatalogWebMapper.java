@@ -1,4 +1,4 @@
-package com.coldchain.delivery.web.catalog;
+package com.coldchain.delivery.web.catalog.mapper;
 
 import com.coldchain.delivery.web.catalog.dto.CreateProductRequest;
 import com.coldchain.delivery.web.catalog.dto.CreateSiteRequest;

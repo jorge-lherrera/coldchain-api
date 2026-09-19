@@ -1,4 +1,4 @@
-package com.coldchain.delivery.web.identity;
+package com.coldchain.delivery.web.identity.mapper;
 
 import com.coldchain.delivery.web.identity.dto.ActivateUserRequest;
 import com.coldchain.delivery.web.identity.dto.ActivateUserResponse;

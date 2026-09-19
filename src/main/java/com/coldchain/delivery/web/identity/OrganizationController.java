@@ -4,6 +4,7 @@ import com.coldchain.delivery.web.identity.dto.ApiClientResponse;
 import com.coldchain.delivery.web.identity.dto.CreateApiClientRequest;
 import com.coldchain.delivery.web.identity.dto.RegisterOrganizationRequest;
 import com.coldchain.delivery.web.identity.dto.RegisterOrganizationResponse;
+import com.coldchain.delivery.web.identity.mapper.IdentityWebMapper;
 import com.coldchain.modules.identity.api.IdentityApi;
 import com.coldchain.shared.response.ApiResponse;
 import com.coldchain.shared.response.ApiResponseFactory;

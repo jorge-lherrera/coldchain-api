@@ -5,6 +5,7 @@ import com.coldchain.delivery.web.identity.dto.InviteUserRequest;
 import com.coldchain.delivery.web.identity.dto.InviteUserResponse;
 import com.coldchain.delivery.web.identity.dto.RoleGrantResponse;
 import com.coldchain.delivery.web.identity.dto.UserResponse;
+import com.coldchain.delivery.web.identity.mapper.IdentityWebMapper;
 import com.coldchain.modules.identity.api.IdentityApi;
 import com.coldchain.modules.identity.api.RoleCode;
 import com.coldchain.modules.identity.api.dto.AssignRoleCommand;

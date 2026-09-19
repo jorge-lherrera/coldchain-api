@@ -117,9 +117,9 @@ class ModuleFileLayoutArchTest {
         assertThat(channelsWithBodies).isNotEmpty();
         assertThat(mappers).allSatisfy(mapper -> assertThat(mapper.getPackageName())
                 .describedAs("%s translates for a channel it does not live in", mapper.getFullName())
-                .isEqualTo(DELIVERY + channelOf(mapper.getPackageName())));
+                .isEqualTo(DELIVERY + channelOf(mapper.getPackageName()) + ".mapper"));
         assertThat(channelsWithBodies).allSatisfy(channel -> assertThat(mappers.stream()
-                .filter(mapper -> mapper.getPackageName().equals(DELIVERY + channel))
+                .filter(mapper -> mapper.getPackageName().equals(DELIVERY + channel + ".mapper"))
                 .count())
                 .describedAs("channel %s translates its bodies somewhere other than its one mapper",
                         channel)

@@ -7,6 +7,7 @@ import com.coldchain.delivery.web.identity.dto.EffectiveScopesResponse;
 import com.coldchain.delivery.web.identity.dto.LoginRequest;
 import com.coldchain.delivery.web.identity.dto.RefreshRequest;
 import com.coldchain.delivery.web.identity.dto.TokenResponse;
+import com.coldchain.delivery.web.identity.mapper.IdentityWebMapper;
 import com.coldchain.modules.identity.api.IdentityApi;
 import com.coldchain.shared.response.ApiResponse;
 import com.coldchain.shared.response.ApiResponseFactory;

@@ -1,4 +1,4 @@
-package com.coldchain.delivery.web.shipment;
+package com.coldchain.delivery.web.shipment.mapper;
 
 import com.coldchain.delivery.web.shipment.dto.AcceptHandoffRequest;
 import com.coldchain.delivery.web.shipment.dto.AddParticipantRequest;

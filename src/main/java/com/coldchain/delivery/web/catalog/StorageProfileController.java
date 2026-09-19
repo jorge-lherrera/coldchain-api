@@ -3,6 +3,7 @@ package com.coldchain.delivery.web.catalog;
 import com.coldchain.delivery.web.catalog.dto.CreateStorageProfileRequest;
 import com.coldchain.delivery.web.catalog.dto.StorageProfileResponse;
 import com.coldchain.delivery.web.catalog.dto.UpdateStorageProfileRequest;
+import com.coldchain.delivery.web.catalog.mapper.CatalogWebMapper;
 import com.coldchain.modules.catalog.api.CatalogApi;
 import com.coldchain.shared.pagination.SortCatalog;
 import com.coldchain.shared.response.ApiResponse;

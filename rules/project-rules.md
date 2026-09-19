@@ -71,12 +71,14 @@ else hidden. See [ADR-006](../docs/adr/ADR-006-modules-and-events.md).
 | R1.13 | **A query does not name tables outside its module.** Not native SQL, not JPQL, not `JdbcTemplate` | INT | `SchemaOwnershipArchTest.nativeSqlStaysInsideItsOwnModule` | yes | green |
 | R1.14 | **A module does not write to another module's tables** — not even when seeding, which is one of the reasons reference data ships in migrations ([ADR-008](../docs/adr/ADR-008-reference-data-in-flyway.md)) | INT | `SchemaOwnershipArchTest.nativeSqlStaysInsideItsOwnModule` | yes | green |
 
-### R1.c — The two packages that are not modules
+### R1.c — The packages that are not modules
 
 | Id | Rule | Sev | Enforcer | Machine | Status |
 |---|---|---|---|---|---|
 | R1.15 | **`shared/` holds no business logic.** Value types, domain-free utilities and cross-cutting contracts only | STYLE | `ModuleShapeArchTest.sharedHoldsNoBusiness` | yes | green |
 | R1.16 | **`delivery/` is an adapter, not part of the module.** `delivery.web.shipment` does not belong to module `shipment`, and R1.9 applies to it just the same | INT | `ModuleBoundariesArchTest.moduleInternalsAreOnlyAccessedWithinTheirModule` | yes | green |
+| R1.18 | **A module enters the application through the composition root and nowhere else.** The application scans `bootstrap/`, `shared/` and `delivery/`; `modules/` is not scanned. Each module carries its own `<Name>ModuleConfig` that scans itself, and `bootstrap/BootstrapConfiguration` imports them in dependency order. Without this, a module is in the application because a package happened to sit under the scanned root, and turning one off is a hunt through the classpath instead of a line deleted from one list | INT | `CompositionRootArchTest.theApplicationScansTheRootTheSharedKernelAndDeliveryAndNothingElse` · `CompositionRootArchTest.everyModuleEntersTheApplicationThroughTheCompositionRoot` | yes | green |
+| R1.19 | **The import list of the composition root is the list of modules**, complete and in dependency order. A module missing from it is not deployed; one in the wrong place hides which way the arrows go | INT | `CompositionRootArchTest.theCompositionRootImportsNothingItDoesNotDeclare` | yes | green |
 | R1.17 | A type moves up into `shared/` only when **more than one module** consumes it. **No machine:** "more than one module consumes it" is measurable, but "it should move up" is a judgement about the future | STYLE | — | none | — |
 
 ---

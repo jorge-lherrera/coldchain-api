@@ -6,6 +6,7 @@ import com.coldchain.delivery.web.telemetry.dto.DeviceResponse;
 import com.coldchain.delivery.web.telemetry.dto.IngestBatchRequest;
 import com.coldchain.delivery.web.telemetry.dto.IngestBatchResponse;
 import com.coldchain.delivery.web.telemetry.dto.RegisterDeviceRequest;
+import com.coldchain.delivery.web.telemetry.mapper.TelemetryWebMapper;
 import com.coldchain.modules.telemetry.api.TelemetryApi;
 import com.coldchain.modules.telemetry.api.dto.SeriesResult;
 import com.coldchain.shared.pagination.SortCatalog;

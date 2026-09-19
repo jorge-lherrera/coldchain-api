@@ -8,6 +8,7 @@ import com.coldchain.delivery.web.shipment.dto.OpenHandoffRequest;
 import com.coldchain.delivery.web.shipment.dto.OpenHandoffResponse;
 import com.coldchain.delivery.web.shipment.dto.ShipmentResponse;
 import com.coldchain.delivery.web.shipment.dto.ShipmentTimelineResponse;
+import com.coldchain.delivery.web.shipment.mapper.ShipmentWebMapper;
 import com.coldchain.modules.shipment.api.ShipmentApi;
 import com.coldchain.shared.pagination.SortCatalog;
 import com.coldchain.shared.response.ApiResponse;

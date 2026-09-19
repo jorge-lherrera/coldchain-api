@@ -78,6 +78,8 @@ anywhere near them. That is the point of it, and the reasoning is in
 - **Testcontainers** with `gvenzl/oracle-free` — a real Oracle in the integration tests, not H2
   pretending to be Oracle
 - Spring Security with our own JWT, OpenAPI, Docker Compose
+- Every message the API answers with travels as a key and resolves in **English, Spanish and
+  Portuguese**, chosen by `Accept-Language`
 
 The reasoning is in [ADR-001](docs/adr/ADR-001-oracle-23ai.md) and
 [ADR-006](docs/adr/ADR-006-modules-and-events.md).
@@ -123,10 +125,15 @@ docker compose up -d oracle      # only the database
 ```
 
 ```bash
-./gradlew test                   # unit tests
+./gradlew test                   # the domain in milliseconds, plus the rule gate
 ./gradlew integrationTest        # with Testcontainers, requires Docker
 ./gradlew rebuild                # a database from nothing: migrate, start, run everything
 ```
+
+The domain suite is the one that proves the shape is worth its price: **41 tests in 52 milliseconds**,
+with no Spring context and no database anywhere near them — the state machine, the verdict
+arithmetic, the excursion detection, the temperature band and the custody hash chain. A rule in the
+catalogue fails the build if a calculator loses its test, or if a domain test reaches for a framework.
 
 ## The demo
 

@@ -51,6 +51,10 @@ public class MessageConfig {
     MessageSource messageSource() {
         ResourceBundleMessageSource messages = new ResourceBundleMessageSource();
         String[] basenames = discoverBasenames();
+        if (basenames.length == 0) {
+            throw new IllegalStateException("No message bundle was found: every answer would come "
+                    + "back in English while the envelope claims a key that resolves");
+        }
         messages.setBasenames(basenames);
         messages.setDefaultEncoding("UTF-8");
         messages.setFallbackToSystemLocale(false);
@@ -96,14 +100,13 @@ public class MessageConfig {
     private Optional<String> basenameOf(Resource bundle) {
         try {
             String uri = bundle.getURI().toString();
-            int start = uri.lastIndexOf("/i18n/");
-            if (start < 0 || !uri.endsWith(PROPERTIES)) {
+            if (!uri.endsWith(PROPERTIES) || !uri.contains("/i18n/")) {
                 return Optional.empty();
             }
             String path = uri.substring(0, uri.length() - PROPERTIES.length());
-            int folder = uri.lastIndexOf('/', start - 1);
-            String relative = path.substring(folder + 1);
-            return Optional.of(withoutLanguage(relative));
+            int modules = path.lastIndexOf("/modules/");
+            int start = modules >= 0 ? modules : path.lastIndexOf("/i18n/");
+            return Optional.of(withoutLanguage(path.substring(start + 1)));
         } catch (IOException unreadable) {
             LOG.warn(LogMessages.I18N_SCAN_FAILED, bundle.getDescription(), unreadable);
             return Optional.empty();

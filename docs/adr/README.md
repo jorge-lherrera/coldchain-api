@@ -15,6 +15,7 @@ snapshot.
 | [006](ADR-006-modules-and-events.md) | Modular monolith of five modules with synchronous events | Accepted |
 | [007](ADR-007-hexagonal-module-internals.md) | Hexagonal internals: pure domain, ports and adapters | Accepted |
 | [008](ADR-008-reference-data-in-flyway.md) | Reference data ships in Flyway, never in an application seeder | Accepted |
+| [009](ADR-009-kafka-for-integration-events.md) | Excursions leave the monolith through Kafka, as integration events | Proposed |
 
 An ADR explains *why*. What the project **enforces** is declared in
 [`rules/project-rules.md`](../../rules/project-rules.md), and a rule there cites the ADR rather than

@@ -1,7 +1,8 @@
 # ColdChain Specification
 
-Tables, features and rules for the five modules. This is the contract: if the code and this document
-contradict each other, one of the two is wrong and it gets fixed in the same change.
+Tables, features and rules for the five modules, and for what phase two adds: a sixth module and a
+second service, marked *planned* until they are built. This is the contract: if the code and this
+document contradict each other, one of the two is wrong and it gets fixed in the same change.
 
 In the diagrams, `RAW(16)` is the UUID v7 in binary, `TIMESTAMP_TZ` is `TIMESTAMP WITH TIME ZONE` and
 `NUMBER "0/1"` is a boolean with a `CHECK`. Every table carries `created_at` and `updated_at`;
@@ -14,6 +15,8 @@ change state, where two writers would otherwise overwrite each other in silence.
 - [03 · shipment](#03--shipment)
 - [04 · telemetry](#04--telemetry)
 - [05 · compliance](#05--compliance)
+- [06 · advisory](#06--advisory) — *planned*
+- [Beyond the monolith: the triage service](#beyond-the-monolith-the-triage-service) — *planned*
 - [Oracle traps the design already respects](#oracle-traps-the-design-already-respects)
 
 ---
@@ -564,6 +567,115 @@ that is exactly why the coverage rule is needed.
   ones out, and the pair `shipment_id + version` unique as well.
 
 **Out of scope:** PKI signing, per-customer certificate templates, legal archiving.
+
+---
+
+## 06 · advisory
+
+> *Planned* — [plan 06](plan-06-advisory.md), [ADR-012](adr/ADR-012-triage-is-advice-not-evidence.md).
+
+**Advice about an excursion, kept where the verdict cannot reach it.**
+
+```mermaid
+erDiagram
+  excursion {
+    RAW(16) id PK
+  }
+  shipment {
+    RAW(16) id PK
+  }
+  excursion_alert {
+    RAW(16) id PK
+    RAW(16) excursion_id UK
+    RAW(16) shipment_id
+    VARCHAR2 probable_cause "HANDLING_DURING_HANDOFF / REFRIGERATION_FAILURE / DOOR_OPENING / SENSOR_FAULT / UNKNOWN"
+    VARCHAR2 severity "LOW / MEDIUM / HIGH"
+    NUMBER confidence "3,2 — between 0 and 1"
+    VARCHAR2 summary_en
+    VARCHAR2 summary_es
+    VARCHAR2 summary_pt
+    VARCHAR2 recommended_action
+    VARCHAR2 source "LLM / RULES"
+    VARCHAR2 model "null when source = RULES"
+    NUMBER context_available "0/1"
+    TIMESTAMP_TZ triaged_at
+    NUMBER lock_version
+  }
+  excursion ||..o| excursion_alert : "ref by uuid"
+  shipment ||..o{ excursion_alert : "ref by uuid"
+```
+
+The rows are not written by any request. They arrive from `coldchain-triage` on the Kafka topic
+`coldchain.triage.alert.v1`, and the module only stores and serves them.
+
+### Features
+
+- Consuming the triage of every excursion, with the newest triage replacing an older one.
+- `GET /v1/shipments/{shipmentId}/alerts` for the participants of the shipment, with the summary in the
+  caller's language.
+
+### Rules
+
+- **The verdict never reads advice.** `compliance` does not list `advisory` among its allowed
+  dependencies, and the build fails if it ever imports it
+  ([ADR-012](adr/ADR-012-triage-is-advice-not-evidence.md)).
+- Visibility is participation, decided by `shipment`: an outsider asking for the alerts of a shipment
+  gets `404` ([ADR-003](adr/ADR-003-visibility-by-participation.md)).
+- One alert per excursion. A triage only replaces the stored one when its `triaged_at` is later, so a
+  redelivered older message changes nothing.
+- A cause is never served without its `confidence` and its `source`.
+- The three summaries are stored; the response carries the one that matches `Accept-Language`, with
+  English as the fallback.
+
+**Out of scope:** notifying participants by email or webhook, acknowledging or dismissing an alert,
+confirming the real cause after the fact.
+
+---
+
+## Beyond the monolith: the triage service
+
+> *Planned* — [plan 07](plan-07-triage-service.md), [ADR-010](adr/ADR-010-second-service-for-excursion-triage.md),
+> [ADR-011](adr/ADR-011-platform-credential-for-service-calls.md).
+
+`coldchain-triage` is a separate service with its own PostgreSQL. It is not a module: nothing in the
+monolith imports it, and it imports nothing from the monolith. What the two share is the topics below
+and one internal endpoint.
+
+| Topic | Producer → consumer | Key | What travels |
+|---|---|---|---|
+| `coldchain.telemetry.excursion.v1` | API (`telemetry`) → triage | `shipmentId` | `ExcursionOpened`, `ExcursionClosed` ([ADR-009](adr/ADR-009-kafka-for-integration-events.md)) |
+| `coldchain.triage.alert.v1` | triage → API (`advisory`) | `shipmentId` | `AlertTriaged`: cause, severity, confidence, the three summaries, source, model |
+| `coldchain.triage.excursion-dlt.v1` | triage → nobody | `shipmentId` | Feed messages triage can never process |
+| `coldchain.advisory.alert-dlt.v1` | API → nobody | `shipmentId` | Alert messages the API can never process |
+
+The internal endpoint is
+`GET /api/internal/v1/shipments/{shipmentId}/excursions/{excursionId}/context`, served by `shipment`.
+
+- It returns the excursion, the readings from thirty minutes before it opened to thirty minutes after
+  it closed, the frozen thresholds, the participation of the custody holder when it opened, the
+  minutes since the last accepted handoff, and the handoffs inside that window.
+- It accepts only the platform token, and the platform token is accepted nowhere else
+  ([ADR-011](adr/ADR-011-platform-credential-for-service-calls.md)).
+- It is left out of the published OpenAPI document and out of the Ingress.
+
+Triage owns three tables in its own database:
+
+- `inbox_event` — every feed event received, keyed by `eventId`;
+- `excursion_alert` — its working copy of each alert, with the provenance of the triage;
+- `event_publication` — its outbox.
+
+The API never reads them.
+
+### Rules
+
+- Delivery is at-least-once in both directions. Triage deduplicates by `eventId`; `advisory` keeps the
+  newest triage per excursion.
+- An alert always goes out. Without the API, triage classifies without context; without the model, it
+  falls back to rules. `source` and `context_available` say which.
+- The model receives measurements, the frozen thresholds and the participation of the custody holder,
+  never a name, an email or an identifier.
+- Nothing is written to Kafka inside a database transaction, on either side: both services publish
+  through an outbox.
 
 ---
 

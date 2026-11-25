@@ -102,10 +102,13 @@ What [ADR-011](adr/ADR-011-platform-credential-for-service-calls.md) decides, in
 - the token from `POST /v1/auth/client-token` with no organization and the single scope
   `PLATFORM_EXCURSION_READ`, which no role or `api_client` can be granted;
 - a security filter chain for `/internal/**`, ordered before the public one;
-- `/internal/**` left out of the published OpenAPI document.
+- `/internal/**` left out of the published OpenAPI document;
+- issuing the platform token logged, not audited: `AUDIT_ENTRY` belongs to an organization, and the
+  platform belongs to none.
 
-**Check:** an organization's token on `/internal/**` gets `403`; the platform token on any public
-route gets `403`. Both are integration tests.
+**Check:** an organization's token on `/internal/**` gets `403`; the platform token gets `403` on
+every published route, walked one by one from the handler mappings. Both are integration tests, and
+rule R9.19 cites them.
 
 ## Step 4 · The excursion context — in the API
 

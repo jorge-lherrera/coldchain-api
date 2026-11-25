@@ -60,6 +60,9 @@ accepts nothing else.**
   until there is a reason.
 - **Triage holds a credential that reads every excursion's context.** That is exactly why the scope
   is a single read and why nothing grants it by mistake.
+- **Issuing the platform token is logged, not audited.** `AUDIT_ENTRY` is each organization's record
+  of what happened inside it, with a foreign key to the organization, and the platform belongs to
+  none. The issuance goes to the structured log with the client's identifier, never its secret.
 
 ## Alternatives considered and rejected
 

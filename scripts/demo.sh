@@ -6,8 +6,9 @@
 #   scripts/demo.sh
 #
 # Three organizations, one shipment, a temperature series with an excursion and a
-# blackout, and the certificate the system issues on its own when the shipment closes.
-# The script fails if the verdict is not the one the README claims.
+# blackout, the certificate the system issues on its own when the shipment closes, and
+# the advice the triage service sends about the excursion. The script fails if the
+# verdict is not the one the README claims, or if the advice never arrives.
 
 set -euo pipefail
 
@@ -59,6 +60,30 @@ request() {
 
 data() {
     request "$@" | jq -c '.data'
+}
+
+status_of() {
+    local method="$1" path="$2" token="$3"
+    curl --silent --output /dev/null --write-out '%{http_code}' --request "$method" "$BASE_URL$path" \
+        --header "Authorization: Bearer $token"
+}
+
+await_advice() {
+    local token="$1" waited=0 alerts
+    while true; do
+        alerts="$(data GET "/v1/shipments/$shipment_id/alerts" "$token")"
+        if [ "$(jq '[.[] | select(.contextAvailable)] | length' <<< "$alerts")" -gt 0 ] \
+            || { [ "$waited" -ge 30 ] && [ "$(jq 'length' <<< "$alerts")" -gt 0 ]; }; then
+            printf '%s' "$alerts"
+            return
+        fi
+        if [ "$waited" -ge 90 ]; then
+            printf '\nNo advice arrived for the shipment. Is the triage service running?\n' >&2
+            exit 1
+        fi
+        sleep 2
+        waited=$((waited + 2))
+    done
 }
 
 await_api() {
@@ -217,7 +242,27 @@ if [ "$verdict" != "FAIL" ] || [ "$actual_findings" != "$expected_findings" ]; t
     exit 1
 fi
 
+step '8 · Apart from the verdict, advice about the excursion'
+advice="$(await_advice "$carrier_token" | jq -c 'sort_by(.triagedAt) | last')"
+told "source             $(jq -r '.source + (if .model then " · \(.model)" else "" end)' <<< "$advice")"
+told "probable cause     $(jq -r \
+    '.probableCause + (if .confidence then " · confidence \(.confidence)" else "" end)' <<< "$advice")"
+told "severity           $(jq -r '.severity' <<< "$advice")"
+told "summary            $(jq -r '.summary' <<< "$advice")"
+told "what to do         $(jq -r '.recommendedAction' <<< "$advice")"
+stranger="$(register stranger 'Unrelated Pharma' SHIPPER)"
+stranger_token="$(token_of "$(jq -r '.email' <<< "$stranger")")"
+stranger_status="$(status_of GET "/v1/shipments/$shipment_id/alerts" "$stranger_token")"
+told "an organization that takes no part asks for it: $stranger_status"
+
+if ! jq -e '(.source == "LLM" or .source == "RULES") and .probableCause and .severity' \
+    <<< "$advice" > /dev/null || [ "$stranger_status" != "404" ]; then
+    printf '\nThe advice is not what the README says it is.\n' >&2
+    exit 1
+fi
+
 step 'The journey is on the record'
 told "GET $BASE_URL/v1/shipments/$shipment_id/timeline"
 told "GET $BASE_URL/v1/shipments/$shipment_id/series"
+told "GET $BASE_URL/v1/shipments/$shipment_id/alerts"
 told "the whole contract at $BASE_URL/swagger-ui.html"

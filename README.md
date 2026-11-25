@@ -6,8 +6,9 @@ Cold chain custody and compliance API. A pharmaceutical shipment passes from han
 organizations, its temperature is measured for the entire journey, and when it closes it **either has
 a certificate or it doesn't**.
 
-> **Status:** the five modules are built and closed. Every rule in the catalogue has a machine that
-> checks it, and the integration suite runs against a real Oracle raised from nothing on every push.
+> **Status:** the six modules are built and closed, and a second service triages every excursion and
+> sends its advice back. Every rule in the catalogue has a machine that checks it, and the integration
+> suite runs against a real Oracle raised from nothing on every push.
 > The specification lives in [`docs/specification.md`](docs/specification.md), the decisions in
 > [`docs/adr/`](docs/adr/), and the order the work was done in
 > [`docs/branching-plan.md`](docs/branching-plan.md).
@@ -36,7 +37,7 @@ The domain was chosen because it forces three problems a CRUD app never has to f
 - **Readings arrive in volume, out of order and repeated.** Idempotent ingestion, indexes and
   partitioning stop being decoration.
 
-## The five modules
+## The six modules
 
 They are numbered by dependency: that is also the build order.
 
@@ -47,6 +48,7 @@ They are numbered by dependency: that is also the build order.
 | 03 | `shipment` | The shipment, its chain of custody and who can see it. |
 | 04 | `telemetry` | Devices, temperature readings and excursion detection. |
 | 05 | `compliance` | The certificate, its verdict and the findings that back it. |
+| 06 | `advisory` | The advice the triage service sends about each excursion, apart from the verdict. |
 
 ```mermaid
 flowchart LR
@@ -56,6 +58,7 @@ flowchart LR
   shipment -- "ShipmentClosed" --> compliance
   telemetry -- "series and excursions" --> compliance
   identity -. "org and scopes on every request" .-> shipment
+  shipment -- "who may see it" --> advisory
 ```
 
 Modules talk to each other through domain events, synchronous and in-process. **No `join` crosses a
@@ -83,6 +86,22 @@ stable `eventId` so a consumer can drop the copies, and the close of an excursio
 `excursionId` as its open. The reasoning, and what was ruled out, is in
 [ADR-009](docs/adr/ADR-009-kafka-for-integration-events.md).
 
+## Advice comes back, and never reaches the verdict
+
+`coldchain-triage`, a second service with its own PostgreSQL, reads that feed. When an excursion
+closes it asks the API what was happening around it — the readings, the frozen thresholds, who held
+custody — and asks a language model for a probable cause, how serious it looks and what to do next, in
+English, Spanish and Portuguese. When the model is not configured, does not answer, refuses or answers
+outside the schema, the rules answer instead, and the alert says which one did. The alert goes back to
+the API on `coldchain.triage.alert.v1`, through an outbox again, and the sixth module, `advisory`,
+shows it to whoever takes part in the shipment.
+
+The model's answer is advice, not evidence: it can be wrong and it changes with the model. So
+`compliance` cannot read `advisory`, and the build fails if it ever tries — Spring Modulith refuses the
+edge and a rule in the catalogue names the two packages. Why the line is drawn there is in
+[ADR-012](docs/adr/ADR-012-triage-is-advice-not-evidence.md); why it is a second service and not a
+module is in [ADR-010](docs/adr/ADR-010-second-service-for-excursion-triage.md).
+
 ## Stack
 
 - **Java 25** (LTS) and **Spring Boot 4**
@@ -91,8 +110,10 @@ stable `eventId` so a consumer can drop the copies, and the close of an excursio
   gate — see [`rules/`](rules/)
 - **Testcontainers** with `gvenzl/oracle-free` — a real Oracle in the integration tests, not H2
   pretending to be Oracle
-- **Apache Kafka** for the outbound excursion feed, published through Spring Modulith's event
-  externalization and its JPA event publication registry
+- **Apache Kafka** for the excursion feed out and the advice back, both published through Spring
+  Modulith's event externalization and its JPA event publication registry
+- **Spring AI** with Claude for the triage, behind a port, with rules that answer whenever the model
+  does not
 - Spring Security with our own JWT, OpenAPI, Docker Compose
 - Every message the API answers with travels as a key and resolves in **English, Spanish and
   Portuguese**, chosen by `Accept-Language`
@@ -146,9 +167,10 @@ docker compose up -d oracle kafka   # the database and the broker
 ./gradlew rebuild                # a database from nothing: migrate, start, run everything
 ```
 
-The domain suite is the one that proves the shape is worth its price: **41 tests in 52 milliseconds**,
+The domain suite is the one that proves the shape is worth its price: **69 tests in 87 milliseconds**,
 with no Spring context and no database anywhere near them — the state machine, the verdict
-arithmetic, the excursion detection, the temperature band and the custody hash chain. A rule in the
+arithmetic, the excursion detection, the temperature band, the custody hash chain, who held custody
+at a given moment, and which advice wins when two arrive out of order. A rule in the
 catalogue fails the build if a calculator loses its test, or if a domain test reaches for a framework.
 
 ## The demo
@@ -181,13 +203,26 @@ finding            DATA_GAP · CRITICAL · {"coveragePercent":71.43,"minimum":80
 finding            EXCURSION_ABOVE_MAX · CRITICAL · {"durationMinutes":45,"peakCelsius":11.5}
 ```
 
-The script is not a narration: it fails if the verdict is not the one written above. **It runs in CI
+6. Apart from the verdict, the advice about the excursion arrives from the triage service. Without a
+   model key it comes from the rules; with one, from the model:
+
+```
+source             RULES
+probable cause     UNKNOWN
+severity           HIGH
+summary            The temperature stayed above the maximum for 45 minutes. Highest reading: 11.5 °C.
+what to do         Review the readings around the excursion with the holder of the shipment and record what caused it.
+an organization that takes no part asks for it: 404
+```
+
+The script is not a narration: it fails if the verdict is not the one written above, or if the advice
+never arrives. **It runs in CI
 on every push**, against Oracle raised from nothing, and the OpenAPI document the API served during
 that run is published as a build artifact.
 
 ## Documentation
 
-- [`docs/specification.md`](docs/specification.md) — tables, features and rules for the five modules.
+- [`docs/specification.md`](docs/specification.md) — tables, features and rules for the six modules.
   It is the contract: if the code and this document contradict each other, one of them is wrong.
 - [`docs/adr/`](docs/adr/) — the architecture decisions, with their context and what was ruled out.
 - [`docs/branching-plan.md`](docs/branching-plan.md) — the build order, branch by branch.
@@ -196,12 +231,13 @@ that run is published as a build artifact.
   [02 catalog](docs/plan-02-catalog.md) ·
   [03 shipment](docs/plan-03-shipment.md) ·
   [04 telemetry](docs/plan-04-telemetry.md) ·
-  [05 compliance](docs/plan-05-compliance.md).
-- **Phase two**, planned — a second service that triages excursions with a language model, and
-  Kubernetes: [06 advisory](docs/plan-06-advisory.md) · [07 triage](docs/plan-07-triage-service.md) ·
+  [05 compliance](docs/plan-05-compliance.md) ·
+  [06 advisory](docs/plan-06-advisory.md).
+- **Phase two**, in progress — a second service that triages excursions with a language model, and
+  Kubernetes: [07 triage](docs/plan-07-triage-service.md) ·
   [08 kubernetes](docs/plan-08-local-kubernetes.md), decided in ADR-010 to ADR-013.
 - **Data model** (draw.io):
-  [`docs/coldchain-data-model.drawio`](docs/coldchain-data-model.drawio) — the 24 tables with their
+  [`docs/coldchain-data-model.drawio`](docs/coldchain-data-model.drawio) — the 25 tables with their
   columns and relationships, and one page per module.
 
 ## License

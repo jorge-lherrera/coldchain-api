@@ -27,6 +27,13 @@ spring:
     baseline-on-migrate: false
     validate-on-migrate: true
     clean-disabled: true
+  modulith:
+    events:
+      completion-mode: delete
+      republish-outstanding-events-on-restart: true
+      staleness:
+        published: 1m
+        processing: 1m
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     consumer:
@@ -44,6 +51,7 @@ coldchain:
   triage:
     feed-topic: coldchain.telemetry.excursion.v1
     dead-letter-topic: coldchain.triage.excursion-dlt.v1
+    alert-topic: coldchain.triage.alert.v1
     api:
       base-url: ${COLDCHAIN_API_URL:http://localhost:8080/api}
       client-id: ${PLATFORM_CLIENT_ID:coldchain-triage}

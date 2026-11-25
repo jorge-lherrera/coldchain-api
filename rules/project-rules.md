@@ -51,7 +51,7 @@ else hidden. See [ADR-006](../docs/adr/ADR-006-modules-and-events.md).
 
 | Id | Rule | Sev | Enforcer | Machine | Status |
 |---|---|---|---|---|---|
-| R1.1 | A module lives in `com.coldchain.modules.<name>` and its name is **one lowercase word with no separators**. The five are `identity`, `catalog`, `shipment`, `telemetry`, `compliance` | STYLE | `ModuleShapeArchTest.everyModuleIsNamedInOneLowercaseWord` | yes | green |
+| R1.1 | A module lives in `com.coldchain.modules.<name>` and its name is **one lowercase word with no separators**. The six are `identity`, `catalog`, `shipment`, `telemetry`, `compliance`, `advisory` | STYLE | `ModuleShapeArchTest.everyModuleIsNamedInOneLowercaseWord` | yes | green |
 | R1.2 | A module has exactly **two top-level folders**: `api/` and `internal/`. There is no third | STYLE | `ModuleShapeArchTest.everyModuleHasExactlyApiAndInternal` | yes | green |
 | R1.3 | Under `internal/` the folders are `domain/`, `application/`, `infrastructure/` and `exception/`. No others | STYLE | `ModuleShapeArchTest.everyInternalHoldsOnlyItsFourFolders` | yes | green |
 | R1.4 | The layout is fixed where it decides the design: `domain/{model,repository,service}`, `application/{usecase,mapper}` and `infrastructure/persistence/{entity,jpa,adapter,mapper}` ([ADR-007](../docs/adr/ADR-007-hexagonal-module-internals.md)). Under `infrastructure/` a module also holds one folder per outbound technology it actually speaks — `security/` for token issuing and hashing, later a `messaging/` or an `external/`. What is fixed is the shape of persistence, not how many things the outside world is made of | STYLE | `ModuleShapeArchTest.everyLayerKeepsItsFixedLayout` | yes | green |
@@ -70,6 +70,7 @@ else hidden. See [ADR-006](../docs/adr/ADR-006-modules-and-events.md).
 | R1.12 | **Every table has exactly one owning module.** A second mapping from another module is a contract copied instead of called: the coupling survives, the edge disappears, and the column names become an agreement nobody signed | INT | `SchemaOwnershipArchTest.everyTableHasExactlyOneOwningModule` | yes | green |
 | R1.13 | **A query does not name tables outside its module.** Not native SQL, not JPQL, not `JdbcTemplate` | INT | `SchemaOwnershipArchTest.nativeSqlStaysInsideItsOwnModule` | yes | green |
 | R1.14 | **A module does not write to another module's tables** — not even when seeding, which is one of the reasons reference data ships in migrations ([ADR-008](../docs/adr/ADR-008-reference-data-in-flyway.md)) | INT | `SchemaOwnershipArchTest.nativeSqlStaysInsideItsOwnModule` | yes | green |
+| R1.20 | **The verdict never reads advice.** `compliance` does not depend on `advisory`, not even on its `api/`: a model's guess is advice, the certificate is evidence, and evidence that reads a guess stops being evidence ([ADR-012](../docs/adr/ADR-012-triage-is-advice-not-evidence.md)). Spring Modulith already refuses the edge because `compliance` does not declare it (R1.6); this rule names the two packages, so the reason survives an edit to that declaration | INT | `ModuleBoundariesArchTest.theVerdictNeverReadsAdvice` | yes | green |
 
 ### R1.c — The packages that are not modules
 
@@ -130,6 +131,16 @@ notices. The canon is the other way round — a whitelist.
 | R2.25 | **Generic type parameters, one capital letter** (`<T>`, `<K, V>`) | STYLE | `JavaIdentifierCanonArchTest.genericParametersAreSingleCapitalLetters` | yes | green |
 | R2.26 | **All code in English**: names, types, log messages, commit subjects. **No machine:** telling an English identifier from a Spanish one needs a dictionary, and the false positives would kill the rule | STYLE | — | none | — |
 
+### R2.d — The messaging channel
+
+A message from a broker enters the application the way a request does, so it gets the same treatment:
+a channel in `delivery/`, a shape of its own, and the module's door as the only thing it calls (R5.5).
+
+| Id | Rule | Sev | Enforcer | Machine | Status |
+|---|---|---|---|---|---|
+| R2.27 | **A class that consumes a broker topic lives in `delivery/messaging/<module>/`**, the module whose door it calls. A listener inside a module would make the module know where its commands come from, which is the channel's business | STYLE | `ModuleFileLayoutArchTest.everyBrokerListenerIsADeliveryChannelOfItsModule` | yes | green |
+| R2.28 | **`<X>Message` is the shape of a topic**, in the channel that reads it (`delivery/messaging/<x>/`) or in the infrastructure that writes it (`internal/infrastructure/messaging/`). It is never shared with the other side of the topic: each service owns its reading of the wire ([ADR-010](../docs/adr/ADR-010-second-service-for-excursion-triage.md)) | STYLE | `ModuleFileLayoutArchTest.everyWireMessageSitsWithTheChannelThatCarriesIt` | yes | green |
+
 ---
 
 ## R3 — The class: how it is built
@@ -179,7 +190,7 @@ notices. The canon is the other way round — a whitelist.
 | R5.2 | **Command and query separated**: `usecase/command/` writes, `usecase/query/` reads and never writes | STYLE | `LayerContractArchTest.queriesDoNotWrite` | yes | green |
 | R5.3 | **No paginated endpoint without declared sortable fields.** An open `sort` parameter is an open door to ordering by an unindexed column | CON | `ArchitectureRulesArchTest.pageableEndpointsDeclareSortableFields` | yes | green |
 | R5.4 | **No unbounded read.** `findAll()` and `findAll(Specification)` inherited from Spring Data do not reach a use case; every listing is `Pageable` | COST | `PersistenceFetchArchTest.noUnboundedReadArrivesThroughAnInheritedOverload` | yes | green |
-| R5.5 | **The controller depends only on `<X>Api`**, never on a use case, a repository or the module's domain | INT | `ArchitectureRulesArchTest.deliveryNeverDependsOnUseCases` · `ArchitectureRulesArchTest.deliveryNeverDependsOnModuleDomain` | yes | green |
+| R5.5 | **The controller and the listener depend only on `<X>Api`**, never on a use case, a repository or the module's domain | INT | `ArchitectureRulesArchTest.deliveryNeverDependsOnUseCases` · `ArchitectureRulesArchTest.deliveryNeverDependsOnModuleDomain` | yes | green |
 | R5.6 | **No JPA entity crosses to a controller.** Always a DTO | CON | `ModuleBoundariesArchTest.moduleInternalsAreOnlyAccessedWithinTheirModule` | yes | green |
 | R5.7 | **`@Valid` on the controller is mandatory** whenever there is a request body | CON | `LayerContractArchTest.everyRequestBodyIsValidated` | yes | green |
 | R5.8 | **Business validation lives in the use case**, not in the DTO and not in the controller. The DTO validates shape; the use case validates meaning | INT | `LayerContractArchTest.noBusinessRuleIsDecidedAtTheEdge` | yes | green |
@@ -218,7 +229,7 @@ binds.
 | Id | Rule | Sev | Enforcer | Machine | Status |
 |---|---|---|---|---|---|
 | R7.1 | **The global `default_batch_fetch_size` is configured** and it is the one that rules | COST | `PersistenceFetchArchTest.theGlobalBatchFetchSizeIsConfigured` | yes | green |
-| R7.2 | **Every listing endpoint has a query budget checked by exact equality**: one query more breaks it and one query less breaks it too. A budget that only has an upper bound stops noticing the day a read disappears because it started returning nothing | COST | `ShipmentListingQueryBudgetIT` · `TelemetrySeriesQueryBudgetIT` | yes | green |
+| R7.2 | **Every listing endpoint has a query budget checked by exact equality**: one query more breaks it and one query less breaks it too. A budget that only has an upper bound stops noticing the day a read disappears because it started returning nothing | COST | `ShipmentListingQueryBudgetIT` · `TelemetrySeriesQueryBudgetIT` · `ShipmentAlertsQueryBudgetIT` | yes | green |
 | R7.3 | **Aggregation is computed in the database, not by pulling rows into Java.** The compliance dashboard and the downsampled time series are `GROUP BY`, not streams | COST | `PersistenceFetchArchTest.aggregatesAreProjectedNotComputedInMemory` | yes | green |
 | R7.4 | **A batch write is one statement, not one per row.** Reading ingestion writes thousands of rows at a time with application-generated UUIDs precisely so there is no round trip per row | COST | `TelemetryIngestionQueryBudgetIT` | yes | green |
 | R7.5 | **Pagination is `OFFSET ... ROWS FETCH NEXT ... ROWS ONLY`**, never a nested `ROWNUM` | COST | `PersistenceFetchArchTest.paginationUsesTheAnsiOffsetSyntax` | yes | green |

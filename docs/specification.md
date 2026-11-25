@@ -1,7 +1,7 @@
 # ColdChain Specification
 
-Tables, features and rules for the five modules, and for what phase two adds: a sixth module and a
-second service, marked *planned* until they are built. This is the contract: if the code and this
+Tables, features and rules for the six modules, and for the second service phase two adds next to
+them. This is the contract: if the code and this
 document contradict each other, one of the two is wrong and it gets fixed in the same change.
 
 In the diagrams, `RAW(16)` is the UUID v7 in binary, `TIMESTAMP_TZ` is `TIMESTAMP WITH TIME ZONE` and
@@ -9,19 +9,19 @@ In the diagrams, `RAW(16)` is the UUID v7 in binary, `TIMESTAMP_TZ` is `TIMESTAM
 `deleted_at` only appears where there is a soft delete, and `lock_version` only on the aggregates that
 change state, where two writers would otherwise overwrite each other in silence.
 
-- [How the five fit together](#how-the-five-fit-together)
+- [How the six fit together](#how-the-six-fit-together)
 - [01 · identity](#01--identity)
 - [02 · catalog](#02--catalog)
 - [03 · shipment](#03--shipment)
 - [04 · telemetry](#04--telemetry)
 - [05 · compliance](#05--compliance)
-- [06 · advisory](#06--advisory) — *planned*
-- [Beyond the monolith: the triage service](#beyond-the-monolith-the-triage-service) — *planned*
+- [06 · advisory](#06--advisory)
+- [Beyond the monolith: the triage service](#beyond-the-monolith-the-triage-service) — *in progress*
 - [Oracle traps the design already respects](#oracle-traps-the-design-already-respects)
 
 ---
 
-## How the five fit together
+## How the six fit together
 
 ```mermaid
 flowchart TB
@@ -31,16 +31,20 @@ flowchart TB
   shipment["shipment<br/><small>shipment · shipment_line · custody_event<br/>participant · handoff</small>"]
   telemetry["telemetry<br/><small>device · assignment<br/>reading · batch · excursion</small>"]
   compliance["compliance<br/><small>certificate · certificate_finding</small>"]
+  advisory["advisory<br/><small>excursion_alert</small>"]
 
   catalog -- "frozen thresholds" --> shipment
   shipment -- "dispatch" --> telemetry
   telemetry -- "excursion" --> shipment
   shipment -- "custody and thresholds" --> compliance
   telemetry -- "series and excursions" --> compliance
+  shipment -- "who may see it" --> advisory
 ```
 
 The shipment is the center: nothing moves without it. The two arrows that point back — the excursion
 and the late reading — are what make the certificate impossible to compute in a single pass.
+`advisory` hangs off the side: it depends on `shipment` only to decide who may see an alert, its rows
+come from the triage service, and nothing depends on it.
 
 Communication happens through domain events, synchronous and in-process
 ([ADR-006](adr/ADR-006-modules-and-events.md)):
@@ -578,7 +582,7 @@ that is exactly why the coverage rule is needed.
 
 ## 06 · advisory
 
-> *Planned* — [plan 06](plan-06-advisory.md), [ADR-012](adr/ADR-012-triage-is-advice-not-evidence.md).
+> [Plan 06](plan-06-advisory.md), [ADR-012](adr/ADR-012-triage-is-advice-not-evidence.md).
 
 **Advice about an excursion, kept where the verdict cannot reach it.**
 
@@ -592,11 +596,12 @@ erDiagram
   }
   excursion_alert {
     RAW(16) id PK
+    RAW(16) organization_id FK "whose excursion it is"
     RAW(16) excursion_id UK
     RAW(16) shipment_id
     VARCHAR2 probable_cause "HANDLING_DURING_HANDOFF / REFRIGERATION_FAILURE / DOOR_OPENING / SENSOR_FAULT / UNKNOWN"
     VARCHAR2 severity "LOW / MEDIUM / HIGH"
-    NUMBER confidence "3,2 — between 0 and 1"
+    NUMBER confidence "3,2 — between 0 and 1, null when source = RULES"
     VARCHAR2 summary_en
     VARCHAR2 summary_es
     VARCHAR2 summary_pt
@@ -612,7 +617,9 @@ erDiagram
 ```
 
 The rows are not written by any request. They arrive from `coldchain-triage` on the Kafka topic
-`coldchain.triage.alert.v1`, and the module only stores and serves them.
+`coldchain.triage.alert.v1`, and the module only stores and serves them. The listener that reads them
+is a delivery channel, `delivery/messaging/advisory`, the way a controller is one for HTTP; the audit
+columns of a row it writes name the system actor.
 
 ### Features
 
@@ -632,6 +639,8 @@ The rows are not written by any request. They arrive from `coldchain-triage` on 
 - A cause is never served without its `confidence` and its `source`.
 - The three summaries are stored; the response carries the one that matches `Accept-Language`, with
   English as the fallback.
+- A message that can never become an alert goes to `coldchain.advisory.alert-dlt.v1` without a retry,
+  and the next one is still consumed.
 
 **Out of scope:** notifying participants by email or webhook, acknowledging or dismissing an alert,
 confirming the real cause after the fact.
@@ -641,8 +650,9 @@ confirming the real cause after the fact.
 ## Beyond the monolith: the triage service
 
 > *In progress* — [plan 07](plan-07-triage-service.md), [ADR-010](adr/ADR-010-second-service-for-excursion-triage.md),
-> [ADR-011](adr/ADR-011-platform-credential-for-service-calls.md). The service consumes the feed; the
-> platform credential and the internal endpoint exist in the API.
+> [ADR-011](adr/ADR-011-platform-credential-for-service-calls.md). The service consumes the feed, asks
+> the API for the context and the model for the cause, and publishes the alert the API shows; what is
+> left is the evaluation of the model.
 
 `coldchain-triage` is a separate service with its own PostgreSQL. It is not a module: nothing in the
 monolith imports it, and it imports nothing from the monolith. What the two share is the topics below

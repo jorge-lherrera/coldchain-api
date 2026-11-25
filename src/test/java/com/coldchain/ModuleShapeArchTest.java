@@ -21,7 +21,7 @@ class ModuleShapeArchTest {
     private static final Path MODULES = SourceTree.MAIN.resolve(Path.of("com", "coldchain", "modules"));
 
     private static final List<String> DECLARED_MODULES =
-            List.of("identity", "catalog", "shipment", "telemetry", "compliance");
+            List.of("identity", "catalog", "shipment", "telemetry", "compliance", "advisory");
 
     private static final Pattern ONE_LOWERCASE_WORD = Pattern.compile("[a-z]+");
 

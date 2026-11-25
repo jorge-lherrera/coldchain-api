@@ -42,6 +42,8 @@ dependencies {
 	implementation 'io.github.resilience4j:resilience4j-circuitbreaker:2.3.0'
 	implementation 'io.github.resilience4j:resilience4j-retry:2.3.0'
 	implementation 'org.springframework.ai:spring-ai-anthropic'
+	implementation 'org.springframework.modulith:spring-modulith-starter-jpa'
+	implementation 'org.springframework.modulith:spring-modulith-events-kafka'
 	runtimeOnly 'org.flywaydb:flyway-database-postgresql'
 	runtimeOnly 'org.postgresql:postgresql'
 	testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
@@ -57,6 +59,7 @@ dependencies {
 dependencyManagement {
 	imports {
 		mavenBom 'org.springframework.ai:spring-ai-bom:2.1.0'
+		mavenBom 'org.springframework.modulith:spring-modulith-bom:2.2.0'
 	}
 }
 

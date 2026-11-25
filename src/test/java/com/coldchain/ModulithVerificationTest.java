@@ -11,7 +11,7 @@ import org.springframework.modulith.core.ApplicationModules;
 class ModulithVerificationTest {
 
     private static final List<String> DECLARED_MODULES =
-            List.of("identity", "catalog", "shipment", "telemetry", "compliance");
+            List.of("identity", "catalog", "shipment", "telemetry", "compliance", "advisory");
 
     private static final String COMPOSITION_ROOT = "bootstrap";
 
@@ -23,7 +23,7 @@ class ModulithVerificationTest {
         expected.add(COMPOSITION_ROOT);
 
         assertThat(modules.stream().map(module -> module.getIdentifier().toString()))
-                .describedAs("the model is the five modules and the root that assembles them")
+                .describedAs("the model is the six modules and the root that assembles them")
                 .containsExactlyInAnyOrderElementsOf(expected);
     }
 

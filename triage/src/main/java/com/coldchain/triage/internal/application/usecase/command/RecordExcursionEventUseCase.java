@@ -3,6 +3,7 @@ package com.coldchain.triage.internal.application.usecase.command;
 import com.coldchain.triage.api.EventOutcome;
 import com.coldchain.triage.api.dto.RecordExcursionEventCommand;
 import com.coldchain.triage.api.dto.RecordExcursionEventResult;
+import com.coldchain.triage.internal.application.mapper.AlertTriagedMapper;
 import com.coldchain.triage.internal.domain.model.ExcursionAlert;
 import com.coldchain.triage.internal.domain.model.ExcursionEvent;
 import com.coldchain.triage.internal.domain.model.InboxEvent;
@@ -13,6 +14,7 @@ import com.coldchain.triage.shared.annotation.UseCase;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Optional;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 
 @UseCase
@@ -22,11 +24,15 @@ public class RecordExcursionEventUseCase {
 
     private final ExcursionAlertRepository alerts;
 
+    private final ApplicationEventPublisher events;
+
     private final Clock clock;
 
-    public RecordExcursionEventUseCase(InboxEventRepository inbox, ExcursionAlertRepository alerts, Clock clock) {
+    public RecordExcursionEventUseCase(InboxEventRepository inbox, ExcursionAlertRepository alerts,
+            ApplicationEventPublisher events, Clock clock) {
         this.inbox = inbox;
         this.alerts = alerts;
+        this.events = events;
         this.clock = clock;
     }
 
@@ -52,7 +58,8 @@ public class RecordExcursionEventUseCase {
             inbox.save(received);
             return new RecordExcursionEventResult(event.eventId(), event.excursionId(), outcome, true);
         }
-        alerts.save(alert.triagedBy(RuleBasedTriage.of(alert, now)));
+        ExcursionAlert triaged = alerts.save(alert.triagedBy(RuleBasedTriage.of(alert, now)));
+        events.publishEvent(AlertTriagedMapper.toEvent(triaged));
         inbox.save(received.processedAt(now));
         return new RecordExcursionEventResult(event.eventId(), event.excursionId(), outcome, false);
     }

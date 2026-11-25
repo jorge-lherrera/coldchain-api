@@ -1,5 +1,6 @@
 package com.coldchain.bootstrap;
 
+import com.coldchain.modules.advisory.AdvisoryModuleConfig;
 import com.coldchain.modules.catalog.CatalogModuleConfig;
 import com.coldchain.modules.compliance.ComplianceModuleConfig;
 import com.coldchain.modules.identity.IdentityModuleConfig;
@@ -21,7 +22,8 @@ import org.springframework.context.annotation.Import;
         CatalogModuleConfig.class,
         TelemetryModuleConfig.class,
         ShipmentModuleConfig.class,
-        ComplianceModuleConfig.class
+        ComplianceModuleConfig.class,
+        AdvisoryModuleConfig.class
 })
 public class BootstrapConfiguration {
 }

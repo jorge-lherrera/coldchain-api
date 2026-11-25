@@ -14,7 +14,7 @@ class ModuleBoundariesArchTest {
     private static final String ROOT = "com.coldchain";
 
     private static final List<String> MODULES =
-            List.of("identity", "catalog", "shipment", "telemetry", "compliance");
+            List.of("identity", "catalog", "shipment", "telemetry", "compliance", "advisory");
 
     private final JavaClasses production = new ClassFileImporter()
             .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
@@ -31,6 +31,16 @@ class ModuleBoundariesArchTest {
                 .should().dependOnClassesThat().resideInAPackage(ROOT + ".modules." + module + ".internal..")
                 .because("the inside of a module is its own business, and delivery is outside it too")
                 .check(production));
+    }
+
+    @Test
+    void theVerdictNeverReadsAdvice() {
+        ArchRuleDefinition.noClasses()
+                .that().resideInAPackage(ROOT + ".modules.compliance..")
+                .should().dependOnClassesThat().resideInAPackage(ROOT + ".modules.advisory..")
+                .because("a model's guess is advice and the certificate is evidence, and evidence that reads "
+                        + "a guess is no longer evidence (ADR-012)")
+                .check(production);
     }
 
     private List<String> inhabitedModules() {

@@ -13,6 +13,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.assertj.core.api.AbstractStringAssert;
 import org.junit.jupiter.api.Test;
+import org.springframework.kafka.annotation.KafkaListener;
 
 class ModuleFileLayoutArchTest {
 
@@ -23,6 +24,11 @@ class ModuleFileLayoutArchTest {
     private static final String DELIVERY = ROOT + ".delivery.web.";
 
     private static final Pattern CHANNEL = Pattern.compile(Pattern.quote(DELIVERY) + "([a-z]+)");
+
+    private static final String MESSAGING = ROOT + ".delivery.messaging.";
+
+    private static final Pattern WIRE_MESSAGE_HOME = Pattern.compile(Pattern.quote(MESSAGING) + "[a-z]+|"
+            + Pattern.quote(MODULES) + "[a-z]+[.]internal[.]infrastructure[.]messaging");
 
     private static final List<Map.Entry<String, String>> FOLDER_OF_SUFFIX = List.of(
             Map.entry("RepositoryAdapter", "internal.infrastructure.persistence.adapter"),
@@ -124,6 +130,38 @@ class ModuleFileLayoutArchTest {
                 .describedAs("channel %s translates its bodies somewhere other than its one mapper",
                         channel)
                 .isEqualTo(1));
+    }
+
+    @Test
+    void everyBrokerListenerIsADeliveryChannelOfItsModule() {
+        List<String> modules = moduleTypes().stream()
+                .map(type -> type.getPackageName().substring(MODULES.length()).split("[.]")[0])
+                .distinct()
+                .toList();
+        List<JavaClass> listeners = production.stream()
+                .filter(type -> type.getMethods().stream()
+                        .anyMatch(method -> method.isAnnotatedWith(KafkaListener.class)))
+                .toList();
+
+        assertThat(listeners).isNotEmpty();
+        assertThat(listeners).allSatisfy(listener -> assertThat(modules)
+                .describedAs("%s reads a topic from outside delivery/messaging/<module>, where a message "
+                        + "enters the application the way a request does", listener.getFullName())
+                .anySatisfy(module -> assertThat(listener.getPackageName()).isEqualTo(MESSAGING + module)));
+    }
+
+    @Test
+    void everyWireMessageSitsWithTheChannelThatCarriesIt() {
+        List<JavaClass> messages = production.stream()
+                .filter(type -> type.getSimpleName().endsWith("Message"))
+                .toList();
+
+        assertThat(messages).isNotEmpty();
+        assertThat(messages).allSatisfy(message -> assertThat(WIRE_MESSAGE_HOME.matcher(
+                message.getPackageName()).matches())
+                .describedAs("%s is the shape of a topic, and lives either in the channel that reads it or "
+                        + "in the infrastructure that writes it", message.getFullName())
+                .isTrue());
     }
 
     @Test

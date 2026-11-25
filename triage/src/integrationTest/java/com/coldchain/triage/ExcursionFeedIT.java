@@ -3,6 +3,7 @@ package com.coldchain.triage;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -30,6 +32,8 @@ class ExcursionFeedIT {
 
     private static final String DEAD_LETTER_TOPIC = "coldchain.triage.excursion-dlt.v1";
 
+    private static final String ALERT_TOPIC = "coldchain.triage.alert.v1";
+
     private static final Duration PATIENCE = Duration.ofSeconds(30);
 
     private static final Instant OPENED = Instant.parse("2026-05-01T10:05:00Z");
@@ -43,7 +47,7 @@ class ExcursionFeedIT {
             "recommendedAction":"Keep the doors shut while loading."}""";
 
     @Autowired
-    private KafkaTemplate<String, String> kafka;
+    private KafkaTemplate<String, byte[]> kafka;
 
     @Autowired
     private KafkaContainer broker;
@@ -239,6 +243,33 @@ class ExcursionFeedIT {
     }
 
     @Test
+    void everyTriageLeavesForTheApiKeyedByItsShipment() {
+        UUID shipment = UUID.randomUUID();
+        UUID excursion = UUID.randomUUID();
+        UUID closing = UUID.randomUUID();
+        api.knows(shipment, 60);
+        model.willAnswer(DOOR_OPENING);
+
+        publish(shipment, opened(UUID.randomUUID(), shipment, excursion, "11.50"));
+        publish(shipment, closed(closing, shipment, excursion, 45));
+
+        awaitProcessed(closing);
+        List<ConsumerRecord<String, String>> published = readUntil(ALERT_TOPIC,
+                value -> value.contains(excursion.toString()) && value.contains("\"source\":\"LLM\""));
+        List<ConsumerRecord<String, String>> ofThisExcursion = published.stream()
+                .filter(record -> record.value().contains(excursion.toString()))
+                .toList();
+        assertThat(ofThisExcursion)
+                .describedAs("the rules' alert at the open, then the model's at the close, in that order")
+                .extracting(record -> record.value().contains("\"source\":\"RULES\"") ? "RULES" : "LLM")
+                .containsExactly("RULES", "LLM");
+        assertThat(ofThisExcursion).allSatisfy(record -> assertThat(record.key()).isEqualTo(shipment.toString()));
+        assertThat(ofThisExcursion.getLast().value())
+                .contains("\"probableCause\":\"DOOR_OPENING\"", "\"summaryPt\":\"Um pico curto que se recuperou sozinho.\"",
+                        "\"model\":\"" + FakeChatModel.MODEL + "\"", "\"contextAvailable\":true");
+    }
+
+    @Test
     void aMalformedMessageIsDeadLetteredAndTheNextOneStillArrives() {
         UUID shipment = UUID.randomUUID();
         UUID excursion = UUID.randomUUID();
@@ -248,7 +279,7 @@ class ExcursionFeedIT {
         publish(shipment, opened(UUID.randomUUID(), shipment, excursion, "9.50"));
 
         awaitAlert(excursion);
-        List<ConsumerRecord<String, String>> deadLettered = deadLetterUntil(poison);
+        List<ConsumerRecord<String, String>> deadLettered = readUntil(DEAD_LETTER_TOPIC, poison::equals);
         assertThat(deadLettered)
                 .describedAs("a message that can never be read leaves the partition instead of blocking it")
                 .anySatisfy(record -> {
@@ -277,7 +308,8 @@ class ExcursionFeedIT {
 
     private void publish(UUID shipment, String payload) {
         try {
-            kafka.send(TestcontainersConfiguration.FEED_TOPIC, shipment.toString(), payload).get(10, TimeUnit.SECONDS);
+            kafka.send(TestcontainersConfiguration.FEED_TOPIC, shipment.toString(),
+                    payload.getBytes(StandardCharsets.UTF_8)).get(10, TimeUnit.SECONDS);
         } catch (Exception cause) {
             throw new IllegalStateException("Could not publish to the feed", cause);
         }
@@ -308,21 +340,22 @@ class ExcursionFeedIT {
         return counted == null ? 0 : counted;
     }
 
-    private List<ConsumerRecord<String, String>> deadLetterUntil(String value) {
+    private List<ConsumerRecord<String, String>> readUntil(String topic, Predicate<String> wanted) {
         List<ConsumerRecord<String, String>> seen = new ArrayList<>();
         Map<String, Object> config = Map.of(
                 ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, broker.getBootstrapServers(),
                 ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class,
                 ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(config)) {
-            List<TopicPartition> partitions = consumer.partitionsFor(DEAD_LETTER_TOPIC).stream()
-                    .map(info -> new TopicPartition(DEAD_LETTER_TOPIC, info.partition()))
+            await().atMost(PATIENCE).until(() -> !consumer.partitionsFor(topic).isEmpty());
+            List<TopicPartition> partitions = consumer.partitionsFor(topic).stream()
+                    .map(info -> new TopicPartition(topic, info.partition()))
                     .toList();
             consumer.assign(partitions);
             consumer.seekToBeginning(partitions);
             await().atMost(PATIENCE).until(() -> {
                 consumer.poll(Duration.ofMillis(250)).forEach(seen::add);
-                return seen.stream().anyMatch(record -> value.equals(record.value()));
+                return seen.stream().anyMatch(record -> wanted.test(record.value()));
             });
         }
         return seen;

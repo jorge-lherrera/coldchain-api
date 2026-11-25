@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 class CompositionRootArchTest {
 
     private static final List<String> DECLARED_MODULES =
-            List.of("identity", "catalog", "shipment", "telemetry", "compliance");
+            List.of("identity", "catalog", "shipment", "telemetry", "compliance", "advisory");
 
     private static final List<String> SCANNED_PACKAGES =
             List.of("com.coldchain.bootstrap", "com.coldchain.shared", "com.coldchain.delivery");
@@ -72,7 +72,7 @@ class CompositionRootArchTest {
         assertThat(imported)
                 .describedAs("the list in the composition root is the list of modules, in the order "
                         + "they depend on each other")
-                .containsExactly("identity", "catalog", "telemetry", "shipment", "compliance");
+                .containsExactly("identity", "catalog", "telemetry", "shipment", "compliance", "advisory");
     }
 
     private static String capitalised(String module) {

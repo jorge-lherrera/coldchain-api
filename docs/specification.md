@@ -640,8 +640,9 @@ confirming the real cause after the fact.
 
 ## Beyond the monolith: the triage service
 
-> *Planned* — [plan 07](plan-07-triage-service.md), [ADR-010](adr/ADR-010-second-service-for-excursion-triage.md),
-> [ADR-011](adr/ADR-011-platform-credential-for-service-calls.md).
+> *In progress* — [plan 07](plan-07-triage-service.md), [ADR-010](adr/ADR-010-second-service-for-excursion-triage.md),
+> [ADR-011](adr/ADR-011-platform-credential-for-service-calls.md). The service consumes the feed; the
+> platform credential and the internal endpoint exist in the API.
 
 `coldchain-triage` is a separate service with its own PostgreSQL. It is not a module: nothing in the
 monolith imports it, and it imports nothing from the monolith. What the two share is the topics below

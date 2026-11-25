@@ -56,8 +56,8 @@ checked, with a deterministic answer whenever the model does not give one.**
   - `ExcursionOpened` gets an immediate rule-based alert.
   - `ExcursionClosed`, when the duration and the whole window are known, is what goes to the model.
 - **The model sees measurements, not people.** Temperatures, timestamps, the frozen thresholds and
-  the *kind* of organization holding custody (`CARRIER`, `WAREHOUSE`…). No names, no emails, no
-  documents, no identifiers of any sort.
+  the *participation* of whoever held custody (`SHIPPER`, `CARRIER`, `CONSIGNEE`). No names, no
+  emails, no documents, no identifiers of any sort.
 - **The model is a port.**
   - Triage talks to it through Spring AI's chat client, behind a `TriageAdvisor` port, so the
     provider is an adapter.

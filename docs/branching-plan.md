@@ -395,6 +395,7 @@ docs: the platform credential as it was built
 ```
 feat(telemetry): read the readings of a window for the platform
 feat(shipment): the context of an excursion for internal callers
+docs: the excursion context as it was built
 ```
 
 **Done when:** the context of the walkthrough's excursion comes back with the carrier holding custody.

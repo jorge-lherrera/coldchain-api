@@ -121,9 +121,15 @@ rule R9.19 cites them.
 token only.
 
 - It lives in `shipment`, which already depends on `telemetry::api` and owns custody and the frozen
-  thresholds: `ShipmentApi.excursionContextOf(shipmentId, excursionId)`.
-- `telemetry` adds a platform-level read of the readings in a window. There is no viewer, because the
-  check happened at the filter chain.
+  thresholds: `ShipmentApi.excursionContextOf(shipmentId, excursionId)`. The controller sits with the
+  other shipment controllers in `delivery/web/shipment`, because controllers are grouped by module.
+- `telemetry` adds `TelemetryApi.excursionWindowOf(shipmentId, excursionId, margin)`: the excursion and
+  its readings in the window, read for the platform. There is no viewer, because the check happened at
+  the filter chain. An excursion asked for under another shipment is `EXCURSION_NOT_FOUND`, exactly as
+  if it did not exist.
+- Custody at a moment is read from the custody log by `CustodyHistory`, a pure domain model with its
+  own unit test. The participations come from every participant row, revoked ones included: a carrier
+  that left the shipment afterwards still held it while it held it.
 - The response carries:
   - the excursion: kind, opened, closed, peak, duration;
   - the readings from thirty minutes before it opened to thirty minutes after it closed;
@@ -134,6 +140,8 @@ token only.
   
   No organization names and no identifiers beyond the two in the path.
 - A new row in the contract snapshot (R15): the internal contract versions like the public one.
+- The integration profile configures the platform client, so the HTTP journey calls the internal
+  endpoint too and R14.6 counts `/internal/v1/` routes among the ones that must answer.
 
 **Check:** an integration test against Oracle returns the context of the walkthrough's excursion, with
 the carrier holding custody.

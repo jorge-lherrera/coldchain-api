@@ -1,6 +1,6 @@
 # ADR-009 — Kafka for outbound integration events
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-09-25
 
 ## Context
@@ -44,6 +44,12 @@ touch how modules talk to each other.
 - **Publication goes through Spring Modulith's event externalization**, backed by its JPA event
   publication registry. The event is stored in the same transaction as the excursion and sent to
   Kafka after the commit: that is the outbox, and it is what makes the feed consistent with Oracle.
+- **Externalization runs on a single thread.** Spring Modulith hands every event to its own
+  asynchronous task, and on virtual threads the events of one commit race each other to the broker:
+  a close can overtake its open, and the integration test that asserts the order caught them
+  arriving shuffled. One thread sends them in the order they were published, and the idempotent
+  producer keeps that order within the partition. Excursions are rare enough that one sender is
+  never the bottleneck.
 - **The producer runs with `acks=all` and idempotence on.** A publication is complete when every
   in-sync replica has it.
 - **Delivery is at-least-once.** A consumer may see an event twice and deduplicates by `eventId`.
@@ -58,7 +64,8 @@ touch how modules talk to each other.
   tests start it with Testcontainers, the same way they start Oracle.
 - **A new table, owned by Flyway.** The event publication registry needs its table, and under R13.1
   it is a hand-written migration, never generated. It has to match the schema Spring Modulith 2.1
-  expects, and it grows: completed publications are purged on a schedule.
+  expects, and a completed publication is deleted as soon as Kafka confirms it, so the table only
+  ever holds what is still pending.
 - **Kafka being down does not stop the business.** An excursion is still committed; its event waits
   in the registry and goes out when the broker is back. The price is latency: the feed is seconds
   behind the database, never in the same request.

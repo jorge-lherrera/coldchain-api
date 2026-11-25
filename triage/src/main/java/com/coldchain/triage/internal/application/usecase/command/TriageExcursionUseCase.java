@@ -7,6 +7,7 @@ import com.coldchain.triage.internal.domain.repository.ExcursionAlertRepository;
 import com.coldchain.triage.internal.domain.repository.InboxEventRepository;
 import com.coldchain.triage.internal.domain.service.ExcursionContextSource;
 import com.coldchain.triage.internal.domain.service.RuleBasedTriage;
+import com.coldchain.triage.internal.domain.service.TriageAdvisor;
 import com.coldchain.triage.shared.annotation.UseCase;
 import java.time.Clock;
 import java.time.Instant;
@@ -14,6 +15,11 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.transaction.support.TransactionOperations;
 
+/**
+ * Triages a closed excursion between two transactions, so that neither the API nor the model is
+ * waited on with a connection held. The model is asked only when the API gave the context: without
+ * the readings there is nothing for it to read, and the rules say as much.
+ */
 @UseCase
 public class TriageExcursionUseCase {
 
@@ -23,15 +29,19 @@ public class TriageExcursionUseCase {
 
     private final ExcursionContextSource contexts;
 
+    private final TriageAdvisor advisor;
+
     private final TransactionOperations transactions;
 
     private final Clock clock;
 
     public TriageExcursionUseCase(ExcursionAlertRepository alerts, InboxEventRepository inbox,
-            ExcursionContextSource contexts, TransactionOperations transactions, Clock clock) {
+            ExcursionContextSource contexts, TriageAdvisor advisor, TransactionOperations transactions,
+            Clock clock) {
         this.alerts = alerts;
         this.inbox = inbox;
         this.contexts = contexts;
+        this.advisor = advisor;
         this.transactions = transactions;
         this.clock = clock;
     }
@@ -39,12 +49,13 @@ public class TriageExcursionUseCase {
     public void execute(UUID eventId, UUID excursionId) {
         ExcursionAlert recorded = alertOf(excursionId);
         Optional<ExcursionContext> context = contexts.contextOf(recorded.shipmentId(), excursionId);
+        Optional<Triage> advised = context.flatMap(found -> advisor.adviseOn(recorded, found));
         transactions.executeWithoutResult(status -> {
             Instant now = clock.instant();
             ExcursionAlert alert = alertOf(excursionId);
-            Triage triage = context
+            Triage triage = advised.orElseGet(() -> context
                     .map(found -> RuleBasedTriage.of(alert, found, now))
-                    .orElseGet(() -> RuleBasedTriage.of(alert, now));
+                    .orElseGet(() -> RuleBasedTriage.of(alert, now)));
             alerts.save(alert.triagedBy(triage));
             inbox.findById(eventId)
                     .filter(received -> !received.processed())

@@ -22,6 +22,7 @@ The same shape as one API module ([ADR-007](adr/ADR-007-hexagonal-module-interna
 com.coldchain.triage/
   TriageApplication.java
   delivery/messaging/        ExcursionFeedListener · ExcursionFeedMessage · ExcursionFeedMessageMapper
+                             ExcursionFeedErrorHandlingConfig
   api/                       TriageApi · dto/ · event/AlertTriaged
   internal/
     application/             TriageFacade · usecase/command/{RecordExcursionEventUseCase, TriageExcursionUseCase}
@@ -33,7 +34,7 @@ com.coldchain.triage/
       persistence/           entity · jpa · adapter · mapper
       coldchainapi/          ColdChainApiClient
       llm/                   SpringAiTriageAdvisor
-      messaging/             KafkaConsumerConfig · AlertFeedConfig
+      messaging/             AlertFeedConfig
     exception/               TriageErrorCode
   shared/                    error model, UUID v7
 ```
@@ -82,14 +83,18 @@ empty PostgreSQL.
 - The ArchUnit rules land with the first domain: the domain imports neither Spring nor JPA, no use
   case sees a `JpaEntity`, and each suffix lives where its role says.
 - `RuleBasedTriage` is pure Java:
-  - severity from the peak and the duration against the thresholds;
+  - severity from the duration until the context brings the thresholds (step 5): an open excursion is
+    `MEDIUM`, a closed one `LOW` under 15 minutes, `MEDIUM` under 30 and `HIGH` from there;
   - cause `UNKNOWN`;
   - a summary from a template in the three languages.
 - **Errors:**
-  - `ErrorHandlingDeserializer`: a malformed message is dead-lettered with no retry;
+  - the value is read as a string and parsed by the channel: a message that does not parse, or lacks a
+    field its type requires, is dead-lettered with no retry;
   - `DefaultErrorHandler` with exponential backoff, three **blocking** attempts;
   - then `coldchain.triage.excursion-dlt.v1`;
   - acknowledgement per record, after success.
+
+In Compose, triage starts after the API, which is what creates the feed topic it subscribes to.
 
 **Check:** the same event delivered twice leaves one alert, and a close delivered before its open
 leaves a closed alert.

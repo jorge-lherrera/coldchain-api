@@ -1,0 +1,207 @@
+# Build plan · 07 · triage service
+
+> **Status:** in progress — not a module of the monolith: a service of its own.
+
+The second service. It reads the excursion feed, asks the API what was happening around each
+excursion, asks a language model for a probable cause and a summary — or the rules, when the model
+does not answer — and publishes the alert back for the API to show
+([ADR-010](adr/ADR-010-second-service-for-excursion-triage.md),
+[ADR-012](adr/ADR-012-triage-is-advice-not-evidence.md)). The milestone ends when an excursion in the
+walkthrough becomes an alert on the other side, with the model and without it.
+
+It lives in `triage/`, an independent Gradle build with its own `settings.gradle`, run with the root
+wrapper: `./gradlew -p triage …`. Two of its steps happen **in the API**, because triage needs them
+there: the platform credential and the excursion context.
+
+## The shape
+
+The same shape as one API module ([ADR-007](adr/ADR-007-hexagonal-module-internals.md)), without a
+`modules/` level, because the service is a single context:
+
+```
+com.coldchain.triage/
+  TriageApplication.java
+  delivery/messaging/        ExcursionFeedListener · ExcursionFeedMessage · ExcursionFeedMessageMapper
+  api/                       TriageApi · dto/ · event/AlertTriaged
+  internal/
+    application/             TriageFacade · usecase/command/{RecordExcursionEventUseCase, TriageExcursionUseCase}
+    domain/
+      model/                 ExcursionAlert · Triage · InboxEvent · ExcursionContext · ProbableCause · Severity
+      repository/            ExcursionAlertRepository · InboxEventRepository
+      service/               RuleBasedTriage · ExcursionContextSource · TriageAdvisor
+    infrastructure/
+      persistence/           entity · jpa · adapter · mapper
+      coldchainapi/          ColdChainApiClient
+      llm/                   SpringAiTriageAdvisor
+      messaging/             KafkaConsumerConfig · AlertFeedConfig
+    exception/               TriageErrorCode
+  shared/                    error model, UUID v7
+```
+
+`ExcursionContextSource` and `TriageAdvisor` are outbound ports declared by the domain, the way
+`identity` declares `SecretHasher`. Their adapters are the only classes that know HTTP or a model
+exists.
+
+## Step 1 · Foundations
+
+- `triage/build.gradle`: Spring Boot 4.1, Java 25, Spring Kafka, Spring Data JPA, Flyway on
+  PostgreSQL, Spring Modulith's event publication registry, Testcontainers, ArchUnit.
+- **Migration V1, three tables**, PostgreSQL types:
+  - `inbox_event` — `event_id uuid` primary key, `type`, `excursion_id`, `occurred_at`,
+    `received_at`, `status` with `CHECK (status IN ('RECEIVED', 'PROCESSED'))`, `processed_at`.
+  - `excursion_alert` — UUID v7 primary key and `excursion_id` unique. It holds:
+    - the facts of the excursion: kind, opened, closed, peak, duration;
+    - the triage: cause, severity, confidence, the three summaries, recommended action;
+    - its provenance: source, model, prompt version, input and output tokens, latency,
+      `context_available`, `triaged_at`;
+    - a version column for optimistic locking.
+  - `event_publication` — the table Spring Modulith 2.1 expects on PostgreSQL, hand-written.
+- The ArchUnit rules of the service: the domain imports neither Spring nor JPA, no use case sees a
+  `JpaEntity`, and each suffix lives where its role says.
+- A multi-stage `Dockerfile` on the same template as the API's: layered jar, non-root user, readiness
+  probe.
+- `docker-compose.yml` gains `postgres` (17) and `triage`. `.env.example` gains the triage database
+  credentials, the platform client and an optional `ANTHROPIC_API_KEY`.
+- The CI workflow gains a `triage` job: rules, unit tests and integration tests of the service.
+
+**Check:** `docker compose up -d --wait` leaves the five containers healthy, and triage migrates an
+empty PostgreSQL.
+
+## Step 2 · Consuming the feed
+
+- `ExcursionFeedListener` on `coldchain.telemetry.excursion.v1`, group `coldchain-triage`,
+  `auto-offset-reset: earliest`, so a new deployment can read the history.
+- It deserializes into its own `ExcursionFeedMessage`: type headers ignored, unknown fields ignored.
+- **Transaction 1, `RecordExcursionEventUseCase`:**
+  - insert into `inbox_event`; if the event is already `PROCESSED`, stop there;
+  - apply the event to `ExcursionAlert`. The domain orders by `occurredAt` within the excursion, so a
+    close that arrives before its open is recorded, and the late open only fills in what was missing;
+  - on `ExcursionOpened`, an immediate rule-based triage.
+- `RuleBasedTriage` is pure Java:
+  - severity from the peak and the duration against the thresholds;
+  - cause `UNKNOWN`;
+  - a summary from a template in the three languages.
+- **Errors:**
+  - `ErrorHandlingDeserializer`: a malformed message is dead-lettered with no retry;
+  - `DefaultErrorHandler` with exponential backoff, three **blocking** attempts;
+  - then `coldchain.triage.excursion-dlt.v1`;
+  - acknowledgement per record, after success.
+
+**Check:** the same event delivered twice leaves one alert, and a close delivered before its open
+leaves a closed alert.
+
+## Step 3 · The platform credential — in the API
+
+What [ADR-011](adr/ADR-011-platform-credential-for-service-calls.md) decides, in `identity`:
+
+- the client and its Argon2id hash read from configuration;
+- the token from `POST /v1/auth/client-token` with no organization and the single scope
+  `PLATFORM_EXCURSION_READ`, which no role or `api_client` can be granted;
+- a security filter chain for `/internal/**`, ordered before the public one;
+- `/internal/**` left out of the published OpenAPI document.
+
+**Check:** an organization's token on `/internal/**` gets `403`; the platform token on any public
+route gets `403`. Both are integration tests.
+
+## Step 4 · The excursion context — in the API
+
+`GET /api/internal/v1/shipments/{shipmentId}/excursions/{excursionId}/context`, for the platform
+token only.
+
+- It lives in `shipment`, which already depends on `telemetry::api` and owns custody and the frozen
+  thresholds: `ShipmentApi.excursionContextOf(shipmentId, excursionId)`.
+- `telemetry` adds a platform-level read of the readings in a window. There is no viewer, because the
+  check happened at the filter chain.
+- The response carries:
+  - the excursion: kind, opened, closed, peak, duration;
+  - the readings from thirty minutes before it opened to thirty minutes after it closed;
+  - the frozen thresholds;
+  - the **participation** of whoever held custody when it opened (`SHIPPER`, `CARRIER`,
+    `CONSIGNEE`), the minutes since the last accepted handoff, and the handoffs inside the window,
+    each by participation.
+  
+  No organization names and no identifiers beyond the two in the path.
+- A new row in the contract snapshot (R15): the internal contract versions like the public one.
+
+**Check:** an integration test against Oracle returns the context of the walkthrough's excursion, with
+the carrier holding custody.
+
+## Step 5 · Asking for the context
+
+- `ColdChainApiClient` implements `ExcursionContextSource` with `RestClient`.
+- It obtains the platform token, keeps it until shortly before it expires, and asks for a new one
+  instead of retrying a `401`.
+- Resilience4j around the call:
+  - a timeout of two seconds;
+  - three retries with backoff, on connection errors and `5xx` only;
+  - a circuit breaker that stops asking while the API is down.
+- **No context is not a failure.** Triage goes on without it and records `context_available = false`.
+
+**Check:** with the API stopped, an excursion still becomes an alert, with `context_available = false`.
+
+## Step 6 · The model
+
+- First, the version check: the Spring AI line that supports Spring Boot 4.1. If none does yet,
+  `TriageAdvisor` is implemented with Anthropic's official Java SDK behind the same port, and
+  nothing else changes.
+- **Outside any transaction, `TriageExcursionUseCase`, for `ExcursionClosed` only:**
+  - context first, then `TriageAdvisor`, with its own timeout;
+  - structured output into a record that is validated: closed sets, confidence between 0 and 1,
+    the three summaries present. An answer that fails validation is discarded, never repaired.
+- **The rules answer whenever the model does not:** timeout, refusal, invalid output, or no key
+  configured. `source` says which one answered.
+- The prompt is `src/main/resources/prompts/triage-v1.st`. It holds measurements and the
+  participation of the custody holder, and nothing that names a person or an organization.
+- **Transaction 2:** save the triage with its provenance (model, prompt version, tokens, latency),
+  and mark the inbox event `PROCESSED`.
+- Tests stub the chat model. CI never calls one.
+
+**Check:** with a key, the walkthrough's excursion comes back with `source = LLM`; without one, with
+`source = RULES`, and the rest of the pipeline cannot tell the difference.
+
+## Step 7 · Publishing the alert
+
+- `AlertTriaged` is published from transaction 2 through the outbox: Spring Modulith's registry on
+  PostgreSQL, externalized to `coldchain.triage.alert.v1`, keyed by `shipmentId`.
+- The single-threaded externalization that keeps the API's feed in order applies here too, for the
+  same reason ([ADR-009](adr/ADR-009-kafka-for-integration-events.md)).
+- **If the process dies between transaction 1 and transaction 2**, the offset is not committed and
+  Kafka redelivers the event. The inbox says `RECEIVED`, not `PROCESSED`, so the triage runs again.
+  The API's consumer keeps the newest triage, so a second publication is harmless.
+
+## Step 8 · Evaluation
+
+- A golden set of about twelve synthetic excursions, one or two per cause:
+  - a slow ramp is a refrigeration failure;
+  - a short spike is a door opening;
+  - a jump minutes after a handoff is handling during the handoff;
+  - flat or impossible readings are a sensor fault;
+  - a blackout followed by a jump is a sensor fault too.
+- `./gradlew -p triage evalTriage` runs the set against the real model, by hand and outside CI, and
+  prints the hits per cause and the confusion matrix.
+- The result goes in the triage README, the misses included. A change of model or prompt reruns it
+  before it merges.
+
+## Step 9 · The tests that close the milestone
+
+- **Unit, no Spring:**
+  - `ExcursionAlert`: ordering by `occurredAt`, a close before its open, the late open;
+  - `RuleBasedTriage`: severity at each boundary;
+  - the validation of the model's answer: a cause outside the set, a confidence of 1.2, a missing
+    summary.
+- **Integration (Testcontainers, Kafka + PostgreSQL, the API stubbed over HTTP):**
+  - an event becomes an alert published on `coldchain.triage.alert.v1`;
+  - the same event twice is one alert;
+  - a close before its open;
+  - a malformed message on the dead letter topic, with the next valid one still consumed;
+  - the API down means an alert without context;
+  - the model failing means an alert from the rules;
+  - an event `RECEIVED` but not `PROCESSED` is triaged again on redelivery.
+- **In the API:** the two directions of the internal filter chain, and the context endpoint against
+  Oracle.
+
+**Milestone done when:** `docker compose up -d --wait` and `scripts/demo.sh` end with the alert for
+the delivered shipment printed by the API, with `source = RULES` and no key configured, and with
+`source = LLM` once `ANTHROPIC_API_KEY` is set; `./gradlew -p triage test integrationTest` is green;
+and with the API stopped while triage handles an excursion, the alert still reaches
+`coldchain.triage.alert.v1`, with `context_available = false`.

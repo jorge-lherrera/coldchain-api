@@ -197,6 +197,9 @@ that run is published as a build artifact.
   [03 shipment](docs/plan-03-shipment.md) ·
   [04 telemetry](docs/plan-04-telemetry.md) ·
   [05 compliance](docs/plan-05-compliance.md).
+- **Phase two**, planned — a second service that triages excursions with a language model, and
+  Kubernetes: [06 advisory](docs/plan-06-advisory.md) · [07 triage](docs/plan-07-triage-service.md) ·
+  [08 kubernetes](docs/plan-08-local-kubernetes.md), decided in ADR-010 to ADR-013.
 - **Data model** (draw.io):
   [`docs/coldchain-data-model.drawio`](docs/coldchain-data-model.drawio) — the 24 tables with their
   columns and relationships, and one page per module.

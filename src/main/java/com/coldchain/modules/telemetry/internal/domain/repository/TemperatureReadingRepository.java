@@ -11,5 +11,7 @@ public interface TemperatureReadingRepository {
 
     List<TemperatureReading> findOfShipment(UUID shipmentId);
 
+    List<TemperatureReading> findOfShipmentBetween(UUID shipmentId, Instant from, Instant to);
+
     List<Instant> findMeasuredAtOf(UUID deviceId, Instant from, Instant to);
 }

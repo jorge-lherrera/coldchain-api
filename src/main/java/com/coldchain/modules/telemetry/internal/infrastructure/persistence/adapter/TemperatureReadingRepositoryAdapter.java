@@ -3,6 +3,8 @@ package com.coldchain.modules.telemetry.internal.infrastructure.persistence.adap
 import com.coldchain.modules.telemetry.internal.domain.model.TemperatureReading;
 import com.coldchain.modules.telemetry.internal.domain.repository.TemperatureReadingRepository;
 import com.coldchain.shared.util.RawUuid;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -26,6 +28,13 @@ public class TemperatureReadingRepositoryAdapter implements TemperatureReadingRe
             SELECT ID, ORGANIZATION_ID, DEVICE_ID, SHIPMENT_ID, READING_BATCH_ID, CELSIUS, MEASURED_AT
             FROM TEMPERATURE_READING
             WHERE SHIPMENT_ID = ?
+            ORDER BY MEASURED_AT
+            """;
+
+    private static final String SELECT_WINDOW = """
+            SELECT ID, ORGANIZATION_ID, DEVICE_ID, SHIPMENT_ID, READING_BATCH_ID, CELSIUS, MEASURED_AT
+            FROM TEMPERATURE_READING
+            WHERE SHIPMENT_ID = ? AND MEASURED_AT BETWEEN ? AND ?
             ORDER BY MEASURED_AT
             """;
 
@@ -64,16 +73,14 @@ public class TemperatureReadingRepositoryAdapter implements TemperatureReadingRe
 
     @Override
     public List<TemperatureReading> findOfShipment(UUID shipmentId) {
-        return jdbc.query(SELECT_SERIES,
-                (row, index) -> TemperatureReading.restore(
-                        RawUuid.fromBytes(row.getBytes("ID")),
-                        RawUuid.fromBytes(row.getBytes("ORGANIZATION_ID")),
-                        RawUuid.fromBytes(row.getBytes("DEVICE_ID")),
-                        RawUuid.fromBytes(row.getBytes("SHIPMENT_ID")),
-                        RawUuid.fromBytes(row.getBytes("READING_BATCH_ID")),
-                        row.getBigDecimal("CELSIUS"),
-                        row.getObject("MEASURED_AT", OffsetDateTime.class).toInstant()),
+        return jdbc.query(SELECT_SERIES, TemperatureReadingRepositoryAdapter::reading,
                 RawUuid.toBytes(shipmentId));
+    }
+
+    @Override
+    public List<TemperatureReading> findOfShipmentBetween(UUID shipmentId, Instant from, Instant to) {
+        return jdbc.query(SELECT_WINDOW, TemperatureReadingRepositoryAdapter::reading,
+                RawUuid.toBytes(shipmentId), from.atOffset(ZoneOffset.UTC), to.atOffset(ZoneOffset.UTC));
     }
 
     @Override
@@ -81,5 +88,16 @@ public class TemperatureReadingRepositoryAdapter implements TemperatureReadingRe
         return jdbc.query(SELECT_SAMPLES,
                 (row, index) -> row.getObject("MEASURED_AT", OffsetDateTime.class).toInstant(),
                 RawUuid.toBytes(deviceId), from.atOffset(ZoneOffset.UTC), to.atOffset(ZoneOffset.UTC));
+    }
+
+    private static TemperatureReading reading(ResultSet row, int index) throws SQLException {
+        return TemperatureReading.restore(
+                RawUuid.fromBytes(row.getBytes("ID")),
+                RawUuid.fromBytes(row.getBytes("ORGANIZATION_ID")),
+                RawUuid.fromBytes(row.getBytes("DEVICE_ID")),
+                RawUuid.fromBytes(row.getBytes("SHIPMENT_ID")),
+                RawUuid.fromBytes(row.getBytes("READING_BATCH_ID")),
+                row.getBigDecimal("CELSIUS"),
+                row.getObject("MEASURED_AT", OffsetDateTime.class).toInstant());
     }
 }

@@ -89,6 +89,10 @@ public final class Excursion {
         return status == ExcursionStatus.OPEN;
     }
 
+    public Instant lastSeenAt() {
+        return closedAt != null ? closedAt : openedAt.plus(Duration.ofMinutes(durationMinutes));
+    }
+
     public UUID id() {
         return id;
     }

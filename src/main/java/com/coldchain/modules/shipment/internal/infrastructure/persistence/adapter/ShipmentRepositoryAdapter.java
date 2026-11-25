@@ -63,6 +63,12 @@ public class ShipmentRepositoryAdapter implements ShipmentRepository {
     }
 
     @Override
+    public Optional<Shipment> findForPlatform(UUID shipmentId) {
+        return shipments.findById(shipmentId)
+                .map(entity -> mapper.toDomain(entity, lines.findByShipmentId(entity.getId())));
+    }
+
+    @Override
     public PagedResult<Shipment> findVisibleTo(UUID viewerOrganizationId, PageCriteria criteria) {
         Page<ShipmentJpaEntity> page =
                 shipments.findVisibleTo(viewerOrganizationId, SpringDataPaging.toPageable(criteria));

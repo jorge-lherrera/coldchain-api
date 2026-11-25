@@ -42,6 +42,10 @@ class HttpContractIT {
 
     private static final String PASSWORD = "integration-password";
 
+    private static final String PLATFORM_CLIENT_ID = "coldchain-triage";
+
+    private static final String PLATFORM_SECRET = "integration-platform-secret";
+
     private static final Map<String, Object> FRIDGE = Map.of(
             "minCelsius", new BigDecimal("2.00"),
             "maxCelsius", new BigDecimal("8.00"),
@@ -307,6 +311,16 @@ class HttpContractIT {
                 shipmentId);
         expect(series, 200);
         assertThat(data(series).get("points").size()).isEqualTo(12);
+        assertThat(data(series).get("excursions").size()).isEqualTo(1);
+
+        Answer context = call(HttpMethod.GET,
+                "/internal/v1/shipments/{shipmentId}/excursions/{excursionId}/context", platform(), null,
+                shipmentId, data(series).get("excursions").get(0).get("id").asString());
+        expect(context, 200);
+        assertThat(data(context).get("custodian").asString())
+                .describedAs("the carrier took the shipment before the temperature rose")
+                .isEqualTo("CARRIER");
+        assertThat(data(context).get("handoffs").size()).isEqualTo(1);
 
         Answer one = call(HttpMethod.GET, "/v1/shipments/{shipmentId}", carrier, null, shipmentId);
         expect(one, 200);
@@ -392,7 +406,7 @@ class HttpContractIT {
                 return;
             }
             mapping.getPathPatternsCondition().getPatternValues().stream()
-                    .filter(pattern -> pattern.startsWith("/v1/"))
+                    .filter(pattern -> pattern.startsWith("/v1/") || pattern.startsWith("/internal/v1/"))
                     .forEach(pattern -> mapping.getMethodsCondition().getMethods()
                             .forEach(method -> endpoints.add(method.name() + " " + pattern)));
         });
@@ -442,9 +456,16 @@ class HttpContractIT {
         List<Map<String, Object>> readings = new ArrayList<>();
         for (int minute = 0; minute < 60; minute += 5) {
             readings.add(Map.of("measuredAt", dispatchedAt.plus(minute, ChronoUnit.MINUTES),
-                    "celsius", new BigDecimal("4.50")));
+                    "celsius", minute == 20 || minute == 25 ? new BigDecimal("9.50") : new BigDecimal("4.50")));
         }
         return readings;
+    }
+
+    private String platform() {
+        Answer token = call(HttpMethod.POST, "/v1/auth/client-token", null, Map.of(
+                "clientId", PLATFORM_CLIENT_ID, "clientSecret", PLATFORM_SECRET));
+        expect(token, 201);
+        return data(token).get("accessToken").asString();
     }
 
     private Answer call(HttpMethod method, String template, String token, Object body,

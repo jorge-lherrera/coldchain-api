@@ -61,4 +61,5 @@ TelemetryErrorCode.DEVICE_NOT_ASSIGNED=error.telemetry.device_not_assigned
 TelemetryErrorCode.DEVICE_NOT_FOUND=error.telemetry.device_not_found
 TelemetryErrorCode.DEVICE_NOT_USABLE=error.telemetry.device_not_usable
 TelemetryErrorCode.EMPTY_BATCH=error.telemetry.empty_batch
+TelemetryErrorCode.EXCURSION_NOT_FOUND=error.telemetry.excursion_not_found
 TelemetryErrorCode.SERIAL_ALREADY_REGISTERED=error.telemetry.serial_already_registered

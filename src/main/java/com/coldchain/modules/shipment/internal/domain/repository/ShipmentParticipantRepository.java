@@ -11,5 +11,7 @@ public interface ShipmentParticipantRepository {
 
     List<ShipmentParticipant> findLiveOf(UUID shipmentId);
 
+    List<ShipmentParticipant> findEveryOf(UUID shipmentId);
+
     Optional<ShipmentParticipant> findLive(UUID shipmentId, UUID organizationId);
 }

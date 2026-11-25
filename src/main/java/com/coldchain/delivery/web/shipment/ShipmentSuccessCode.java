@@ -22,6 +22,8 @@ public enum ShipmentSuccessCode implements SuccessCode {
             "Shipments retrieved"),
     TIMELINE_RETRIEVED("success.shipment.timeline_retrieved", SuccessOutcome.RETRIEVED,
             "Custody timeline retrieved"),
+    EXCURSION_CONTEXT_RETRIEVED("success.shipment.excursion_context_retrieved",
+            SuccessOutcome.RETRIEVED, "Excursion context retrieved"),
     HANDOFF_OPENED("success.shipment.handoff_opened", SuccessOutcome.CREATED, "Handoff opened"),
     HANDOFF_ACCEPTED("success.shipment.handoff_accepted", SuccessOutcome.UPDATED, "Handoff accepted"),
     HANDOFF_REJECTED("success.shipment.handoff_rejected", SuccessOutcome.UPDATED, "Handoff rejected"),

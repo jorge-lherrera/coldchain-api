@@ -7,6 +7,9 @@ coldchain:
     capacity: 1000
     window: 1m
     trusted-proxies: []
+  platform:
+    client-id: coldchain-triage
+    client-secret-hash: "$argon2id$v=19$m=16384,t=2,p=1$lCOjH42S3otp/3TSg41ZYQ$ldoJr4raMgXM6Lr90wAZAkMpu14w6M7DJGzLhHa2axA"
 
 logging:
   level:

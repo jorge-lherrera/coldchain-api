@@ -5,6 +5,7 @@ import com.coldchain.modules.shipment.api.dto.AcceptHandoffCommand;
 import com.coldchain.modules.shipment.api.dto.AddParticipantCommand;
 import com.coldchain.modules.shipment.api.dto.CreateShipmentCommand;
 import com.coldchain.modules.shipment.api.dto.DispatchShipmentCommand;
+import com.coldchain.modules.shipment.api.dto.ExcursionContextResult;
 import com.coldchain.modules.shipment.api.dto.OpenHandoffCommand;
 import com.coldchain.modules.shipment.api.dto.OpenHandoffResult;
 import com.coldchain.modules.shipment.api.dto.ShipmentResult;
@@ -20,6 +21,7 @@ import com.coldchain.modules.shipment.internal.application.usecase.command.OpenH
 import com.coldchain.modules.shipment.internal.application.usecase.command.RejectHandoffUseCase;
 import com.coldchain.modules.shipment.internal.application.usecase.command.RejectShipmentUseCase;
 import com.coldchain.modules.shipment.internal.application.usecase.command.RevokeParticipantUseCase;
+import com.coldchain.modules.shipment.internal.application.usecase.query.ExcursionContextUseCase;
 import com.coldchain.modules.shipment.internal.application.usecase.query.GetShipmentUseCase;
 import com.coldchain.modules.shipment.internal.application.usecase.query.ListShipmentsUseCase;
 import com.coldchain.modules.shipment.internal.application.usecase.query.ShipmentTimelineUseCase;
@@ -59,6 +61,8 @@ public class ShipmentFacade implements ShipmentApi {
 
     private final ListShipmentsUseCase listShipments;
 
+    private final ExcursionContextUseCase excursionContext;
+
     public ShipmentFacade(CreateShipmentUseCase createShipment,
             DispatchShipmentUseCase dispatchShipment, CancelShipmentUseCase cancelShipment,
             ArriveShipmentUseCase arriveShipment, DeliverShipmentUseCase deliverShipment,
@@ -66,7 +70,7 @@ public class ShipmentFacade implements ShipmentApi {
             AcceptHandoffUseCase acceptHandoff, RejectHandoffUseCase rejectHandoff,
             AddParticipantUseCase addParticipant, RevokeParticipantUseCase revokeParticipant,
             GetShipmentUseCase getShipment, ShipmentTimelineUseCase timeline,
-            ListShipmentsUseCase listShipments) {
+            ListShipmentsUseCase listShipments, ExcursionContextUseCase excursionContext) {
         this.createShipment = createShipment;
         this.dispatchShipment = dispatchShipment;
         this.cancelShipment = cancelShipment;
@@ -81,6 +85,7 @@ public class ShipmentFacade implements ShipmentApi {
         this.getShipment = getShipment;
         this.timeline = timeline;
         this.listShipments = listShipments;
+        this.excursionContext = excursionContext;
     }
 
     @Override
@@ -152,5 +157,10 @@ public class ShipmentFacade implements ShipmentApi {
     public PagedResult<ShipmentResult> listShipments(UUID viewerOrganizationId,
             PageCriteria criteria) {
         return listShipments.execute(viewerOrganizationId, criteria);
+    }
+
+    @Override
+    public ExcursionContextResult excursionContextOf(UUID shipmentId, UUID excursionId) {
+        return excursionContext.execute(shipmentId, excursionId);
     }
 }

@@ -11,6 +11,8 @@ public interface ShipmentParticipantJpaRepository
 
     List<ShipmentParticipantJpaEntity> findByShipmentIdAndRevokedAtIsNull(UUID shipmentId);
 
+    List<ShipmentParticipantJpaEntity> findByShipmentId(UUID shipmentId);
+
     Optional<ShipmentParticipantJpaEntity> findByShipmentIdAndOrganizationIdAndRevokedAtIsNull(
             UUID shipmentId, UUID organizationId);
 }

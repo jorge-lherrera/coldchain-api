@@ -237,3 +237,14 @@ shipments, and this one grows with the number of shipments times their duration 
 **N9.2 — The Free edition ceiling is a design input, not a surprise.** 12 GB of user data and 2 GB of
 RAM. The demo series generator works inside that ceiling on purpose, and the partitioning is what makes
 dropping a month a metadata operation rather than a mass delete.
+
+---
+
+## N10 — Tables the schema does not own
+
+**N10.1 — A table whose shape a library dictates is not held to this standard.** Flyway's history
+table and Spring Modulith's `EVENT_PUBLICATION` are written and read by the framework, column by
+column: an audit column it does not fill breaks every insert, and no module owns what no module
+writes. They are listed by name in `Migrations.FRAMEWORK_TABLES` — a new one is a reviewed line,
+not a pattern that swallows tables — and where the standard costs the framework nothing, its
+migration follows it anyway: zoned instants, a `CHECK` on the status, named constraints and indexes.

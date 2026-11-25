@@ -49,6 +49,11 @@ Communication happens through domain events, synchronous and in-process
 | `ExcursionClosed` | telemetry → shipment | Closes the excursion with its final duration. |
 | `ShipmentClosed` | shipment → compliance | Delivery or rejection: triggers issuing version 1 of the certificate. |
 
+`ExcursionOpened` and `ExcursionClosed` also leave the monolith as integration events on the Kafka
+topic `coldchain.telemetry.excursion.v1`, keyed by shipment and published through an outbox after the
+commit ([ADR-009](adr/ADR-009-kafka-for-integration-events.md)). That feed is for consumers outside
+the monolith; modules never read it.
+
 ---
 
 ## 01 · identity

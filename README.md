@@ -69,6 +69,20 @@ excursion detection — are plain objects, so they are unit-tested in millisecon
 anywhere near them. That is the point of it, and the reasoning is in
 [ADR-007](docs/adr/ADR-007-hexagonal-module-internals.md).
 
+## Excursions leave through Kafka
+
+Inside the monolith those events stay in-process. Outside it nobody would hear them, so
+`ExcursionOpened` and `ExcursionClosed` also leave as integration events on
+`coldchain.telemetry.excursion.v1`, keyed by shipment: every event of a shipment lands on the same
+partition, in the order it happened.
+
+They go out through an **outbox**. Spring Modulith stores the event in the same Oracle transaction as
+the excursion and sends it to Kafka after the commit, so a rollback publishes nothing, and a broker
+that is down delays the feed instead of losing it. Delivery is at-least-once: every message carries a
+stable `eventId` so a consumer can drop the copies, and the close of an excursion carries the same
+`excursionId` as its open. The reasoning, and what was ruled out, is in
+[ADR-009](docs/adr/ADR-009-kafka-for-integration-events.md).
+
 ## Stack
 
 - **Java 25** (LTS) and **Spring Boot 4**
@@ -77,6 +91,8 @@ anywhere near them. That is the point of it, and the reasoning is in
   gate — see [`rules/`](rules/)
 - **Testcontainers** with `gvenzl/oracle-free` — a real Oracle in the integration tests, not H2
   pretending to be Oracle
+- **Apache Kafka** for the outbound excursion feed, published through Spring Modulith's event
+  externalization and its JPA event publication registry
 - Spring Security with our own JWT, OpenAPI, Docker Compose
 - Every message the API answers with travels as a key and resolves in **English, Spanish and
   Portuguese**, chosen by `Accept-Language`
@@ -110,7 +126,7 @@ writer erased the first without a trace.
 
 ```bash
 cp .env.example .env             # local credentials, never committed
-docker compose up -d --wait      # Oracle 23ai Free and the API, on 1521 and 8080
+docker compose up -d --wait      # Oracle 23ai Free, Kafka and the API, on 1521, 9092 and 8080
 scripts/demo.sh                  # the whole story below, end to end
 ```
 
@@ -120,7 +136,7 @@ The stack answers at `http://localhost:8080/api`, and the contract it serves is 
 To work on the code, run the API from Gradle against the same database:
 
 ```bash
-docker compose up -d oracle      # only the database
+docker compose up -d oracle kafka   # the database and the broker
 ./gradlew bootRun                # Flyway migrates, then the API on 8080
 ```
 

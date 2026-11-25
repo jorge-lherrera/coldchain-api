@@ -80,6 +80,11 @@ public final class Excursion {
                 Duration.between(openedAt, when).toMinutes(), lockVersion);
     }
 
+    public Excursion keepingIdentityOf(Excursion previous) {
+        return new Excursion(previous.id, organizationId, shipmentId, kind, status, openedAt, closedAt,
+                openedByReadingId, closedByReadingId, peakCelsius, durationMinutes, previous.lockVersion);
+    }
+
     public boolean open() {
         return status == ExcursionStatus.OPEN;
     }

@@ -3,6 +3,7 @@ package com.coldchain;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
+import org.testcontainers.kafka.KafkaContainer;
 import org.testcontainers.oracle.OracleContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -13,6 +14,12 @@ class TestcontainersConfiguration {
 	@ServiceConnection
 	OracleContainer oracleFreeContainer() {
 		return new OracleContainer(DockerImageName.parse("gvenzl/oracle-free:23-slim-faststart"));
+	}
+
+	@Bean
+	@ServiceConnection
+	KafkaContainer kafkaContainer() {
+		return new KafkaContainer(DockerImageName.parse("apache/kafka:4.2.0"));
 	}
 
 }

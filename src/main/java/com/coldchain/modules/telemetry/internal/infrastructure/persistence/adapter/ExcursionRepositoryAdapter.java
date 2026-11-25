@@ -35,7 +35,7 @@ public class ExcursionRepositoryAdapter implements ExcursionRepository {
     }
 
     @Override
-    public int deleteOfShipment(UUID shipmentId) {
-        return excursions.deleteByShipmentId(shipmentId);
+    public void deleteAll(List<Excursion> stale) {
+        excursions.deleteAllById(stale.stream().map(Excursion::id).toList());
     }
 }

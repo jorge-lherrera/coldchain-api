@@ -10,5 +10,5 @@ public interface ExcursionRepository {
 
     List<Excursion> findOfShipment(UUID shipmentId);
 
-    int deleteOfShipment(UUID shipmentId);
+    void deleteAll(List<Excursion> excursions);
 }

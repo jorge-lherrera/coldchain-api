@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -52,29 +53,39 @@ public class ExcursionReview {
             return;
         }
         List<TemperatureReading> series = readings.findOfShipment(shipmentId);
-        Map<Instant, Excursion> before = excursions.findOfShipment(shipmentId).stream()
+        List<Excursion> stored = excursions.findOfShipment(shipmentId);
+        Map<Instant, Excursion> before = stored.stream()
                 .collect(Collectors.toMap(Excursion::openedAt, Function.identity(),
                         (first, second) -> first));
-        excursions.deleteOfShipment(shipmentId);
+        List<DetectedExcursion> detections = ExcursionDetector.detect(series, window.minCelsius(),
+                window.maxCelsius());
+        Set<UUID> stillDetected = detections.stream()
+                .map(detected -> before.get(detected.openedAt()))
+                .filter(Objects::nonNull)
+                .map(Excursion::id)
+                .collect(Collectors.toSet());
+        excursions.deleteAll(stored.stream()
+                .filter(excursion -> !stillDetected.contains(excursion.id()))
+                .toList());
 
         UUID organizationId = series.isEmpty() ? null : series.getFirst().organizationId();
-        for (DetectedExcursion detected : ExcursionDetector.detect(series, window.minCelsius(),
-                window.maxCelsius())) {
+        for (DetectedExcursion detected : detections) {
+            Excursion previous = before.get(detected.openedAt());
             Excursion opened = Excursion.open(organizationId, shipmentId, detected.kind(),
                     detected.openedAt(), detected.openedByReadingId(), detected.peakCelsius())
                     .deepenedTo(detected.peakCelsius(), detected.lastSeenAt());
-            Excursion stored = detected.closed()
+            Excursion found = detected.closed()
                     ? opened.close(detected.closedAt(), detected.closedByReadingId())
                     : opened;
-            excursions.save(stored);
-            Excursion previous = before.get(detected.openedAt());
+            Excursion current = previous == null ? found : found.keepingIdentityOf(previous);
+            excursions.save(current);
             if (previous == null) {
-                events.publishEvent(new ExcursionOpened(stored.id(), organizationId, shipmentId,
-                        stored.kind(), stored.peakCelsius(), stored.openedAt()));
+                events.publishEvent(new ExcursionOpened(current.id(), organizationId, shipmentId,
+                        current.kind(), current.peakCelsius(), current.openedAt()));
             }
-            if (stored.closedAt() != null && (previous == null || previous.open())) {
-                events.publishEvent(new ExcursionClosed(stored.id(), organizationId, shipmentId,
-                        stored.kind(), stored.durationMinutes(), stored.closedAt()));
+            if (current.closedAt() != null && (previous == null || previous.open())) {
+                events.publishEvent(new ExcursionClosed(current.id(), organizationId, shipmentId,
+                        current.kind(), current.durationMinutes(), current.closedAt()));
             }
         }
     }

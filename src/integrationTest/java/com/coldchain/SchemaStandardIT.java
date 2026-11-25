@@ -13,7 +13,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 @IntegrationTest
 class SchemaStandardIT {
 
-    private static final String OURS = "UPPER(TABLE_NAME) NOT LIKE 'FLYWAY%'";
+    private static final String OURS = "UPPER(TABLE_NAME) NOT LIKE 'FLYWAY%' AND UPPER(TABLE_NAME) NOT IN ("
+            + Migrations.FRAMEWORK_TABLES.stream().map(table -> "'" + table + "'")
+                    .collect(Collectors.joining(", "))
+            + ")";
 
     private static final List<String> AUDIT_COLUMNS =
             List.of("CREATED_AT", "CREATED_BY", "UPDATED_AT", "UPDATED_BY");

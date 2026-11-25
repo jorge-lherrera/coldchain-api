@@ -9,8 +9,8 @@ does not answer — and publishes the alert back for the API to show
 [ADR-012](adr/ADR-012-triage-is-advice-not-evidence.md)). The milestone ends when an excursion in the
 walkthrough becomes an alert on the other side, with the model and without it.
 
-It lives in `triage/`, an independent Gradle build with its own `settings.gradle`, run with the root
-wrapper: `./gradlew -p triage …`. Two of its steps happen **in the API**, because triage needs them
+It lives in `triage/`, an independent Gradle build with its own `settings.gradle` and its own wrapper:
+`cd triage && ./gradlew check`. Two of its steps happen **in the API**, because triage needs them
 there: the platform credential and the excursion context.
 
 ## The shape
@@ -56,13 +56,15 @@ exists.
       `context_available`, `triaged_at`;
     - a version column for optimistic locking.
   - `event_publication` — the table Spring Modulith 2.1 expects on PostgreSQL, hand-written.
-- The ArchUnit rules of the service: the domain imports neither Spring nor JPA, no use case sees a
-  `JpaEntity`, and each suffix lives where its role says.
 - A multi-stage `Dockerfile` on the same template as the API's: layered jar, non-root user, readiness
-  probe.
+  probe. Its build context is `triage/` itself, with its own wrapper, so the image is built from the
+  service and nothing else.
 - `docker-compose.yml` gains `postgres` (17) and `triage`. `.env.example` gains the triage database
-  credentials, the platform client and an optional `ANTHROPIC_API_KEY`.
-- The CI workflow gains a `triage` job: rules, unit tests and integration tests of the service.
+  credentials; the platform client and the model key arrive with the steps that use them.
+- The CI workflow gains a `triage` job running `./gradlew check` in `triage/`, and the image job builds
+  both images.
+- The ArchUnit rules of the service wait for step 2. With no domain yet they would find nothing to
+  check, and a rule that passes because it found nothing proves nothing (R0.16).
 
 **Check:** `docker compose up -d --wait` leaves the five containers healthy, and triage migrates an
 empty PostgreSQL.
@@ -77,6 +79,8 @@ empty PostgreSQL.
   - apply the event to `ExcursionAlert`. The domain orders by `occurredAt` within the excursion, so a
     close that arrives before its open is recorded, and the late open only fills in what was missing;
   - on `ExcursionOpened`, an immediate rule-based triage.
+- The ArchUnit rules land with the first domain: the domain imports neither Spring nor JPA, no use
+  case sees a `JpaEntity`, and each suffix lives where its role says.
 - `RuleBasedTriage` is pure Java:
   - severity from the peak and the duration against the thresholds;
   - cause `UNKNOWN`;
@@ -177,7 +181,7 @@ the carrier holding custody.
   - a jump minutes after a handoff is handling during the handoff;
   - flat or impossible readings are a sensor fault;
   - a blackout followed by a jump is a sensor fault too.
-- `./gradlew -p triage evalTriage` runs the set against the real model, by hand and outside CI, and
+- `./gradlew evalTriage`, in `triage/`, runs the set against the real model, by hand and outside CI, and
   prints the hits per cause and the confusion matrix.
 - The result goes in the triage README, the misses included. A change of model or prompt reruns it
   before it merges.
@@ -202,6 +206,6 @@ the carrier holding custody.
 
 **Milestone done when:** `docker compose up -d --wait` and `scripts/demo.sh` end with the alert for
 the delivered shipment printed by the API, with `source = RULES` and no key configured, and with
-`source = LLM` once `ANTHROPIC_API_KEY` is set; `./gradlew -p triage test integrationTest` is green;
+`source = LLM` once `ANTHROPIC_API_KEY` is set; `./gradlew check` in `triage/` is green;
 and with the API stopped while triage handles an excursion, the alert still reaches
 `coldchain.triage.alert.v1`, with `context_available = false`.

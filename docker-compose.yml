@@ -69,5 +69,46 @@ services:
         limits:
           memory: 1g
 
+  postgres:
+    image: postgres:17.6-alpine
+    container_name: coldchain-postgres
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_DB: ${TRIAGE_DB_NAME}
+      POSTGRES_USER: ${TRIAGE_DB_USERNAME}
+      POSTGRES_PASSWORD: ${TRIAGE_DB_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready --username=$${POSTGRES_USER} --dbname=$${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  triage:
+    build:
+      context: triage
+    container_name: coldchain-triage
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${TRIAGE_PORT:-8081}:8081"
+    environment:
+      TRIAGE_DB_URL: jdbc:postgresql://postgres:5432/${TRIAGE_DB_NAME}
+      TRIAGE_DB_USERNAME: ${TRIAGE_DB_USERNAME}
+      TRIAGE_DB_PASSWORD: ${TRIAGE_DB_PASSWORD}
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+
 volumes:
   oracle-data:
+  postgres-data:

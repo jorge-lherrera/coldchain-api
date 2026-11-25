@@ -45,8 +45,10 @@ run that needs none of that transaction and fails in ways the custody API must n
   - Nothing else reads it. It holds an inbox, the alerts and the publications still pending.
   - A second Oracle would be a second 2 GB process for a worker that writes a few rows per
     excursion. A second schema in the same Oracle would tie two lifecycles to one edition ceiling.
-- **Same repository, independent build.** Triage lives in `triage/` with its own `settings.gradle`
-  and its own Dockerfile. The API's build and its rule catalogue do not see it.
+- **Same repository, independent build.** Triage lives in `triage/` with its own `settings.gradle`,
+  its own Gradle wrapper and its own Dockerfile, built from `triage/` as its context. It could move to
+  a repository of its own without touching a line. The API's build and its rule catalogue do not see
+  it.
 - **No shared library.** Each consumer declares its own record of the message and reads it
   tolerantly: a field it does not know is ignored. The contract is the JSON on a versioned topic, as
   ADR-009 decided, never a jar both sides import.

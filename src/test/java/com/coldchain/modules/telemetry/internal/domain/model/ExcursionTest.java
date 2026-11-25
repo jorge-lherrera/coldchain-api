@@ -87,6 +87,23 @@ class ExcursionTest {
                 .isEqualTo(open.id());
     }
 
+    @Test
+    void anExcursionFoundAgainKeepsTheIdentityItWasStoredWith() {
+        Excursion stored = Excursion.restore(UUID.fromString("01930000-0000-7000-8000-000000000005"),
+                ORGANIZATION, SHIPMENT, ExcursionKind.ABOVE_MAX, ExcursionStatus.OPEN, OPENED, null,
+                FIRST_READING, null, new BigDecimal("9.50"), 0, 3);
+        Excursion foundAgain = above(new BigDecimal("9.50"))
+                .close(OPENED.plus(10, ChronoUnit.MINUTES), LAST_READING)
+                .keepingIdentityOf(stored);
+
+        assertThat(foundAgain.id())
+                .describedAs("whoever heard it open must be able to pair the close with it")
+                .isEqualTo(stored.id());
+        assertThat(foundAgain.lockVersion()).isEqualTo(3);
+        assertThat(foundAgain.status()).isEqualTo(ExcursionStatus.CLOSED);
+        assertThat(foundAgain.closedByReadingId()).isEqualTo(LAST_READING);
+    }
+
     private Excursion above(BigDecimal celsius) {
         return Excursion.open(ORGANIZATION, SHIPMENT, ExcursionKind.ABOVE_MAX, OPENED, FIRST_READING,
                 celsius);

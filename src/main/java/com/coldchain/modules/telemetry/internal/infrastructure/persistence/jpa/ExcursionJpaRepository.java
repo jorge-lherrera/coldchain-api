@@ -8,6 +8,4 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface ExcursionJpaRepository extends JpaRepository<ExcursionJpaEntity, UUID> {
 
     List<ExcursionJpaEntity> findByShipmentIdOrderByOpenedAtAsc(UUID shipmentId);
-
-    int deleteByShipmentId(UUID shipmentId);
 }

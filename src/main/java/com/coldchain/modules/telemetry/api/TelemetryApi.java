@@ -3,12 +3,14 @@ package com.coldchain.modules.telemetry.api;
 import com.coldchain.modules.telemetry.api.dto.AssignDeviceCommand;
 import com.coldchain.modules.telemetry.api.dto.AssignmentResult;
 import com.coldchain.modules.telemetry.api.dto.DeviceResult;
+import com.coldchain.modules.telemetry.api.dto.ExcursionWindowResult;
 import com.coldchain.modules.telemetry.api.dto.IngestBatchCommand;
 import com.coldchain.modules.telemetry.api.dto.IngestBatchResult;
 import com.coldchain.modules.telemetry.api.dto.RegisterDeviceCommand;
 import com.coldchain.modules.telemetry.api.dto.SeriesResult;
 import com.coldchain.shared.pagination.PageCriteria;
 import com.coldchain.shared.pagination.PagedResult;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -27,4 +29,6 @@ public interface TelemetryApi {
     PagedResult<DeviceResult> listDevices(UUID organizationId, PageCriteria criteria);
 
     SeriesResult seriesOf(UUID shipmentId, UUID organizationId);
+
+    ExcursionWindowResult excursionWindowOf(UUID shipmentId, UUID excursionId, Duration margin);
 }

@@ -361,6 +361,7 @@ com.coldchain.modules.shipment.api.dto.CustodyEventResult#toOrganizationId():jav
 com.coldchain.modules.shipment.api.dto.DispatchShipmentCommand
 com.coldchain.modules.shipment.api.dto.DispatchShipmentCommand#deviceId():java.util.UUID
 com.coldchain.modules.shipment.api.dto.DispatchShipmentCommand#shipmentId():java.util.UUID
+com.coldchain.modules.shipment.api.dto.ExcursionContextResult#excursion():com.coldchain.modules.telemetry.api.dto.ExcursionResult
 com.coldchain.modules.shipment.api.dto.OpenHandoffCommand
 com.coldchain.modules.shipment.api.dto.OpenHandoffCommand#shipmentId():java.util.UUID
 com.coldchain.modules.shipment.api.dto.OpenHandoffCommand#toOrganizationId():java.util.UUID
@@ -440,6 +441,7 @@ com.coldchain.modules.telemetry.api.TelemetryApi
 com.coldchain.modules.telemetry.api.TelemetryApi#assignDevice(com.coldchain.modules.telemetry.api.dto.AssignDeviceCommand):com.coldchain.modules.telemetry.api.dto.AssignmentResult
 com.coldchain.modules.telemetry.api.TelemetryApi#detachDevice(java.util.UUID,java.time.Instant):com.coldchain.modules.telemetry.api.dto.AssignmentResult
 com.coldchain.modules.telemetry.api.TelemetryApi#deviceOf(java.util.UUID):com.coldchain.modules.telemetry.api.dto.DeviceResult
+com.coldchain.modules.telemetry.api.TelemetryApi#excursionWindowOf(java.util.UUID,java.util.UUID,java.time.Duration):com.coldchain.modules.telemetry.api.dto.ExcursionWindowResult
 com.coldchain.modules.telemetry.api.TelemetryApi#ingestBatch(com.coldchain.modules.telemetry.api.dto.IngestBatchCommand):com.coldchain.modules.telemetry.api.dto.IngestBatchResult
 com.coldchain.modules.telemetry.api.TelemetryApi#listDevices(java.util.UUID,com.coldchain.shared.pagination.PageCriteria):com.coldchain.shared.pagination.PagedResult
 com.coldchain.modules.telemetry.api.TelemetryApi#registerDevice(com.coldchain.modules.telemetry.api.dto.RegisterDeviceCommand):com.coldchain.modules.telemetry.api.dto.DeviceResult
@@ -476,6 +478,11 @@ com.coldchain.modules.telemetry.api.dto.ExcursionResult#openedAt():java.time.Ins
 com.coldchain.modules.telemetry.api.dto.ExcursionResult#peakCelsius():java.math.BigDecimal
 com.coldchain.modules.telemetry.api.dto.ExcursionResult#shipmentId():java.util.UUID
 com.coldchain.modules.telemetry.api.dto.ExcursionResult#status():com.coldchain.modules.telemetry.api.ExcursionStatus
+com.coldchain.modules.telemetry.api.dto.ExcursionWindowResult
+com.coldchain.modules.telemetry.api.dto.ExcursionWindowResult#excursion():com.coldchain.modules.telemetry.api.dto.ExcursionResult
+com.coldchain.modules.telemetry.api.dto.ExcursionWindowResult#from():java.time.Instant
+com.coldchain.modules.telemetry.api.dto.ExcursionWindowResult#readings():java.util.List
+com.coldchain.modules.telemetry.api.dto.ExcursionWindowResult#to():java.time.Instant
 com.coldchain.modules.telemetry.api.dto.IngestBatchCommand
 com.coldchain.modules.telemetry.api.dto.IngestBatchCommand#deviceId():java.util.UUID
 com.coldchain.modules.telemetry.api.dto.IngestBatchCommand#idempotencyKey():java.lang.String

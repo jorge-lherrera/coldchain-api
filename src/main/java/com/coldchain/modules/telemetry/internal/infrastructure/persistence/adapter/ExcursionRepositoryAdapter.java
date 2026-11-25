@@ -5,6 +5,7 @@ import com.coldchain.modules.telemetry.internal.domain.repository.ExcursionRepos
 import com.coldchain.modules.telemetry.internal.infrastructure.persistence.jpa.ExcursionJpaRepository;
 import com.coldchain.modules.telemetry.internal.infrastructure.persistence.mapper.TelemetryPersistenceMapper;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Repository;
 
@@ -32,6 +33,11 @@ public class ExcursionRepositoryAdapter implements ExcursionRepository {
         return excursions.findByShipmentIdOrderByOpenedAtAsc(shipmentId).stream()
                 .map(mapper::toDomain)
                 .toList();
+    }
+
+    @Override
+    public Optional<Excursion> findById(UUID excursionId) {
+        return excursions.findById(excursionId).map(mapper::toDomain);
     }
 
     @Override

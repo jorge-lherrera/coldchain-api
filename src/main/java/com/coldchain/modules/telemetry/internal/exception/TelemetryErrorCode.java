@@ -16,7 +16,9 @@ public enum TelemetryErrorCode implements ErrorCode {
     SERIAL_ALREADY_REGISTERED("error.telemetry.serial_already_registered", ErrorCategory.CONFLICT,
             "Another device already uses that serial number"),
     EMPTY_BATCH("error.telemetry.empty_batch", ErrorCategory.VALIDATION,
-            "A batch with no readings says nothing");
+            "A batch with no readings says nothing"),
+    EXCURSION_NOT_FOUND("error.telemetry.excursion_not_found", ErrorCategory.NOT_FOUND,
+            "That shipment has no such excursion");
 
     private final String messageKey;
 

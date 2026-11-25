@@ -88,6 +88,19 @@ class ExcursionTest {
     }
 
     @Test
+    void anExcursionIsLastSeenWhereItClosedOrWhereTheLatestReadingLeftIt() {
+        Excursion open = above(new BigDecimal("9.50"))
+                .deepenedTo(new BigDecimal("10.00"), OPENED.plus(25, ChronoUnit.MINUTES));
+        Excursion closed = open.close(OPENED.plus(40, ChronoUnit.MINUTES), LAST_READING);
+
+        assertThat(open.lastSeenAt())
+                .describedAs("an excursion still open ends, as far as anybody knows, at the last "
+                        + "reading that was out of band")
+                .isEqualTo(OPENED.plus(25, ChronoUnit.MINUTES));
+        assertThat(closed.lastSeenAt()).isEqualTo(OPENED.plus(40, ChronoUnit.MINUTES));
+    }
+
+    @Test
     void anExcursionFoundAgainKeepsTheIdentityItWasStoredWith() {
         Excursion stored = Excursion.restore(UUID.fromString("01930000-0000-7000-8000-000000000005"),
                 ORGANIZATION, SHIPMENT, ExcursionKind.ABOVE_MAX, ExcursionStatus.OPEN, OPENED, null,

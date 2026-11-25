@@ -4,6 +4,7 @@ import com.coldchain.modules.telemetry.api.TelemetryApi;
 import com.coldchain.modules.telemetry.api.dto.AssignDeviceCommand;
 import com.coldchain.modules.telemetry.api.dto.AssignmentResult;
 import com.coldchain.modules.telemetry.api.dto.DeviceResult;
+import com.coldchain.modules.telemetry.api.dto.ExcursionWindowResult;
 import com.coldchain.modules.telemetry.api.dto.IngestBatchCommand;
 import com.coldchain.modules.telemetry.api.dto.IngestBatchResult;
 import com.coldchain.modules.telemetry.api.dto.RegisterDeviceCommand;
@@ -12,11 +13,13 @@ import com.coldchain.modules.telemetry.internal.application.usecase.command.Assi
 import com.coldchain.modules.telemetry.internal.application.usecase.command.DetachDeviceUseCase;
 import com.coldchain.modules.telemetry.internal.application.usecase.command.IngestBatchUseCase;
 import com.coldchain.modules.telemetry.internal.application.usecase.command.RegisterDeviceUseCase;
+import com.coldchain.modules.telemetry.internal.application.usecase.query.ExcursionWindowUseCase;
 import com.coldchain.modules.telemetry.internal.application.usecase.query.GetDeviceUseCase;
 import com.coldchain.modules.telemetry.internal.application.usecase.query.ListDevicesUseCase;
 import com.coldchain.modules.telemetry.internal.application.usecase.query.QuerySeriesUseCase;
 import com.coldchain.shared.pagination.PageCriteria;
 import com.coldchain.shared.pagination.PagedResult;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
@@ -38,10 +41,12 @@ public class TelemetryFacade implements TelemetryApi {
 
     private final QuerySeriesUseCase querySeries;
 
+    private final ExcursionWindowUseCase excursionWindow;
+
     public TelemetryFacade(RegisterDeviceUseCase registerDevice, AssignDeviceUseCase assignDevice,
             DetachDeviceUseCase detachDevice, IngestBatchUseCase ingestBatch,
             ListDevicesUseCase listDevices, GetDeviceUseCase getDevice,
-            QuerySeriesUseCase querySeries) {
+            QuerySeriesUseCase querySeries, ExcursionWindowUseCase excursionWindow) {
         this.registerDevice = registerDevice;
         this.assignDevice = assignDevice;
         this.detachDevice = detachDevice;
@@ -49,6 +54,7 @@ public class TelemetryFacade implements TelemetryApi {
         this.listDevices = listDevices;
         this.getDevice = getDevice;
         this.querySeries = querySeries;
+        this.excursionWindow = excursionWindow;
     }
 
     @Override
@@ -84,5 +90,11 @@ public class TelemetryFacade implements TelemetryApi {
     @Override
     public SeriesResult seriesOf(UUID shipmentId, UUID organizationId) {
         return querySeries.execute(shipmentId, organizationId);
+    }
+
+    @Override
+    public ExcursionWindowResult excursionWindowOf(UUID shipmentId, UUID excursionId,
+            Duration margin) {
+        return excursionWindow.execute(shipmentId, excursionId, margin);
     }
 }

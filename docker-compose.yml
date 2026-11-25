@@ -109,6 +109,7 @@ services:
       COLDCHAIN_API_URL: http://api:8080/api
       PLATFORM_CLIENT_ID: ${PLATFORM_CLIENT_ID}
       PLATFORM_CLIENT_SECRET: ${PLATFORM_CLIENT_SECRET}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     read_only: true
     tmpfs:
       - /tmp

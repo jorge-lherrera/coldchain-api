@@ -48,6 +48,9 @@ coldchain:
       base-url: ${COLDCHAIN_API_URL:http://localhost:8080/api}
       client-id: ${PLATFORM_CLIENT_ID:coldchain-triage}
       client-secret: ${PLATFORM_CLIENT_SECRET:}
+    model:
+      api-key: ${ANTHROPIC_API_KEY:}
+      name: ${TRIAGE_MODEL:claude-opus-5-5}
 
 server:
   port: ${TRIAGE_SERVER_PORT:8081}

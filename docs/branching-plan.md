@@ -364,11 +364,13 @@ docs: the triage foundations as they were built
 the dead letter topic.
 
 ```
-test(triage): the shape rules of the service
-feat(triage): an inbox that drops duplicates and resumes the unfinished
 feat(triage): alerts from the excursion feed, in the order things happened
 feat(triage): rule-based triage
-feat(triage): dead-letter only what can never be processed
+feat(triage): an inbox that drops duplicates and resumes the unfinished
+feat(triage): consume the feed, and dead-letter only what can never be processed
+fix(build): keep every Gradle wrapper on LF line endings
+test(triage): the shape rules of the service
+docs: the triage consumer as it was built
 ```
 
 **Done when:** a duplicate is one alert, a close before its open is a closed alert, and a malformed

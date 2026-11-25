@@ -14,7 +14,7 @@ class MessageKeyStyleTest {
             Pattern.compile("(error|success)[.][a-z]+[.][a-z][a-z0-9_]*");
 
     private static final List<String> AREAS =
-            List.of("core", "identity", "catalog", "shipment", "telemetry", "compliance");
+            List.of("core", "identity", "catalog", "shipment", "telemetry", "compliance", "advisory");
 
     @Test
     void everyMessageKeyFollowsTheThreeSegmentCanon() {

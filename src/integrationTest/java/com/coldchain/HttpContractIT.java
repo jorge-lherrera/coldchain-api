@@ -313,6 +313,12 @@ class HttpContractIT {
         assertThat(data(series).get("points").size()).isEqualTo(12);
         assertThat(data(series).get("excursions").size()).isEqualTo(1);
 
+        Answer alerts = call(HttpMethod.GET, "/v1/shipments/{shipmentId}/alerts", carrier, null, shipmentId);
+        expect(alerts, 200);
+        assertThat(data(alerts).isArray())
+                .describedAs("a participant reads the advice as a list, empty until triage sends some")
+                .isTrue();
+
         Answer context = call(HttpMethod.GET,
                 "/internal/v1/shipments/{shipmentId}/excursions/{excursionId}/context", platform(), null,
                 shipmentId, data(series).get("excursions").get(0).get("id").asString());

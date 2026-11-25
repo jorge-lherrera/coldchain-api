@@ -228,7 +228,7 @@ binds.
 | Id | Rule | Sev | Enforcer | Machine | Status |
 |---|---|---|---|---|---|
 | R7.1 | **The global `default_batch_fetch_size` is configured** and it is the one that rules | COST | `PersistenceFetchArchTest.theGlobalBatchFetchSizeIsConfigured` | yes | green |
-| R7.2 | **Every listing endpoint has a query budget checked by exact equality**: one query more breaks it and one query less breaks it too. A budget that only has an upper bound stops noticing the day a read disappears because it started returning nothing | COST | `ShipmentListingQueryBudgetIT` · `TelemetrySeriesQueryBudgetIT` | yes | green |
+| R7.2 | **Every listing endpoint has a query budget checked by exact equality**: one query more breaks it and one query less breaks it too. A budget that only has an upper bound stops noticing the day a read disappears because it started returning nothing | COST | `ShipmentListingQueryBudgetIT` · `TelemetrySeriesQueryBudgetIT` · `ShipmentAlertsQueryBudgetIT` | yes | green |
 | R7.3 | **Aggregation is computed in the database, not by pulling rows into Java.** The compliance dashboard and the downsampled time series are `GROUP BY`, not streams | COST | `PersistenceFetchArchTest.aggregatesAreProjectedNotComputedInMemory` | yes | green |
 | R7.4 | **A batch write is one statement, not one per row.** Reading ingestion writes thousands of rows at a time with application-generated UUIDs precisely so there is no round trip per row | COST | `TelemetryIngestionQueryBudgetIT` | yes | green |
 | R7.5 | **Pagination is `OFFSET ... ROWS FETCH NEXT ... ROWS ONLY`**, never a nested `ROWNUM` | COST | `PersistenceFetchArchTest.paginationUsesTheAnsiOffsetSyntax` | yes | green |

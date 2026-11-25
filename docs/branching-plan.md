@@ -407,6 +407,7 @@ docs: the excursion context as it was built
 ```
 feat(triage): ask the API for the excursion context with the platform token
 feat(triage): triage without context when the API does not answer
+docs: the context request as it was built
 ```
 
 **Done when:** with the API stopped, the alert still exists, with `context_available = false`.

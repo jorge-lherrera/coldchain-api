@@ -149,13 +149,29 @@ the carrier holding custody.
 ## Step 5 · Asking for the context
 
 - `ColdChainApiClient` implements `ExcursionContextSource` with `RestClient`.
-- It obtains the platform token, keeps it until shortly before it expires, and asks for a new one
-  instead of retrying a `401`.
-- Resilience4j around the call:
-  - a timeout of two seconds;
-  - three retries with backoff, on connection errors and `5xx` only;
-  - a circuit breaker that stops asking while the API is down.
+- It obtains the platform token, keeps it until a minute before it expires, and asks for a new one
+  instead of retrying a `401`: one fresh token and one more request.
+- Around the call:
+  - a timeout of two seconds, in the HTTP client: it abandons the socket, where a Resilience4j time
+    limiter would only abandon a thread;
+  - Resilience4j: three attempts with exponential backoff, on connection errors and `5xx` only;
+  - a Resilience4j circuit breaker over the last ten calls, open for thirty seconds once half of them
+    failed, so a stopped API costs no time per excursion.
+  - A `404` is an answer, not a failure: it is neither retried nor counted by the breaker.
 - **No context is not a failure.** Triage goes on without it and records `context_available = false`.
+  Without a configured secret it never asks.
+- The flow splits around the call, so no transaction waits on the network:
+  - transaction 1 records the closing event as `RECEIVED` and applies it to the alert;
+  - the context is asked for with no transaction open;
+  - transaction 2 saves the triage and marks the event `PROCESSED`.
+  A late `ExcursionOpened` for an alert already closed takes the same path, because it brings the peak
+  the first triage did not have.
+- With the context, the rules weigh the duration against the shipment's frozen single-excursion
+  allowance: `HIGH` from the allowance, `MEDIUM` from half of it. Without it, the allowance is thirty
+  minutes, which is the rule of step 2.
+- Compose passes `PLATFORM_CLIENT_SECRET` to triage and only its Argon2id hash to the API.
+- The integration tests stand up a fake API next to the containers: it answers the token and the
+  context, refuses a wrong token, and can be down for one shipment.
 
 **Check:** with the API stopped, an excursion still becomes an alert, with `context_available = false`.
 

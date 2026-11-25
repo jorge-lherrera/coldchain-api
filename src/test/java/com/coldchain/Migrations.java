@@ -15,6 +15,8 @@ final class Migrations {
 
     static final Path FOLDER = Path.of("src", "main", "resources", "db", "migration");
 
+    static final List<String> FRAMEWORK_TABLES = List.of("EVENT_PUBLICATION");
+
     private static final Pattern FILE_NAME = Pattern.compile("V([0-9]+)__([a-z0-9_]+)[.]sql");
 
     private static final Pattern CREATE_TABLE =
@@ -67,7 +69,9 @@ final class Migrations {
         for (Script script : scripts()) {
             Matcher matcher = CREATE_TABLE.matcher(script.text());
             while (matcher.find()) {
-                tables.add(new Table(matcher.group(1), matcher.group(2), script));
+                if (!FRAMEWORK_TABLES.contains(matcher.group(1))) {
+                    tables.add(new Table(matcher.group(1), matcher.group(2), script));
+                }
             }
         }
         return List.copyOf(tables);
@@ -78,7 +82,9 @@ final class Migrations {
         for (Script script : scripts()) {
             Matcher matcher = CREATE_INDEX.matcher(script.text());
             while (matcher.find()) {
-                indexes.add(new Index(matcher.group(2), matcher.group(3), matcher.group(1) != null));
+                if (!FRAMEWORK_TABLES.contains(matcher.group(3))) {
+                    indexes.add(new Index(matcher.group(2), matcher.group(3), matcher.group(1) != null));
+                }
             }
         }
         return List.copyOf(indexes);

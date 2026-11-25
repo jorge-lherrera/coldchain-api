@@ -5,20 +5,30 @@ import com.coldchain.modules.identity.api.dto.IssueClientTokenCommand;
 import com.coldchain.modules.identity.api.dto.TokenResult;
 import com.coldchain.modules.identity.api.event.ClientTokenIssued;
 import com.coldchain.modules.identity.internal.domain.model.ApiClient;
+import com.coldchain.modules.identity.internal.domain.model.PlatformClient;
 import com.coldchain.modules.identity.internal.domain.repository.ApiClientRepository;
 import com.coldchain.modules.identity.internal.domain.service.AccessTokenIssuer;
+import com.coldchain.modules.identity.internal.domain.service.PlatformClientDirectory;
 import com.coldchain.modules.identity.internal.domain.service.SecretHasher;
 import com.coldchain.modules.identity.internal.exception.IdentityErrorCode;
 import com.coldchain.shared.annotation.UseCase;
 import com.coldchain.shared.exception.DomainException;
+import com.coldchain.shared.infrastructure.log.LogMessages;
 import java.time.Clock;
+import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 
 @UseCase
 public class IssueClientTokenUseCase {
 
+    private static final Logger LOG = LoggerFactory.getLogger(IssueClientTokenUseCase.class);
+
     private final ApiClientRepository clients;
+
+    private final PlatformClientDirectory platformClients;
 
     private final SecretHasher hasher;
 
@@ -28,9 +38,10 @@ public class IssueClientTokenUseCase {
 
     private final Clock clock;
 
-    public IssueClientTokenUseCase(ApiClientRepository clients, SecretHasher hasher,
-            AccessTokenIssuer accessTokens, ApplicationEventPublisher events, Clock clock) {
+    public IssueClientTokenUseCase(ApiClientRepository clients, PlatformClientDirectory platformClients,
+            SecretHasher hasher, AccessTokenIssuer accessTokens, ApplicationEventPublisher events, Clock clock) {
         this.clients = clients;
+        this.platformClients = platformClients;
         this.hasher = hasher;
         this.accessTokens = accessTokens;
         this.events = events;
@@ -39,6 +50,10 @@ public class IssueClientTokenUseCase {
 
     @Transactional
     public TokenResult execute(IssueClientTokenCommand command) {
+        Optional<PlatformClient> platform = platformClients.find(command.clientId());
+        if (platform.isPresent()) {
+            return issueForPlatform(platform.get(), command);
+        }
         ApiClient client = clients.findByClientId(command.clientId())
                 .filter(found -> hasher.matches(command.clientSecret(), found.secretHash()))
                 .filter(ApiClient::active)
@@ -48,6 +63,19 @@ public class IssueClientTokenUseCase {
                 client.scopes());
         events.publishEvent(new ClientTokenIssued(client.organizationId(), ActorType.CLIENT, client.id(),
                 clock.instant()));
+        return bearer(accessToken);
+    }
+
+    private TokenResult issueForPlatform(PlatformClient platform, IssueClientTokenCommand command) {
+        if (!hasher.matches(command.clientSecret(), platform.secretHash())) {
+            throw DomainException.of(IdentityErrorCode.INVALID_CLIENT_CREDENTIALS);
+        }
+        String accessToken = accessTokens.issueForPlatform(platform.actorId(), platform.scopes());
+        LOG.info(LogMessages.PLATFORM_ACCESS_ISSUED, platform.clientId());
+        return bearer(accessToken);
+    }
+
+    private TokenResult bearer(String accessToken) {
         return new TokenResult(accessToken, null, "Bearer", accessTokens.accessTokenLifetime().toSeconds());
     }
 }

@@ -4,5 +4,6 @@ public enum ActorType {
 
     USER,
     CLIENT,
-    SYSTEM
+    SYSTEM,
+    PLATFORM
 }

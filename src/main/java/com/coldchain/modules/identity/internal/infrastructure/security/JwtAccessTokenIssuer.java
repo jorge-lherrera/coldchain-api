@@ -45,6 +45,25 @@ public class JwtAccessTokenIssuer implements AccessTokenIssuer {
                 .claim(TokenClaims.SCOPE, scopes.stream().map(Scope::name).sorted()
                         .collect(Collectors.joining(" ")))
                 .build();
+        return sign(claims);
+    }
+
+    @Override
+    public String issueForPlatform(UUID actorId, Set<Scope> scopes) {
+        Instant now = clock.instant();
+        JwtClaimsSet claims = JwtClaimsSet.builder()
+                .issuer(properties.issuer())
+                .issuedAt(now)
+                .expiresAt(now.plus(properties.accessTokenLifetime()))
+                .subject(actorId.toString())
+                .claim(TokenClaims.ACTOR_TYPE, ActorType.PLATFORM.name())
+                .claim(TokenClaims.SCOPE, scopes.stream().map(Scope::name).sorted()
+                        .collect(Collectors.joining(" ")))
+                .build();
+        return sign(claims);
+    }
+
+    private String sign(JwtClaimsSet claims) {
         JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
         return encoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();
     }

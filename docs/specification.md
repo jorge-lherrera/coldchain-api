@@ -151,6 +151,9 @@ erDiagram
 - Password login, issuing an *access token* and a *refresh token*, with rotation and revocation.
 - Machine credentials (`client_credentials`) for the sensor gateways, with scopes narrowed down to
   ingestion.
+- One platform credential for `coldchain-triage`, defined by configuration rather than stored, whose
+  token names no organization and opens `/internal/**` only
+  ([ADR-011](adr/ADR-011-platform-credential-for-service-calls.md)).
 - Granting and revoking roles; querying the effective scopes of the authenticated user.
 - Automatic audit of every write: who, which resource, when and with what payload.
 
@@ -166,6 +169,9 @@ erDiagram
 - Email is globally unique and case-insensitive: a unique index over `LOWER(email)`, because in
   Oracle the default comparison very much is case-sensitive.
 - A machine credential's scopes are a child table, not a comma-separated string.
+- The platform credential's secret is held as an Argon2id hash in the environment, like every client
+  secret. Issuing its token is logged, not audited: the audit trail belongs to an organization, and the
+  platform belongs to none.
 - Refresh tokens are **stored**, because rotation has to detect reuse: presenting a token that was
   already rotated revokes its whole family. Only a SHA-256 of the token is kept, never the token, and
   the fast hash is the right one here — a 256-bit random value has nothing to brute-force, so the

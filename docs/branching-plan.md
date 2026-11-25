@@ -383,6 +383,7 @@ message does not stop the consumer.
 ```
 feat(identity): a platform client defined by configuration
 feat(identity): an internal filter chain that only the platform token enters
+docs: the platform credential as it was built
 ```
 
 **Done when:** each token is refused on the other's routes, both ways, in an integration test.

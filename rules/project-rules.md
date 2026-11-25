@@ -270,12 +270,13 @@ client function can read either.
 | R9.10 | **Asking for a resource you cannot see returns `404`, not `403`.** A `403` confirms the resource exists, and that is already leaking information to a third party | SEC | `ShipmentVisibilityIT` | yes | green |
 | R9.11 | **Passwords and client secrets are hashed with Argon2id.** Never reversible, never a fast hash | SEC | `SecurityPostureArchTest.secretsAreHashedWithArgon2` | yes | green |
 | R9.12 | **Access token 15 minutes, refresh 7 days, and refresh rotation detects reuse**: using the same refresh token twice revokes the whole family | SEC | `SecurityPostureArchTest.theTokenLifetimesAreFifteenMinutesAndSevenDays` · `RefreshRotationIT` | yes | green |
-| R9.13 | **A machine credential carries only the ingestion scope.** A compromised gateway cannot read a single shipment, and it never chooses its own organization: that travels signed in the token | SEC | `SecurityPostureArchTest.aMachineClientCannotAskForATenant` | yes | green |
+| R9.13 | **A tenant's machine credential carries only the ingestion scope.** A compromised gateway cannot read a single shipment, and it never chooses its own organization: that travels signed in the token. The one platform credential belongs to no tenant, and R9.19 fences it | SEC | `SecurityPostureArchTest.aMachineClientCannotAskForATenant` | yes | green |
 | R9.14 | **Rate limiting on login, on token issuance and on ingestion** | SEC | `SecurityPostureArchTest.theUnauthenticatedEndpointsAreRateLimited` | yes | green |
 | R9.15 | **Security headers are mandatory**: CSP `default-src 'none'`, `frame-ancestors 'none'`, HSTS one year, `Referrer-Policy`, `Permissions-Policy` | SEC | `SecurityPostureArchTest.everySecurityHeaderIsDeclared` | yes | green |
 | R9.16 | **No secret is in the code or in a committed configuration file** | SEC | `SecurityPostureArchTest.noSecretIsWrittenIntoTheConfiguration` | yes | green |
 | R9.17 | **Every denial is audited**, distinguishing an unauthenticated call from a denied scope, and goes out as a translated `ProblemDetail` | SEC | `SecurityPostureArchTest.everyDenialIsAudited` | yes | green |
 | R9.18 | **Every write leaves an `AUDIT_ENTRY`** with actor, resource and payload, written in the same transaction. If the audit write fails, the operation fails: auditing is not best-effort | SEC | `AuditTrailIT.everyWriteLeavesItsEntry` | yes | green |
+| R9.19 | **The platform token enters `/internal/**` and nothing else, and nothing else enters `/internal/**`** ([ADR-011](../docs/adr/ADR-011-platform-credential-for-service-calls.md)). The kind of token decides the surface at the filter chain; the scope is still checked on the method (R9.2). The proof walks every published route with the platform token, so a new route is covered the day it exists | SEC | `PlatformCredentialIT.thePlatformTokenIsRefusedOnEveryPublicRoute`, `PlatformCredentialIT.anOrganizationTokenIsRefusedOnTheInternalSurface` | yes | green |
 
 ---
 

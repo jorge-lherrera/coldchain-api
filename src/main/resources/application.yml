@@ -73,7 +73,12 @@ coldchain:
     window: 1m
     trusted-proxies: []
 
+  platform:
+    client-id: ${PLATFORM_CLIENT_ID:}
+    client-secret-hash: ${PLATFORM_CLIENT_SECRET_HASH:}
+
 springdoc:
+  paths-to-exclude: /internal/**
   api-docs:
     enabled: false
     path: /v3/api-docs

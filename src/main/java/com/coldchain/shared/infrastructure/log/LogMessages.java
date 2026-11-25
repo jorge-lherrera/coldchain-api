@@ -13,6 +13,9 @@ public final class LogMessages {
     public static final String DENIED_SCOPE =
             "Denied an authenticated call that lacked the scope: method={} path={} reason={}";
 
+    public static final String PLATFORM_ACCESS_ISSUED =
+            "Platform access issued, outside any organization's audit trail: client={}";
+
     public static final String I18N_BUNDLES_DISCOVERED =
             "Message catalogue assembled from the classpath: bundles={}";
 

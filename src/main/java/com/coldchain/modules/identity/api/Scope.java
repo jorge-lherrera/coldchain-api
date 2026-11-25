@@ -21,7 +21,8 @@ public enum Scope {
     TELEMETRY_INGEST,
     TELEMETRY_READ,
     COMPLIANCE_READ,
-    COMPLIANCE_ISSUE;
+    COMPLIANCE_ISSUE,
+    PLATFORM_EXCURSION_READ;
 
     public static Optional<Scope> ofCode(String code) {
         return Stream.of(values()).filter(scope -> scope.name().equals(code)).findFirst();

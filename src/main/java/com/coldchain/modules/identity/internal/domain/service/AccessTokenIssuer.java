@@ -10,6 +10,8 @@ public interface AccessTokenIssuer {
 
     String issue(ActorType actorType, UUID actorId, UUID organizationId, Set<Scope> scopes);
 
+    String issueForPlatform(UUID actorId, Set<Scope> scopes);
+
     Duration accessTokenLifetime();
 
     Duration refreshTokenLifetime();

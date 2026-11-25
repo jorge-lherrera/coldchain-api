@@ -45,6 +45,9 @@ class ExcursionFeedIT {
     @Autowired
     private JdbcTemplate jdbc;
 
+    @Autowired
+    private FakeColdChainApi api;
+
     @Test
     void anOpenedExcursionBecomesAnOpenAlertTriagedByTheRules() {
         UUID shipment = UUID.randomUUID();
@@ -104,6 +107,44 @@ class ExcursionFeedIT {
     }
 
     @Test
+    void aClosedExcursionIsWeighedAgainstWhatItsShipmentAllows() {
+        UUID shipment = UUID.randomUUID();
+        UUID excursion = UUID.randomUUID();
+        UUID closing = UUID.randomUUID();
+        api.knows(shipment, 60);
+
+        publish(shipment, opened(UUID.randomUUID(), shipment, excursion, "11.50"));
+        publish(shipment, closed(closing, shipment, excursion, 45));
+
+        awaitProcessed(closing);
+        Map<String, Object> alert = alertOf(excursion);
+        assertThat(alert.get("status")).isEqualTo("CLOSED");
+        assertThat(alert.get("context_available")).isEqualTo(true);
+        assertThat(alert.get("severity"))
+                .describedAs("forty-five minutes is a warning on a shipment that tolerates an hour out of range")
+                .isEqualTo("MEDIUM");
+    }
+
+    @Test
+    void withTheApiDownTheAlertStillGoesOutWithoutContext() {
+        UUID shipment = UUID.randomUUID();
+        UUID excursion = UUID.randomUUID();
+        UUID closing = UUID.randomUUID();
+        api.isDownFor(shipment);
+
+        publish(shipment, closed(closing, shipment, excursion, 45));
+
+        awaitProcessed(closing);
+        Map<String, Object> alert = alertOf(excursion);
+        assertThat(alert.get("triaged_at")).isNotNull();
+        assertThat(alert.get("source")).isEqualTo("RULES");
+        assertThat(alert.get("context_available"))
+                .describedAs("an API that does not answer degrades the alert; it never withholds it")
+                .isEqualTo(false);
+        assertThat(alert.get("severity")).isEqualTo("HIGH");
+    }
+
+    @Test
     void aMalformedMessageIsDeadLetteredAndTheNextOneStillArrives() {
         UUID shipment = UUID.randomUUID();
         UUID excursion = UUID.randomUUID();
@@ -153,6 +194,11 @@ class ExcursionFeedIT {
                 "SELECT count(*) FROM excursion_alert WHERE excursion_id = ? AND triaged_at IS NOT NULL",
                 excursion) == 1);
         return alertOf(excursion);
+    }
+
+    private void awaitProcessed(UUID event) {
+        await().atMost(PATIENCE).until(() -> count(
+                "SELECT count(*) FROM inbox_event WHERE event_id = ? AND status = 'PROCESSED'", event) == 1);
     }
 
     private Map<String, Object> alertOf(UUID excursion) {

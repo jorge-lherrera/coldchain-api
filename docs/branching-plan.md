@@ -29,6 +29,7 @@ main                                  publishable at any moment
       ├── feat/platform-credential
       ├── feat/excursion-context
       ├── feat/triage-context
+      ├── chore/spring-upgrade
       ├── feat/triage-llm
       ├── feat/advisory
       ├── feat/triage-evaluation
@@ -411,6 +412,27 @@ docs: the context request as it was built
 ```
 
 **Done when:** with the API stopped, the alert still exists, with `context_available = false`.
+
+### Between 19 and 20 · `chore/spring-upgrade`
+
+Spring Boot 4.2.0 shipped on 2026-11-19, and Spring AI 2.1, which step 20 builds on, is built on it.
+Both services move together:
+
+- Spring Boot 4.1.1 → 4.2.0, in the API and in triage;
+- Spring Modulith 2.1.1 → 2.2.0. Its event publication schema is unchanged, so there is no
+  migration;
+- springdoc-openapi 3.1.1 → 3.2.1.
+
+Spring Modulith 2.2 deprecates `IncompleteEventPublications` for removal. The resubmitter moves to
+`FailedEventPublications`, and the registry's staleness check marks a publication failed after a
+minute without completing, so what was resubmitted before is still resubmitted.
+
+```
+chore(build): move both services to Spring Boot 4.2
+docs: the Spring Boot 4.2 upgrade
+```
+
+**Done when:** every test of both builds passes on 4.2, the Oracle ones included.
 
 ### 20 · `feat/triage-llm`
 

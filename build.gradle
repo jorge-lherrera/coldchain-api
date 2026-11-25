@@ -1,6 +1,6 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '4.1.1'
+	id 'org.springframework.boot' version '4.2.0'
 	id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -18,7 +18,7 @@ repositories {
 }
 
 ext {
-	set('springModulithVersion', "2.1.1")
+	set('springModulithVersion', "2.2.0")
 }
 
 sourceSets {
@@ -43,7 +43,7 @@ dependencies {
 	implementation 'org.bouncycastle:bcprov-jdk18on:1.82'
 	implementation 'com.bucket4j:bucket4j_jdk17-core:8.14.0'
 	implementation 'com.github.ben-manes.caffeine:caffeine'
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1'
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.1'
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 	implementation 'org.springframework.modulith:spring-modulith-starter-core'
 	implementation 'org.springframework.boot:spring-boot-starter-kafka'

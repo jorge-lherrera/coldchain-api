@@ -63,9 +63,9 @@ touch how modules talk to each other.
 - **A new piece of infrastructure.** Kafka joins Oracle in `docker-compose.yml`, and the integration
   tests start it with Testcontainers, the same way they start Oracle.
 - **A new table, owned by Flyway.** The event publication registry needs its table, and under R13.1
-  it is a hand-written migration, never generated. It has to match the schema Spring Modulith 2.1
-  expects, and a completed publication is deleted as soon as Kafka confirms it, so the table only
-  ever holds what is still pending.
+  it is a hand-written migration, never generated. It has to match the schema Spring Modulith
+  expects, which is the same from 2.1 to 2.2, and a completed publication is deleted as soon as Kafka
+  confirms it, so the table only ever holds what is still pending.
 - **Kafka being down does not stop the business.** An excursion is still committed; its event waits
   in the registry and goes out when the broker is back. The price is latency: the feed is seconds
   behind the database, never in the same request.

@@ -33,7 +33,7 @@ com.coldchain.triage/
     infrastructure/
       persistence/           entity · jpa · adapter · mapper
       coldchainapi/          ColdChainApiClient
-      llm/                   SpringAiTriageAdvisor
+      llm/                   SpringAiTriageAdvisor · TriagePrompt · TriageAnswer · TriageModelConfig
       messaging/             AlertFeedConfig
     exception/               TriageErrorCode
   shared/                    error model, UUID v7
@@ -177,23 +177,47 @@ the carrier holding custody.
 
 ## Step 6 · The model
 
-- First, the version check: the Spring AI line that supports Spring Boot 4.1. If none does yet,
-  `TriageAdvisor` is implemented with Anthropic's official Java SDK behind the same port, and
-  nothing else changes.
-- **Outside any transaction, `TriageExcursionUseCase`, for `ExcursionClosed` only:**
-  - context first, then `TriageAdvisor`, with its own timeout;
-  - structured output into a record that is validated: closed sets, confidence between 0 and 1,
-    the three summaries present. An answer that fails validation is discarded, never repaired.
-- **The rules answer whenever the model does not:** timeout, refusal, invalid output, or no key
-  configured. `source` says which one answered.
-- The prompt is `src/main/resources/prompts/triage-v1.st`. It holds measurements and the
-  participation of the custody holder, and nothing that names a person or an organization.
-- **Transaction 2:** save the triage with its provenance (model, prompt version, tokens, latency),
-  and mark the inbox event `PROCESSED`.
-- Tests stub the chat model. CI never calls one.
+- The version check came out in favour of Spring AI: 2.1.0 is built on Spring Boot 4.2, and its
+  Anthropic module uses Anthropic's official Java SDK underneath. Triage takes the module alone,
+  `spring-ai-anthropic`, without its auto-configuration, so that a missing key means no chat model
+  at all rather than a context that fails to start.
+- **`TriageAdvisor`, a port of the domain:** `adviseOn(alert, context)` gives a triage, or nothing
+  when the model gave no usable answer. `SpringAiTriageAdvisor` implements it in
+  `infrastructure/llm`, and an ArchUnit rule keeps Spring AI and the Anthropic SDK out of every other
+  package.
+- **Outside any transaction, `TriageExcursionUseCase`, when the excursion closes:**
+  - context first, then the advisor;
+  - the model is asked only when the API gave the context. Without the readings there is nothing
+    for it to read, and the rules say as much at no cost.
+- **The request:**
+  - the model is a property, `claude-opus-5-5` by default. The effort is set explicitly, `medium`,
+    so that a change of model does not silently change how much it thinks;
+  - no sampling parameters, which the current models reject;
+  - the answer is requested as structured output against `prompts/triage-v1.schema.json`. A forced
+    tool call is the other way to get JSON back, and the current models reject it while they think;
+  - sixty seconds per call and one retry, set in the SDK's client.
+- **The answer is untrusted, schema or not:**
+  - only a completed turn is read. A refusal, an answer cut at the token limit, or any other stop
+    reason is left to the rules;
+  - it is parsed into `TriageAnswer`, with the closed sets read as strings, and validated: a cause or
+    a severity outside its set, a confidence outside 0 to 1, a summary missing in one language or too
+    long for its column, no recommended action. Any flaw discards the answer whole. It is never
+    repaired.
+- **The rules answer whenever the model does not:** no key, an error or no answer in time, a
+  refusal, an answer cut short or outside the schema, or no context to read. `source` says which one
+  answered, and the rules never replace a model's triage of the same excursion.
+- The prompt is `src/main/resources/prompts/triage-v1.st`. It holds the excursion, the frozen
+  thresholds, the readings of the window, and the custody holder and the handoffs by participation.
+  Nothing in it names a shipment, a person or an organization, and a unit test renders it and checks
+  that no identifier made it in.
+- **Transaction 2:** save the triage with its provenance (the model that answered, the prompt
+  version, the input and output tokens, the latency), and mark the inbox event `PROCESSED`.
+- Tests stub the chat model, and CI never calls one. The integration tests put a fake chat model in
+  the context: it gives each answer it was handed once, and fails when it has none left.
 
-**Check:** with a key, the walkthrough's excursion comes back with `source = LLM`; without one, with
-`source = RULES`, and the rest of the pipeline cannot tell the difference.
+**Check:** with the model answering, a closed excursion with its context comes back with
+`source = LLM` and its provenance. With the model failing, answering outside the schema, or not
+configured, it comes back with `source = RULES`, and the event is processed either way.
 
 ## Step 7 · Publishing the alert
 

@@ -46,7 +46,7 @@ checked, with a deterministic answer whenever the model does not give one.**
   repaired.
 - **A deterministic fallback, always.**
   - Rule-based triage takes over whenever the model times out, refuses, answers outside the schema,
-    or has no key configured:
+    has no key configured, or has no context to read, because the API did not give it:
     - the severity comes from the peak and the duration against the frozen thresholds;
     - the cause is `UNKNOWN`;
     - the summary comes from a template.
@@ -59,7 +59,7 @@ checked, with a deterministic answer whenever the model does not give one.**
   the *participation* of whoever held custody (`SHIPPER`, `CARRIER`, `CONSIGNEE`). No names, no
   emails, no documents, no identifiers of any sort.
 - **The model is a port.**
-  - Triage talks to it through Spring AI's chat client, behind a `TriageAdvisor` port, so the
+  - Triage talks to it through Spring AI's chat model, behind a `TriageAdvisor` port, so the
     provider is an adapter.
   - The model is a property, `claude-opus-5-5` by default.
   - The prompt is a versioned file in the repository.

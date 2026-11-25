@@ -126,7 +126,7 @@ writer erased the first without a trace.
 
 ```bash
 cp .env.example .env             # local credentials, never committed
-docker compose up -d --wait      # Oracle 23ai Free, Kafka and the API, on 1521, 9092 and 8080
+docker compose up -d --wait      # Oracle, Kafka, the API, and triage with its PostgreSQL
 scripts/demo.sh                  # the whole story below, end to end
 ```
 

@@ -352,8 +352,8 @@ and `./gradlew rules` is still green.
 ```
 chore(triage): scaffold the service with its own build and PostgreSQL
 chore(triage): production image and the service in compose
-test(triage): the shape rules of the service
 chore(build): run the triage build in CI
+docs: the triage foundations as they were built
 ```
 
 **Done when:** `docker compose up -d --wait` leaves five healthy containers.
@@ -364,6 +364,7 @@ chore(build): run the triage build in CI
 the dead letter topic.
 
 ```
+test(triage): the shape rules of the service
 feat(triage): an inbox that drops duplicates and resumes the unfinished
 feat(triage): alerts from the excursion feed, in the order things happened
 feat(triage): rule-based triage
@@ -444,7 +445,7 @@ test(triage): golden set of excursions and the evaluation task
 docs(triage): what the model gets right and what it gets wrong
 ```
 
-**Done when:** `./gradlew -p triage evalTriage` prints the confusion matrix, and the triage README
+**Done when:** `./gradlew evalTriage`, in `triage/`, prints the confusion matrix, and the triage README
 publishes it.
 
 ### 23 · `feat/k8s-local`

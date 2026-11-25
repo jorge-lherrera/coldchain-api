@@ -35,8 +35,20 @@ You need **JDK 25** and **Docker** running. Everything else comes from the Gradl
 
 ```bash
 cp .env.example .env             # local credentials, never committed
-docker compose up -d             # Oracle 23ai Free, Kafka and the API, on 1521, 9092 and 8080
+docker compose up -d             # Oracle, Kafka, the API, and triage with its PostgreSQL
 ```
+
+Triage is a build of its own, with its own wrapper: `cd triage && ./gradlew check`.
+
+Two traps on Windows, neither of them in the code:
+
+- **`additional privileges requested: pass "--allow=fs.read=..."`** on `docker compose up --build`
+  means the shell's working directory has a lowercase drive letter (`d:\`). Compose resolves the
+  Dockerfile with an uppercase one, and buildx compares the two paths case-sensitively. Run it from
+  `D:\…` instead.
+- **`bind: ... access permissions`** on a published port means Windows reserved it (`netsh interface
+  ipv4 show excludedportrange protocol=tcp`). Move it in `.env`: `ORACLE_PORT`, `API_PORT`,
+  `POSTGRES_PORT` and `TRIAGE_PORT` are all variables.
 
 To work on the code, run the API from Gradle against the same database:
 

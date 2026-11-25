@@ -48,7 +48,8 @@ class SchemaStandardIT {
             Map.entry("TEMPERATURE_READING", "telemetry"),
             Map.entry("EXCURSION", "telemetry"),
             Map.entry("CERTIFICATE", "compliance"),
-            Map.entry("CERTIFICATE_FINDING", "compliance"));
+            Map.entry("CERTIFICATE_FINDING", "compliance"),
+            Map.entry("EXCURSION_ALERT", "advisory"));
 
     private static final Map<String, String> DELETE_RULE_OF = Map.ofEntries(
             Map.entry("FK_API_CLIENT_ORGANIZATION", "NO ACTION"),
@@ -60,6 +61,7 @@ class SchemaStandardIT {
             Map.entry("FK_CUSTODY_EVENT_SHIPMENT", "CASCADE"),
             Map.entry("FK_DEVICE_ASSIGNMENT_DEVICE", "NO ACTION"),
             Map.entry("FK_DEVICE_ORGANIZATION", "NO ACTION"),
+            Map.entry("FK_EXCURSION_ALERT_ORGANIZATION", "NO ACTION"),
             Map.entry("FK_EXCURSION_ORGANIZATION", "NO ACTION"),
             Map.entry("FK_HANDOFF_REQUEST_FROM_ORGANIZATION", "NO ACTION"),
             Map.entry("FK_HANDOFF_REQUEST_SHIPMENT", "CASCADE"),

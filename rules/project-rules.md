@@ -51,7 +51,7 @@ else hidden. See [ADR-006](../docs/adr/ADR-006-modules-and-events.md).
 
 | Id | Rule | Sev | Enforcer | Machine | Status |
 |---|---|---|---|---|---|
-| R1.1 | A module lives in `com.coldchain.modules.<name>` and its name is **one lowercase word with no separators**. The five are `identity`, `catalog`, `shipment`, `telemetry`, `compliance` | STYLE | `ModuleShapeArchTest.everyModuleIsNamedInOneLowercaseWord` | yes | green |
+| R1.1 | A module lives in `com.coldchain.modules.<name>` and its name is **one lowercase word with no separators**. The six are `identity`, `catalog`, `shipment`, `telemetry`, `compliance`, `advisory` | STYLE | `ModuleShapeArchTest.everyModuleIsNamedInOneLowercaseWord` | yes | green |
 | R1.2 | A module has exactly **two top-level folders**: `api/` and `internal/`. There is no third | STYLE | `ModuleShapeArchTest.everyModuleHasExactlyApiAndInternal` | yes | green |
 | R1.3 | Under `internal/` the folders are `domain/`, `application/`, `infrastructure/` and `exception/`. No others | STYLE | `ModuleShapeArchTest.everyInternalHoldsOnlyItsFourFolders` | yes | green |
 | R1.4 | The layout is fixed where it decides the design: `domain/{model,repository,service}`, `application/{usecase,mapper}` and `infrastructure/persistence/{entity,jpa,adapter,mapper}` ([ADR-007](../docs/adr/ADR-007-hexagonal-module-internals.md)). Under `infrastructure/` a module also holds one folder per outbound technology it actually speaks — `security/` for token issuing and hashing, later a `messaging/` or an `external/`. What is fixed is the shape of persistence, not how many things the outside world is made of | STYLE | `ModuleShapeArchTest.everyLayerKeepsItsFixedLayout` | yes | green |

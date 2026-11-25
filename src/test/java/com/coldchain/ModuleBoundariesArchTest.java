@@ -14,7 +14,7 @@ class ModuleBoundariesArchTest {
     private static final String ROOT = "com.coldchain";
 
     private static final List<String> MODULES =
-            List.of("identity", "catalog", "shipment", "telemetry", "compliance");
+            List.of("identity", "catalog", "shipment", "telemetry", "compliance", "advisory");
 
     private final JavaClasses production = new ClassFileImporter()
             .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)

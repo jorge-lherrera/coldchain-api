@@ -454,12 +454,16 @@ API shows it.
 
 ```
 feat(triage): publish triaged alerts through the outbox
-feat(advisory): schema for the excursion alert
-feat(advisory): consume triaged alerts, the newest one wins
+feat(advisory): store the excursion alert, the newest triage wins
+feat(advisory): consume triaged alerts from the triage service
 feat(advisory): the alerts of a shipment, by participation
 test(core): the verdict never reads advice
 docs: six modules, and the alert in the walkthrough
 ```
+
+The schema was planned as a commit of its own. It could not be one: a table no entity maps fails the
+ownership rule (R1.12), and a module without its door fails R2.1, so the table arrived with the module
+that owns it.
 
 **Done when:** `scripts/demo.sh` prints the alert, an outsider gets `404`, and `compliance` importing
 `advisory` fails the build.

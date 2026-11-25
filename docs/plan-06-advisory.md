@@ -1,7 +1,6 @@
 # Build plan · 06 · advisory
 
-> **Status:** in progress — opened with phase two; its code lands in step 21 of the
-> [branching plan](branching-plan.md).
+> **Status:** closed — built in step 21 of the [branching plan](branching-plan.md).
 
 The sixth module, and the only one whose data does not come from the API itself: it receives the
 triage that `coldchain-triage` publishes ([ADR-010](adr/ADR-010-second-service-for-excursion-triage.md))
@@ -31,7 +30,10 @@ It depends on `shipment::api` only, to decide who may see an alert, and **nothin
 - The three summaries are `VARCHAR2(1000 CHAR)`, not `CLOB`. A summary is a few sentences, and a
   `CLOB` would bring `ORA-22848` with it (R6.8).
 - `context_available` is `NUMBER(1)` with `CHECK (context_available IN (0,1))` (R6.7).
-- `model` is nullable: a rule-based alert has none.
+- `model` is nullable: a rule-based alert has none, and a `CHECK` ties the two together.
+- `organization_id`, with its foreign key and the index the foreign key needs (R9.6, R6.4): the alert
+  belongs to the organization whose excursion it is, as the certificate does. It is not what decides
+  who reads it; participation is.
 
 **Check:** two alerts for the same excursion fail with `ORA-00001`, and a `severity` of `CRITICAL`
 fails the `CHECK`.
@@ -56,14 +58,22 @@ The one rule the module owns is a domain method, tested in milliseconds:
   ([ADR-006](adr/ADR-006-modules-and-events.md)).
 - It deserializes into its own `AlertFeedMessage` and ignores fields it does not know. No type shared
   with triage ([ADR-010](adr/ADR-010-second-service-for-excursion-triage.md)).
+- It takes the record itself, not a converted payload, and parses the bytes in the channel. Spring
+  Modulith's Kafka support switches the application to byte-array serializers and a JSON converter for
+  the outbox; reading the bytes here keeps the parsing, and the decision that a message is unreadable,
+  in the channel, whatever the outbox configures.
 - Consumer group `coldchain-api-advisory`; acknowledgement per record, after the write commits.
 - Errors:
-  - `ErrorHandlingDeserializer`, so malformed JSON goes straight to the dead letter topic;
+  - a message that does not parse, names a value outside a closed set or lacks a required field is
+    unreadable, and goes straight to the dead letter topic with the bytes it arrived with;
   - `DefaultErrorHandler` with exponential backoff, three attempts;
   - then `coldchain.advisory.alert-dlt.v1`.
 - The audit actor of an alert written by the listener is the system actor: no user wrote it.
-- The new channel gets its rows in the rule catalogue, with their machines, in the same change:
-  where a listener lives, what it may call, and the `Message` suffix.
+- The alert topic is declared on this side too, with the shape triage gives it, so the order in which
+  the two services start decides nothing.
+- The new channel gets its rows in the rule catalogue, with their machines, in the same change: where a
+  listener lives (R2.27), the `Message` suffix (R2.28), and what it may call, which is what R5.5 already
+  said of a controller.
 
 ## Step 4 · Reading it, by participation
 
@@ -77,6 +87,8 @@ whoever may see the excursions may see the advice about them.
   English as the fallback. That is the same rule every message the API answers with follows.
 - `probableCause`, `confidence` and `source` always travel together. The client is never shown a
   cause without how sure the triage was and where it came from.
+- Its query budget is checked by exact equality, like every listing (R7.2): reading ten alerts costs
+  what reading one does.
 
 ## Step 5 · The boundary the module exists for
 
@@ -97,9 +109,10 @@ whoever may see the excursions may see the advice about them.
   - the same alert published twice leaves one row;
   - an older triage published after a newer one leaves the newer;
   - a participant reads the alert, and an outsider gets `404`;
-  - `Accept-Language: pt` returns the Portuguese summary;
   - a malformed message lands on the dead letter topic, and the next valid one is still consumed.
-- **Architecture:** `@ApplicationModule(allowedDependencies = {"shared", "shipment::api"})`, verified
+- **The summary language** is the web mapper's job, unit-tested on its own: `pt` gives the Portuguese
+  summary, and a language the API does not speak gives the English one.
+- **Architecture:** `@ApplicationModule(id = "advisory", allowedDependencies = {"shipment::api"})`, verified
   by Modulith (R1.5); the rule of step 5 green.
 
 **Milestone done when:** `scripts/demo.sh` prints the alert for the shipment it just delivered, with

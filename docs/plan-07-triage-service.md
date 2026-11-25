@@ -221,13 +221,23 @@ configured, it comes back with `source = RULES`, and the event is processed eith
 
 ## Step 7 · Publishing the alert
 
-- `AlertTriaged` is published from transaction 2 through the outbox: Spring Modulith's registry on
-  PostgreSQL, externalized to `coldchain.triage.alert.v1`, keyed by `shipmentId`.
+- `AlertTriaged` is published in the transaction that saves the triage: transaction 1 for the alert
+  the rules give at the open, transaction 2 for the one given at the close. It goes through the outbox,
+  Spring Modulith's JPA registry on PostgreSQL, externalized to `coldchain.triage.alert.v1`, keyed by
+  `shipmentId`, with a wire shape of its own, `AlertFeedMessage`.
+- A triage by the rules that does not replace one by the model is not published: nothing changed.
 - The single-threaded externalization that keeps the API's feed in order applies here too, for the
-  same reason ([ADR-009](adr/ADR-009-kafka-for-integration-events.md)).
+  same reason ([ADR-009](adr/ADR-009-kafka-for-integration-events.md)), and the same resubmitter
+  retries what Kafka did not take after a minute.
+- Spring Modulith's Kafka support switches the application to byte-array serializers. The listener of
+  the feed therefore takes the record and parses its bytes itself, which keeps the unreadable message
+  a decision of the channel, and the dead letter topic receives the bytes as they arrived.
 - **If the process dies between transaction 1 and transaction 2**, the offset is not committed and
   Kafka redelivers the event. The inbox says `RECEIVED`, not `PROCESSED`, so the triage runs again.
   The API's consumer keeps the newest triage, so a second publication is harmless.
+
+**Check:** the two alerts of an excursion, the rules' at the open and the model's at the close, reach
+the topic in that order, on the shipment's partition.
 
 ## Step 8 · Evaluation
 

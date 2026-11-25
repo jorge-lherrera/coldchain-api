@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "properties": {
+    "probableCause": {
+      "type": "string",
+      "enum": ["HANDLING_DURING_HANDOFF", "REFRIGERATION_FAILURE", "DOOR_OPENING", "SENSOR_FAULT", "UNKNOWN"]
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["LOW", "MEDIUM", "HIGH"]
+    },
+    "confidence": {
+      "type": "number",
+      "description": "The probability that the cause is right, between 0 and 1."
+    },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "en": { "type": "string", "description": "In English, under 400 characters." },
+        "es": { "type": "string", "description": "In Spanish, under 400 characters." },
+        "pt": { "type": "string", "description": "In Portuguese, under 400 characters." }
+      },
+      "required": ["en", "es", "pt"],
+      "additionalProperties": false
+    },
+    "recommendedAction": {
+      "type": "string",
+      "description": "One instruction in English, under 300 characters."
+    }
+  },
+  "required": ["probableCause", "severity", "confidence", "summary", "recommendedAction"],
+  "additionalProperties": false
+}

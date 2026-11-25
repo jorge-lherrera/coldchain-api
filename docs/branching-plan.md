@@ -441,6 +441,7 @@ docs: the Spring Boot 4.2 upgrade
 ```
 feat(triage): ask the model for a probable cause through a port
 feat(triage): fall back to rules when the model does not answer
+docs: the model as it was built
 ```
 
 **Done when:** the same excursion is triaged with `source = LLM` with a key and `source = RULES`

@@ -38,6 +38,11 @@ class TestcontainersConfiguration {
     }
 
     @Bean
+    FakeChatModel fakeChatModel() {
+        return new FakeChatModel();
+    }
+
+    @Bean
     DynamicPropertyRegistrar theApiTriageAsksForContext(FakeColdChainApi api) {
         return registry -> {
             registry.add("coldchain.triage.api.base-url", api::baseUrl);

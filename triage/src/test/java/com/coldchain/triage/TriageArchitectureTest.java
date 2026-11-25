@@ -32,6 +32,12 @@ class TriageArchitectureTest {
             .because("a delivery channel calls TriageApi and knows nothing behind it");
 
     @ArchTest
+    static final ArchRule onlyTheAdapterKnowsAModelExists = noClasses()
+            .that().resideOutsideOfPackage("..internal.infrastructure.llm..")
+            .should().dependOnClassesThat().resideInAnyPackage("org.springframework.ai..", "com.anthropic..")
+            .because("the model is a port: a change of provider touches one package and nothing else (ADR-012)");
+
+    @ArchTest
     static final ArchRule useCasesLiveInTheirFolder = classes()
             .that().haveSimpleNameEndingWith("UseCase")
             .and().areNotAnnotations()

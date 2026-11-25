@@ -36,6 +36,12 @@ class ExcursionFeedIT {
 
     private static final Instant CLOSED = Instant.parse("2026-05-01T10:50:00Z");
 
+    private static final String DOOR_OPENING = """
+            {"probableCause":"DOOR_OPENING","severity":"LOW","confidence":0.8,\
+            "summary":{"en":"A short spike that recovered on its own.","es":"Un pico corto que se recuperó solo.",\
+            "pt":"Um pico curto que se recuperou sozinho."},\
+            "recommendedAction":"Keep the doors shut while loading."}""";
+
     @Autowired
     private KafkaTemplate<String, String> kafka;
 
@@ -47,6 +53,9 @@ class ExcursionFeedIT {
 
     @Autowired
     private FakeColdChainApi api;
+
+    @Autowired
+    private FakeChatModel model;
 
     @Test
     void anOpenedExcursionBecomesAnOpenAlertTriagedByTheRules() {
@@ -142,6 +151,91 @@ class ExcursionFeedIT {
                 .describedAs("an API that does not answer degrades the alert; it never withholds it")
                 .isEqualTo(false);
         assertThat(alert.get("severity")).isEqualTo("HIGH");
+    }
+
+    @Test
+    void aClosedExcursionWithItsContextIsTriagedByTheModel() {
+        UUID shipment = UUID.randomUUID();
+        UUID excursion = UUID.randomUUID();
+        UUID closing = UUID.randomUUID();
+        api.knows(shipment, 60);
+        model.willAnswer(DOOR_OPENING);
+
+        publish(shipment, opened(UUID.randomUUID(), shipment, excursion, "11.50"));
+        publish(shipment, closed(closing, shipment, excursion, 45));
+
+        awaitProcessed(closing);
+        Map<String, Object> alert = alertOf(excursion);
+        assertThat(alert.get("source")).isEqualTo("LLM");
+        assertThat(alert.get("probable_cause")).isEqualTo("DOOR_OPENING");
+        assertThat(alert.get("severity")).isEqualTo("LOW");
+        assertThat(alert.get("confidence")).asString().isEqualTo("0.80");
+        assertThat(alert.get("summary_es")).isEqualTo("Un pico corto que se recuperó solo.");
+        assertThat(alert.get("model")).isEqualTo(FakeChatModel.MODEL);
+        assertThat(alert.get("prompt_version")).isEqualTo("triage-v1");
+        assertThat(alert.get("input_tokens")).isEqualTo(FakeChatModel.INPUT_TOKENS);
+        assertThat(alert.get("output_tokens")).isEqualTo(FakeChatModel.OUTPUT_TOKENS);
+        assertThat(alert.get("latency_ms")).isNotNull();
+        assertThat(alert.get("context_available")).isEqualTo(true);
+    }
+
+    @Test
+    void aModelThatDoesNotAnswerLeavesTheAlertToTheRules() {
+        UUID shipment = UUID.randomUUID();
+        UUID excursion = UUID.randomUUID();
+        UUID closing = UUID.randomUUID();
+        api.knows(shipment, 60);
+        int askedBefore = model.timesAsked();
+
+        publish(shipment, opened(UUID.randomUUID(), shipment, excursion, "11.50"));
+        publish(shipment, closed(closing, shipment, excursion, 45));
+
+        awaitProcessed(closing);
+        Map<String, Object> alert = alertOf(excursion);
+        assertThat(model.timesAsked()).isGreaterThan(askedBefore);
+        assertThat(alert.get("source"))
+                .describedAs("a model that fails degrades the alert to the rules; it never withholds it")
+                .isEqualTo("RULES");
+        assertThat(alert.get("model")).isNull();
+        assertThat(alert.get("severity")).isEqualTo("MEDIUM");
+        assertThat(alert.get("context_available")).isEqualTo(true);
+    }
+
+    @Test
+    void anAnswerOutsideTheSchemaIsDiscardedAndTheRulesAnswer() {
+        UUID shipment = UUID.randomUUID();
+        UUID excursion = UUID.randomUUID();
+        UUID closing = UUID.randomUUID();
+        api.knows(shipment, 60);
+        model.willAnswer(DOOR_OPENING.replace("0.8", "1.2"));
+
+        publish(shipment, opened(UUID.randomUUID(), shipment, excursion, "11.50"));
+        publish(shipment, closed(closing, shipment, excursion, 45));
+
+        awaitProcessed(closing);
+        Map<String, Object> alert = alertOf(excursion);
+        assertThat(alert.get("source")).isEqualTo("RULES");
+        assertThat(alert.get("confidence")).isNull();
+        assertThat(inboxStatusOf(closing))
+                .describedAs("a bad answer is the model's failure, never a reason to retry or dead-letter the event")
+                .isEqualTo("PROCESSED");
+    }
+
+    @Test
+    void withoutTheContextTheModelIsNotAsked() {
+        UUID shipment = UUID.randomUUID();
+        UUID excursion = UUID.randomUUID();
+        UUID closing = UUID.randomUUID();
+        api.isDownFor(shipment);
+        int askedBefore = model.timesAsked();
+
+        publish(shipment, closed(closing, shipment, excursion, 45));
+
+        awaitProcessed(closing);
+        assertThat(model.timesAsked())
+                .describedAs("without the readings there is nothing for the model to read")
+                .isEqualTo(askedBefore);
+        assertThat(alertOf(excursion).get("source")).isEqualTo("RULES");
     }
 
     @Test

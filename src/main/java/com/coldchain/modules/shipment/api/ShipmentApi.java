@@ -4,6 +4,7 @@ import com.coldchain.modules.shipment.api.dto.AcceptHandoffCommand;
 import com.coldchain.modules.shipment.api.dto.AddParticipantCommand;
 import com.coldchain.modules.shipment.api.dto.CreateShipmentCommand;
 import com.coldchain.modules.shipment.api.dto.DispatchShipmentCommand;
+import com.coldchain.modules.shipment.api.dto.ExcursionContextResult;
 import com.coldchain.modules.shipment.api.dto.OpenHandoffCommand;
 import com.coldchain.modules.shipment.api.dto.OpenHandoffResult;
 import com.coldchain.modules.shipment.api.dto.ShipmentResult;
@@ -41,4 +42,6 @@ public interface ShipmentApi {
     ShipmentTimelineResult timelineOf(UUID shipmentId, UUID viewerOrganizationId);
 
     PagedResult<ShipmentResult> listShipments(UUID viewerOrganizationId, PageCriteria criteria);
+
+    ExcursionContextResult excursionContextOf(UUID shipmentId, UUID excursionId);
 }

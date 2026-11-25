@@ -1,10 +1,12 @@
 package com.coldchain.modules.shipment.internal.application.mapper;
 
+import com.coldchain.modules.shipment.api.dto.CustodyChange;
 import com.coldchain.modules.shipment.api.dto.CustodyEventResult;
 import com.coldchain.modules.shipment.api.dto.ShipmentLineResult;
 import com.coldchain.modules.shipment.api.dto.ShipmentResult;
 import com.coldchain.modules.shipment.api.dto.ShipmentThresholds;
 import com.coldchain.modules.shipment.internal.domain.model.CustodyEvent;
+import com.coldchain.modules.shipment.internal.domain.model.CustodyHandoff;
 import com.coldchain.modules.shipment.internal.domain.model.FrozenThresholds;
 import com.coldchain.modules.shipment.internal.domain.model.Shipment;
 import com.coldchain.modules.shipment.internal.domain.model.ShipmentLine;
@@ -31,6 +33,10 @@ public class ShipmentApiMapper {
         return new CustodyEventResult(event.id(), event.sequenceNumber(), event.kind(),
                 event.fromOrganizationId(), event.toOrganizationId(), event.siteId(), event.actorId(),
                 event.occurredAt(), event.recordedAt(), event.previousHash(), event.hash());
+    }
+
+    public CustodyChange toChange(CustodyHandoff handoff) {
+        return new CustodyChange(handoff.occurredAt(), handoff.from(), handoff.to());
     }
 
     public ShipmentThresholds toThresholds(FrozenThresholds thresholds) {

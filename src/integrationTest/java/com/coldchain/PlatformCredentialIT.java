@@ -16,12 +16,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
@@ -38,11 +35,12 @@ class PlatformCredentialIT {
 
     private static final String PLATFORM_CLIENT_ID = "coldchain-triage";
 
-    private static final String PLATFORM_SECRET = "integration-platform-" + UUID.randomUUID();
+    private static final String PLATFORM_SECRET = "integration-platform-secret";
 
     private static final String PASSWORD = "integration-password";
 
-    private static final String INTERNAL_PROBE = "/internal/v1/probe";
+    private static final String EXCURSION_CONTEXT =
+            "/internal/v1/shipments/" + UUID.randomUUID() + "/excursions/" + UUID.randomUUID() + "/context";
 
     private static final Set<String> OPEN_TO_EVERYONE = Set.of(
             "POST /v1/organizations", "POST /v1/auth/login", "POST /v1/auth/refresh",
@@ -60,13 +58,6 @@ class PlatformCredentialIT {
 
     @LocalServerPort
     private int port;
-
-    @DynamicPropertySource
-    static void platformClient(DynamicPropertyRegistry registry) {
-        registry.add("coldchain.platform.client-id", () -> PLATFORM_CLIENT_ID);
-        registry.add("coldchain.platform.client-secret-hash",
-                () -> Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8().encode(PLATFORM_SECRET));
-    }
 
     @Test
     void thePlatformClientGetsATokenThatBelongsToNoOrganization() {
@@ -92,7 +83,7 @@ class PlatformCredentialIT {
 
     @Test
     void anOrganizationTokenIsRefusedOnTheInternalSurface() {
-        Answer denied = call(HttpMethod.GET, INTERNAL_PROBE, organizationToken(), null);
+        Answer denied = call(HttpMethod.GET, EXCURSION_CONTEXT, organizationToken(), null);
 
         assertThat(denied.status())
                 .describedAs("a tenant's token reads what its organization takes part in, never every excursion")
@@ -101,16 +92,18 @@ class PlatformCredentialIT {
 
     @Test
     void aCallWithNoTokenIsRefusedOnTheInternalSurface() {
-        assertThat(call(HttpMethod.GET, INTERNAL_PROBE, null, null).status()).isEqualTo(401);
+        assertThat(call(HttpMethod.GET, EXCURSION_CONTEXT, null, null).status()).isEqualTo(401);
     }
 
     @Test
     void thePlatformTokenGetsThroughTheInternalChain() {
-        Answer probed = call(HttpMethod.GET, INTERNAL_PROBE, platformToken(), null);
+        Answer probed = call(HttpMethod.GET, EXCURSION_CONTEXT, platformToken(), null);
 
         assertThat(probed.status())
-                .describedAs("past the filter chain there is no handler yet; whatever answers, it is not a denial")
-                .isNotIn(401, 403);
+                .describedAs("past the chain and the scope, the shipment simply does not exist: %s",
+                        probed.body())
+                .isEqualTo(404);
+        assertThat(probed.body().get("errorCode").asString()).isEqualTo("SHIPMENT_NOT_FOUND");
     }
 
     @Test
@@ -140,7 +133,7 @@ class PlatformCredentialIT {
             Set<RequestMethod> methods = info.getMethodsCondition().getMethods();
             for (String pattern : info.getPatternValues()) {
                 if (pattern.startsWith("/error") || pattern.startsWith("/v3/api-docs")
-                        || pattern.startsWith("/swagger-ui")) {
+                        || pattern.startsWith("/swagger-ui") || pattern.startsWith("/internal/")) {
                     continue;
                 }
                 for (RequestMethod method : methods.isEmpty() ? Set.of(RequestMethod.GET) : methods) {

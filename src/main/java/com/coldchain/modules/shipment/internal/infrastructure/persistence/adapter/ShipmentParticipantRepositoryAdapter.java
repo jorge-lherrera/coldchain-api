@@ -41,6 +41,13 @@ public class ShipmentParticipantRepositoryAdapter implements ShipmentParticipant
     }
 
     @Override
+    public List<ShipmentParticipant> findEveryOf(UUID shipmentId) {
+        return participants.findByShipmentId(shipmentId).stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
     public Optional<ShipmentParticipant> findLive(UUID shipmentId, UUID organizationId) {
         return participants.findByShipmentIdAndOrganizationIdAndRevokedAtIsNull(shipmentId,
                 organizationId).map(mapper::toDomain);

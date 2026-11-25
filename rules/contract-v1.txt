@@ -317,6 +317,7 @@ com.coldchain.modules.shipment.api.ShipmentApi#cancelShipment(java.util.UUID):co
 com.coldchain.modules.shipment.api.ShipmentApi#createShipment(com.coldchain.modules.shipment.api.dto.CreateShipmentCommand):com.coldchain.modules.shipment.api.dto.ShipmentResult
 com.coldchain.modules.shipment.api.ShipmentApi#deliverShipment(java.util.UUID):com.coldchain.modules.shipment.api.dto.ShipmentResult
 com.coldchain.modules.shipment.api.ShipmentApi#dispatchShipment(com.coldchain.modules.shipment.api.dto.DispatchShipmentCommand):com.coldchain.modules.shipment.api.dto.ShipmentResult
+com.coldchain.modules.shipment.api.ShipmentApi#excursionContextOf(java.util.UUID,java.util.UUID):com.coldchain.modules.shipment.api.dto.ExcursionContextResult
 com.coldchain.modules.shipment.api.ShipmentApi#listShipments(java.util.UUID,com.coldchain.shared.pagination.PageCriteria):com.coldchain.shared.pagination.PagedResult
 com.coldchain.modules.shipment.api.ShipmentApi#openHandoff(com.coldchain.modules.shipment.api.dto.OpenHandoffCommand):com.coldchain.modules.shipment.api.dto.OpenHandoffResult
 com.coldchain.modules.shipment.api.ShipmentApi#rejectHandoff(java.util.UUID):void
@@ -346,6 +347,10 @@ com.coldchain.modules.shipment.api.dto.CreateShipmentCommand#lines():java.util.L
 com.coldchain.modules.shipment.api.dto.CreateShipmentCommand#organizationId():java.util.UUID
 com.coldchain.modules.shipment.api.dto.CreateShipmentCommand#originSiteId():java.util.UUID
 com.coldchain.modules.shipment.api.dto.CreateShipmentCommand#reference():java.lang.String
+com.coldchain.modules.shipment.api.dto.CustodyChange
+com.coldchain.modules.shipment.api.dto.CustodyChange#from():com.coldchain.modules.shipment.api.Participation
+com.coldchain.modules.shipment.api.dto.CustodyChange#occurredAt():java.time.Instant
+com.coldchain.modules.shipment.api.dto.CustodyChange#to():com.coldchain.modules.shipment.api.Participation
 com.coldchain.modules.shipment.api.dto.CustodyEventResult
 com.coldchain.modules.shipment.api.dto.CustodyEventResult#actorId():java.util.UUID
 com.coldchain.modules.shipment.api.dto.CustodyEventResult#fromOrganizationId():java.util.UUID
@@ -361,7 +366,16 @@ com.coldchain.modules.shipment.api.dto.CustodyEventResult#toOrganizationId():jav
 com.coldchain.modules.shipment.api.dto.DispatchShipmentCommand
 com.coldchain.modules.shipment.api.dto.DispatchShipmentCommand#deviceId():java.util.UUID
 com.coldchain.modules.shipment.api.dto.DispatchShipmentCommand#shipmentId():java.util.UUID
+com.coldchain.modules.shipment.api.dto.ExcursionContextResult
+com.coldchain.modules.shipment.api.dto.ExcursionContextResult#custodian():com.coldchain.modules.shipment.api.Participation
 com.coldchain.modules.shipment.api.dto.ExcursionContextResult#excursion():com.coldchain.modules.telemetry.api.dto.ExcursionResult
+com.coldchain.modules.shipment.api.dto.ExcursionContextResult#handoffs():java.util.List
+com.coldchain.modules.shipment.api.dto.ExcursionContextResult#minutesSinceLastHandoff():java.lang.Long
+com.coldchain.modules.shipment.api.dto.ExcursionContextResult#readings():java.util.List
+com.coldchain.modules.shipment.api.dto.ExcursionContextResult#shipmentId():java.util.UUID
+com.coldchain.modules.shipment.api.dto.ExcursionContextResult#thresholds():com.coldchain.modules.shipment.api.dto.ShipmentThresholds
+com.coldchain.modules.shipment.api.dto.ExcursionContextResult#windowFrom():java.time.Instant
+com.coldchain.modules.shipment.api.dto.ExcursionContextResult#windowTo():java.time.Instant
 com.coldchain.modules.shipment.api.dto.OpenHandoffCommand
 com.coldchain.modules.shipment.api.dto.OpenHandoffCommand#shipmentId():java.util.UUID
 com.coldchain.modules.shipment.api.dto.OpenHandoffCommand#toOrganizationId():java.util.UUID

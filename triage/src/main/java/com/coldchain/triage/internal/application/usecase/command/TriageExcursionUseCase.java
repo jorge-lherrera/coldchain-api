@@ -1,5 +1,6 @@
 package com.coldchain.triage.internal.application.usecase.command;
 
+import com.coldchain.triage.internal.application.mapper.AlertTriagedMapper;
 import com.coldchain.triage.internal.domain.model.ExcursionAlert;
 import com.coldchain.triage.internal.domain.model.ExcursionContext;
 import com.coldchain.triage.internal.domain.model.Triage;
@@ -13,6 +14,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.support.TransactionOperations;
 
 /**
@@ -33,16 +35,19 @@ public class TriageExcursionUseCase {
 
     private final TransactionOperations transactions;
 
+    private final ApplicationEventPublisher events;
+
     private final Clock clock;
 
     public TriageExcursionUseCase(ExcursionAlertRepository alerts, InboxEventRepository inbox,
             ExcursionContextSource contexts, TriageAdvisor advisor, TransactionOperations transactions,
-            Clock clock) {
+            ApplicationEventPublisher events, Clock clock) {
         this.alerts = alerts;
         this.inbox = inbox;
         this.contexts = contexts;
         this.advisor = advisor;
         this.transactions = transactions;
+        this.events = events;
         this.clock = clock;
     }
 
@@ -56,7 +61,10 @@ public class TriageExcursionUseCase {
             Triage triage = advised.orElseGet(() -> context
                     .map(found -> RuleBasedTriage.of(alert, found, now))
                     .orElseGet(() -> RuleBasedTriage.of(alert, now)));
-            alerts.save(alert.triagedBy(triage));
+            ExcursionAlert triaged = alerts.save(alert.triagedBy(triage));
+            if (triaged.triage() == triage) {
+                events.publishEvent(AlertTriagedMapper.toEvent(triaged));
+            }
             inbox.findById(eventId)
                     .filter(received -> !received.processed())
                     .ifPresent(received -> inbox.save(received.processedAt(now)));

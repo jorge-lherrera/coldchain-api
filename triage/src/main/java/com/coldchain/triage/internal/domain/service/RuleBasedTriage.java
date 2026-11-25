@@ -5,6 +5,8 @@ import com.coldchain.triage.api.ProbableCause;
 import com.coldchain.triage.api.Severity;
 import com.coldchain.triage.api.TriageSource;
 import com.coldchain.triage.internal.domain.model.ExcursionAlert;
+import com.coldchain.triage.internal.domain.model.ExcursionContext;
+import com.coldchain.triage.internal.domain.model.FrozenThresholds;
 import com.coldchain.triage.internal.domain.model.Summary;
 import com.coldchain.triage.internal.domain.model.Triage;
 import com.coldchain.triage.internal.domain.model.TriageProvenance;
@@ -13,9 +15,7 @@ import java.time.Instant;
 
 public final class RuleBasedTriage {
 
-    static final long MEDIUM_FROM_MINUTES = 15;
-
-    static final long HIGH_FROM_MINUTES = 30;
+    static final long DEFAULT_ALLOWED_MINUTES = 30;
 
     private static final String OPEN_ACTION =
             "Check the shipment now and confirm with whoever holds it that the cooling works.";
@@ -27,20 +27,33 @@ public final class RuleBasedTriage {
     }
 
     public static Triage of(ExcursionAlert alert, Instant triagedAt) {
-        return new Triage(ProbableCause.UNKNOWN, severityOf(alert), null, summaryOf(alert),
-                alert.closed() ? CLOSED_ACTION : OPEN_ACTION, TriageSource.RULES, TriageProvenance.ofRules(false),
-                triagedAt);
+        return triage(alert, severityOf(alert, DEFAULT_ALLOWED_MINUTES), false, triagedAt);
     }
 
-    static Severity severityOf(ExcursionAlert alert) {
+    public static Triage of(ExcursionAlert alert, ExcursionContext context, Instant triagedAt) {
+        long allowed = context.frozenThresholds()
+                .map(FrozenThresholds::maxSingleExcursionMinutes)
+                .map(Integer::longValue)
+                .orElse(DEFAULT_ALLOWED_MINUTES);
+        return triage(alert, severityOf(alert, allowed), true, triagedAt);
+    }
+
+    private static Triage triage(ExcursionAlert alert, Severity severity, boolean contextAvailable,
+            Instant triagedAt) {
+        return new Triage(ProbableCause.UNKNOWN, severity, null, summaryOf(alert),
+                alert.closed() ? CLOSED_ACTION : OPEN_ACTION, TriageSource.RULES,
+                TriageProvenance.ofRules(contextAvailable), triagedAt);
+    }
+
+    static Severity severityOf(ExcursionAlert alert, long allowedMinutes) {
         if (!alert.closed() || alert.durationMinutes() == null) {
             return Severity.MEDIUM;
         }
         long minutes = alert.durationMinutes();
-        if (minutes >= HIGH_FROM_MINUTES) {
+        if (minutes >= allowedMinutes) {
             return Severity.HIGH;
         }
-        return minutes >= MEDIUM_FROM_MINUTES ? Severity.MEDIUM : Severity.LOW;
+        return minutes * 2 >= allowedMinutes ? Severity.MEDIUM : Severity.LOW;
     }
 
     private static Summary summaryOf(ExcursionAlert alert) {

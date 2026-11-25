@@ -44,6 +44,10 @@ coldchain:
   triage:
     feed-topic: coldchain.telemetry.excursion.v1
     dead-letter-topic: coldchain.triage.excursion-dlt.v1
+    api:
+      base-url: ${COLDCHAIN_API_URL:http://localhost:8080/api}
+      client-id: ${PLATFORM_CLIENT_ID:coldchain-triage}
+      client-secret: ${PLATFORM_CLIENT_SECRET:}
 
 server:
   port: ${TRIAGE_SERVER_PORT:8081}

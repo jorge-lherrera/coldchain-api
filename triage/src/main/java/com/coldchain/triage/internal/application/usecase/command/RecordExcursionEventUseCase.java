@@ -37,17 +37,23 @@ public class RecordExcursionEventUseCase {
                 command.peakCelsius(), command.durationMinutes());
         Optional<InboxEvent> seen = inbox.findById(event.eventId());
         if (seen.map(InboxEvent::processed).orElse(false)) {
-            return new RecordExcursionEventResult(event.eventId(), event.excursionId(), EventOutcome.DUPLICATE);
+            return new RecordExcursionEventResult(event.eventId(), event.excursionId(), EventOutcome.DUPLICATE,
+                    false);
         }
 
         Instant now = clock.instant();
         ExcursionAlert alert = alerts.findByExcursionId(event.excursionId())
                 .map(stored -> stored.apply(event))
                 .orElseGet(() -> ExcursionAlert.firstHeardFrom(event));
+        InboxEvent received = seen.orElseGet(() -> InboxEvent.received(event, now));
+        EventOutcome outcome = seen.isPresent() ? EventOutcome.RESUMED : EventOutcome.RECORDED;
+        if (alert.closed()) {
+            alerts.save(alert);
+            inbox.save(received);
+            return new RecordExcursionEventResult(event.eventId(), event.excursionId(), outcome, true);
+        }
         alerts.save(alert.triagedBy(RuleBasedTriage.of(alert, now)));
-        inbox.save(seen.orElseGet(() -> InboxEvent.received(event, now)).processedAt(now));
-
-        return new RecordExcursionEventResult(event.eventId(), event.excursionId(),
-                seen.isPresent() ? EventOutcome.RESUMED : EventOutcome.RECORDED);
+        inbox.save(received.processedAt(now));
+        return new RecordExcursionEventResult(event.eventId(), event.excursionId(), outcome, false);
     }
 }

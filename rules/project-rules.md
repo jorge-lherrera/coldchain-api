@@ -70,6 +70,7 @@ else hidden. See [ADR-006](../docs/adr/ADR-006-modules-and-events.md).
 | R1.12 | **Every table has exactly one owning module.** A second mapping from another module is a contract copied instead of called: the coupling survives, the edge disappears, and the column names become an agreement nobody signed | INT | `SchemaOwnershipArchTest.everyTableHasExactlyOneOwningModule` | yes | green |
 | R1.13 | **A query does not name tables outside its module.** Not native SQL, not JPQL, not `JdbcTemplate` | INT | `SchemaOwnershipArchTest.nativeSqlStaysInsideItsOwnModule` | yes | green |
 | R1.14 | **A module does not write to another module's tables** — not even when seeding, which is one of the reasons reference data ships in migrations ([ADR-008](../docs/adr/ADR-008-reference-data-in-flyway.md)) | INT | `SchemaOwnershipArchTest.nativeSqlStaysInsideItsOwnModule` | yes | green |
+| R1.20 | **The verdict never reads advice.** `compliance` does not depend on `advisory`, not even on its `api/`: a model's guess is advice, the certificate is evidence, and evidence that reads a guess stops being evidence ([ADR-012](../docs/adr/ADR-012-triage-is-advice-not-evidence.md)). Spring Modulith already refuses the edge because `compliance` does not declare it (R1.6); this rule names the two packages, so the reason survives an edit to that declaration | INT | `ModuleBoundariesArchTest.theVerdictNeverReadsAdvice` | yes | green |
 
 ### R1.c — The packages that are not modules
 

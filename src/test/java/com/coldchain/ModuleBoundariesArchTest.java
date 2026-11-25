@@ -33,6 +33,16 @@ class ModuleBoundariesArchTest {
                 .check(production));
     }
 
+    @Test
+    void theVerdictNeverReadsAdvice() {
+        ArchRuleDefinition.noClasses()
+                .that().resideInAPackage(ROOT + ".modules.compliance..")
+                .should().dependOnClassesThat().resideInAPackage(ROOT + ".modules.advisory..")
+                .because("a model's guess is advice and the certificate is evidence, and evidence that reads "
+                        + "a guess is no longer evidence (ADR-012)")
+                .check(production);
+    }
+
     private List<String> inhabitedModules() {
         return MODULES.stream()
                 .filter(module -> !production

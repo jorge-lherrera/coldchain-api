@@ -13,13 +13,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.security.autoconfigure.actuate.web.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationTrustResolver;
+import org.springframework.security.authentication.AuthenticationTrustResolverImpl;
+import org.springframework.security.authorization.AuthorizationDecision;
+import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
@@ -27,6 +34,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
@@ -59,6 +67,10 @@ public class SecurityConfig {
             "/swagger-ui.html",
             "/swagger-ui/**");
 
+    private static final String INTERNAL_ROUTES = "/internal/**";
+
+    private static final AuthenticationTrustResolver TRUST = new AuthenticationTrustResolverImpl();
+
     private final String jwtSecret;
 
     public SecurityConfig(@Value("${coldchain.security.jwt-secret}") String jwtSecret) {
@@ -66,8 +78,32 @@ public class SecurityConfig {
     }
 
     @Bean
+    @Order(1)
+    SecurityFilterChain internalFilterChain(HttpSecurity http, ProblemErrorResponder problemErrorResponder)
+            throws Exception {
+        return statelessResourceServer(http.securityMatcher(INTERNAL_ROUTES), problemErrorResponder)
+                .authorizeHttpRequests(requests -> requests.anyRequest().access(onlyPlatformTokens()))
+                .build();
+    }
+
+    @Bean
+    @Order(2)
     SecurityFilterChain apiFilterChain(HttpSecurity http, ProblemErrorResponder problemErrorResponder,
             RateLimitProperties rateLimitProperties, ClientAddress clientAddress) throws Exception {
+        return statelessResourceServer(http, problemErrorResponder)
+                .authorizeHttpRequests(requests -> requests
+                        .requestMatchers(EndpointRequest.to("health")).permitAll()
+                        .requestMatchers(HttpMethod.POST, PUBLIC_ROUTES.toArray(String[]::new)).permitAll()
+                        .requestMatchers(HttpMethod.GET, DOCUMENTATION_ROUTES.toArray(String[]::new))
+                        .permitAll()
+                        .anyRequest().access(onlyOrganizationTokens()))
+                .addFilterBefore(new RateLimitFilter(publicRouteMatcher(), rateLimitProperties,
+                        clientAddress, problemErrorResponder), SecurityContextHolderFilter.class)
+                .build();
+    }
+
+    private static HttpSecurity statelessResourceServer(HttpSecurity http,
+            ProblemErrorResponder problemErrorResponder) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
@@ -81,14 +117,6 @@ public class SecurityConfig {
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
                         .authenticationEntryPoint(problemErrorResponder)
                         .accessDeniedHandler(problemErrorResponder))
-                .authorizeHttpRequests(requests -> requests
-                        .requestMatchers(EndpointRequest.to("health")).permitAll()
-                        .requestMatchers(HttpMethod.POST, PUBLIC_ROUTES.toArray(String[]::new)).permitAll()
-                        .requestMatchers(HttpMethod.GET, DOCUMENTATION_ROUTES.toArray(String[]::new))
-                        .permitAll()
-                        .anyRequest().authenticated())
-                .addFilterBefore(new RateLimitFilter(publicRouteMatcher(), rateLimitProperties,
-                        clientAddress, problemErrorResponder), SecurityContextHolderFilter.class)
                 .headers(headers -> headers
                         .contentSecurityPolicy(policy -> policy.policyDirectives(CONTENT_SECURITY_POLICY))
                         .frameOptions(frame -> frame.deny())
@@ -96,8 +124,26 @@ public class SecurityConfig {
                         .httpStrictTransportSecurity(hsts -> hsts
                                 .includeSubDomains(true)
                                 .maxAgeInSeconds(HSTS_MAX_AGE_SECONDS))
-                        .permissionsPolicyHeader(permissions -> permissions.policy(PERMISSIONS_POLICY)))
-                .build();
+                        .permissionsPolicyHeader(permissions -> permissions.policy(PERMISSIONS_POLICY)));
+    }
+
+    private static AuthorizationManager<RequestAuthorizationContext> onlyPlatformTokens() {
+        return (authentication, context) -> new AuthorizationDecision(
+                signedIn(authentication.get()) && fromThePlatform(authentication.get()));
+    }
+
+    private static AuthorizationManager<RequestAuthorizationContext> onlyOrganizationTokens() {
+        return (authentication, context) -> new AuthorizationDecision(
+                signedIn(authentication.get()) && !fromThePlatform(authentication.get()));
+    }
+
+    private static boolean signedIn(Authentication authentication) {
+        return authentication != null && authentication.isAuthenticated() && !TRUST.isAnonymous(authentication);
+    }
+
+    private static boolean fromThePlatform(Authentication authentication) {
+        return authentication.getPrincipal() instanceof Jwt token
+                && TokenClaims.PLATFORM_ACTOR.equals(token.getClaimAsString(TokenClaims.ACTOR_TYPE));
     }
 
     private static RequestMatcher publicRouteMatcher() {

@@ -16,6 +16,10 @@ snapshot.
 | [007](ADR-007-hexagonal-module-internals.md) | Hexagonal internals: pure domain, ports and adapters | Accepted |
 | [008](ADR-008-reference-data-in-flyway.md) | Reference data ships in Flyway, never in an application seeder | Accepted |
 | [009](ADR-009-kafka-for-integration-events.md) | Excursions leave the monolith through Kafka, as integration events | Accepted |
+| [010](ADR-010-second-service-for-excursion-triage.md) | A second service, `coldchain-triage`, for excursion triage; the domain stays a monolith | Proposed |
+| [011](ADR-011-platform-credential-for-service-calls.md) | One platform credential, by configuration, valid only on `/internal/**` | Proposed |
+| [012](ADR-012-triage-is-advice-not-evidence.md) | Excursion triage is advice, kept where the verdict cannot reach it | Proposed |
+| [013](ADR-013-local-kubernetes-kind-kustomize-strimzi.md) | Local Kubernetes with kind, Kustomize and Strimzi | Proposed |
 
 An ADR explains *why*. What the project **enforces** is declared in
 [`rules/project-rules.md`](../../rules/project-rules.md), and a rule there cites the ADR rather than

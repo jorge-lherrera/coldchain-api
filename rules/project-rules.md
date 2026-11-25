@@ -130,6 +130,16 @@ notices. The canon is the other way round — a whitelist.
 | R2.25 | **Generic type parameters, one capital letter** (`<T>`, `<K, V>`) | STYLE | `JavaIdentifierCanonArchTest.genericParametersAreSingleCapitalLetters` | yes | green |
 | R2.26 | **All code in English**: names, types, log messages, commit subjects. **No machine:** telling an English identifier from a Spanish one needs a dictionary, and the false positives would kill the rule | STYLE | — | none | — |
 
+### R2.d — The messaging channel
+
+A message from a broker enters the application the way a request does, so it gets the same treatment:
+a channel in `delivery/`, a shape of its own, and the module's door as the only thing it calls (R5.5).
+
+| Id | Rule | Sev | Enforcer | Machine | Status |
+|---|---|---|---|---|---|
+| R2.27 | **A class that consumes a broker topic lives in `delivery/messaging/<module>/`**, the module whose door it calls. A listener inside a module would make the module know where its commands come from, which is the channel's business | STYLE | `ModuleFileLayoutArchTest.everyBrokerListenerIsADeliveryChannelOfItsModule` | yes | green |
+| R2.28 | **`<X>Message` is the shape of a topic**, in the channel that reads it (`delivery/messaging/<x>/`) or in the infrastructure that writes it (`internal/infrastructure/messaging/`). It is never shared with the other side of the topic: each service owns its reading of the wire ([ADR-010](../docs/adr/ADR-010-second-service-for-excursion-triage.md)) | STYLE | `ModuleFileLayoutArchTest.everyWireMessageSitsWithTheChannelThatCarriesIt` | yes | green |
+
 ---
 
 ## R3 — The class: how it is built
@@ -179,7 +189,7 @@ notices. The canon is the other way round — a whitelist.
 | R5.2 | **Command and query separated**: `usecase/command/` writes, `usecase/query/` reads and never writes | STYLE | `LayerContractArchTest.queriesDoNotWrite` | yes | green |
 | R5.3 | **No paginated endpoint without declared sortable fields.** An open `sort` parameter is an open door to ordering by an unindexed column | CON | `ArchitectureRulesArchTest.pageableEndpointsDeclareSortableFields` | yes | green |
 | R5.4 | **No unbounded read.** `findAll()` and `findAll(Specification)` inherited from Spring Data do not reach a use case; every listing is `Pageable` | COST | `PersistenceFetchArchTest.noUnboundedReadArrivesThroughAnInheritedOverload` | yes | green |
-| R5.5 | **The controller depends only on `<X>Api`**, never on a use case, a repository or the module's domain | INT | `ArchitectureRulesArchTest.deliveryNeverDependsOnUseCases` · `ArchitectureRulesArchTest.deliveryNeverDependsOnModuleDomain` | yes | green |
+| R5.5 | **The controller and the listener depend only on `<X>Api`**, never on a use case, a repository or the module's domain | INT | `ArchitectureRulesArchTest.deliveryNeverDependsOnUseCases` · `ArchitectureRulesArchTest.deliveryNeverDependsOnModuleDomain` | yes | green |
 | R5.6 | **No JPA entity crosses to a controller.** Always a DTO | CON | `ModuleBoundariesArchTest.moduleInternalsAreOnlyAccessedWithinTheirModule` | yes | green |
 | R5.7 | **`@Valid` on the controller is mandatory** whenever there is a request body | CON | `LayerContractArchTest.everyRequestBodyIsValidated` | yes | green |
 | R5.8 | **Business validation lives in the use case**, not in the DTO and not in the controller. The DTO validates shape; the use case validates meaning | INT | `LayerContractArchTest.noBusinessRuleIsDecidedAtTheEdge` | yes | green |

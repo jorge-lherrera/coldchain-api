@@ -7,6 +7,10 @@ spring:
       acks: all
       properties:
         enable.idempotence: true
+    consumer:
+      auto-offset-reset: earliest
+    listener:
+      ack-mode: record
   threads:
     virtual:
       enabled: true
@@ -79,6 +83,11 @@ coldchain:
   platform:
     client-id: ${PLATFORM_CLIENT_ID:}
     client-secret-hash: ${PLATFORM_CLIENT_SECRET_HASH:}
+
+  advisory:
+    alert-topic: coldchain.triage.alert.v1
+    dead-letter-topic: coldchain.advisory.alert-dlt.v1
+    consumer-group: coldchain-api-advisory
 
 springdoc:
   paths-to-exclude: /internal/**

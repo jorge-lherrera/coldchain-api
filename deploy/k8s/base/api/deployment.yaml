@@ -1,0 +1,123 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: api
+    spec:
+      terminationGracePeriodSeconds: 45
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: wait-for-oracle
+          image: gvenzl/oracle-free:23-slim
+          command:
+            - sh
+            - -c
+            - |
+              until printf 'select 1 from dual;\n' \
+                  | sqlplus -s -L "$DB_USERNAME/\"$DB_PASSWORD\"@//oracle:1521/FREEPDB1" \
+                  | grep -q '^[[:space:]]*1$'; do
+                echo 'Oracle does not answer yet'
+                sleep 5
+              done
+          env:
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: coldchain-credentials
+                  key: DB_USERNAME
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: coldchain-credentials
+                  key: DB_PASSWORD
+          securityContext:
+            runAsUser: 54321
+            runAsGroup: 54321
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      containers:
+        - name: api
+          image: coldchain-api
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: api
+          env:
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: coldchain-credentials
+                  key: DB_USERNAME
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: coldchain-credentials
+                  key: DB_PASSWORD
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: coldchain-credentials
+                  key: JWT_SECRET
+            - name: PLATFORM_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: coldchain-credentials
+                  key: PLATFORM_CLIENT_ID
+            - name: PLATFORM_CLIENT_SECRET_HASH
+              valueFrom:
+                secretKeyRef:
+                  name: coldchain-credentials
+                  key: PLATFORM_CLIENT_SECRET_HASH
+          startupProbe:
+            httpGet:
+              path: /api/actuator/health/liveness
+              port: http
+            periodSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            httpGet:
+              path: /api/actuator/health/readiness
+              port: http
+            periodSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /api/actuator/health/liveness
+              port: http
+            periodSeconds: 10
+            failureThreshold: 3
+          lifecycle:
+            preStop:
+              sleep:
+                seconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}

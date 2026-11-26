@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: triage
+data:
+  TRIAGE_DB_URL: jdbc:postgresql://postgres:5432/triage
+  KAFKA_BOOTSTRAP_SERVERS: coldchain-kafka-bootstrap:9092
+  COLDCHAIN_API_URL: http://api:8080/api

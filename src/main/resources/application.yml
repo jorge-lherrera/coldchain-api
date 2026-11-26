@@ -16,6 +16,8 @@ spring:
       enabled: true
   main:
     banner-mode: off
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
   modulith:
     detection-strategy: explicitly-annotated
     events:
@@ -100,6 +102,7 @@ springdoc:
 
 server:
   port: ${SERVER_PORT:8080}
+  shutdown: graceful
   servlet:
     context-path: /api
   error:
@@ -121,3 +124,6 @@ management:
     health:
       probes:
         enabled: true
+      group:
+        readiness:
+          include: readinessState,db

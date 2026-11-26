@@ -1,0 +1,41 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: coldchain
+spec:
+  gatewayClassName: envoy-gateway
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: Same
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: api-public
+spec:
+  parentRefs:
+    - name: coldchain
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/v1
+        - path:
+            type: PathPrefix
+            value: /api/actuator/health
+        - path:
+            type: PathPrefix
+            value: /api/swagger-ui
+        - path:
+            type: Exact
+            value: /api/swagger-ui.html
+        - path:
+            type: PathPrefix
+            value: /api/v3/api-docs
+      backendRefs:
+        - name: api
+          port: 8080

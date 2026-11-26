@@ -485,12 +485,17 @@ publishes it.
 [Plan 08](plan-08-local-kubernetes.md), steps 1 to 7.
 
 ```
-chore(deploy): kind cluster script with ingress-nginx and Strimzi
+docs(deploy): Gateway API with Envoy Gateway, ingress-nginx is retired
 chore(deploy): Kafka, Oracle and PostgreSQL in the cluster
 chore(deploy): the two services with probes, limits and an autoscaler
+chore(deploy): kind cluster script with Envoy Gateway and Strimzi
+docs(deploy): the cluster as built, and what the drills showed
 ```
 
-**Done when:** `scripts/k8s-up.sh` and the walkthrough against the Ingress are green on a new cluster.
+As built, the script comes last: it is the commit in which everything it applies and waits for
+already exists. The first commit records the change of decision before any manifest depends on it.
+
+**Done when:** `scripts/k8s-up.sh` and the walkthrough against the Gateway are green on a new cluster.
 
 ### 24 · `chore/k8s-ci-and-readme`
 

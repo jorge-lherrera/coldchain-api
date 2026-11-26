@@ -1,0 +1,39 @@
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  name: coldchain.telemetry.excursion.v1
+  labels:
+    strimzi.io/cluster: coldchain
+spec:
+  partitions: 3
+  replicas: 1
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  name: coldchain.triage.alert.v1
+  labels:
+    strimzi.io/cluster: coldchain
+spec:
+  partitions: 3
+  replicas: 1
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  name: coldchain.triage.excursion-dlt.v1
+  labels:
+    strimzi.io/cluster: coldchain
+spec:
+  partitions: 1
+  replicas: 1
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  name: coldchain.advisory.alert-dlt.v1
+  labels:
+    strimzi.io/cluster: coldchain
+spec:
+  partitions: 1
+  replicas: 1

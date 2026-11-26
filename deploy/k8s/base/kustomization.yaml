@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: coldchain
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: coldchain
+resources:
+  - namespace.yaml
+  - gateway.yaml
+  - kafka/kafka.yaml
+  - kafka/topics.yaml
+  - oracle/statefulset.yaml
+  - oracle/service.yaml
+  - postgres/statefulset.yaml
+  - postgres/service.yaml
+  - api/configmap.yaml
+  - api/deployment.yaml
+  - api/service.yaml
+  - triage/configmap.yaml
+  - triage/deployment.yaml
+  - triage/hpa.yaml

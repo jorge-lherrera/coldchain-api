@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: triage
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: triage
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: triage
+    spec:
+      terminationGracePeriodSeconds: 45
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:17.6-alpine
+          command:
+            - sh
+            - -c
+            - |
+              until pg_isready --host=postgres --port=5432 --username="$TRIAGE_DB_USERNAME" --dbname=triage; do
+                sleep 2
+              done
+          env:
+            - name: TRIAGE_DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: coldchain-credentials
+                  key: TRIAGE_DB_USERNAME
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+      containers:
+        - name: triage
+          image: coldchain-triage
+          ports:
+            - name: http
+              containerPort: 8081
+          envFrom:
+            - configMapRef:
+                name: triage
+          env:
+            - name: TRIAGE_DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: coldchain-credentials
+                  key: TRIAGE_DB_USERNAME
+            - name: TRIAGE_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: coldchain-credentials
+                  key: TRIAGE_DB_PASSWORD
+            - name: PLATFORM_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: coldchain-credentials
+                  key: PLATFORM_CLIENT_ID
+            - name: PLATFORM_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: coldchain-credentials
+                  key: PLATFORM_CLIENT_SECRET
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: coldchain-credentials
+                  key: ANTHROPIC_API_KEY
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            periodSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            periodSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            periodSeconds: 10
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}

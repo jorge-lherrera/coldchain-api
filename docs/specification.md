@@ -673,7 +673,7 @@ The internal endpoint is
   minutes since the last accepted handoff, and the handoffs inside that window.
 - It accepts only the platform token, and the platform token is accepted nowhere else
   ([ADR-011](adr/ADR-011-platform-credential-for-service-calls.md)).
-- It is left out of the published OpenAPI document and out of the Ingress.
+- It is left out of the published OpenAPI document and out of the cluster's public route.
 
 Triage owns three tables in its own database:
 

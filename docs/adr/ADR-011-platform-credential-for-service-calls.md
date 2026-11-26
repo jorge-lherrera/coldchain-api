@@ -43,7 +43,7 @@ accepts nothing else.**
   
   Both directions are integration tests, not conventions.
 - **The internal surface stays out of sight.** It is left out of the OpenAPI document served at
-  `/api/v3/api-docs`, and the Kubernetes Ingress does not route it
+  `/api/v3/api-docs`, and the cluster's Gateway API route does not carry it
   ([ADR-013](ADR-013-local-kubernetes-kind-kustomize-strimzi.md)). The filter chain is the control;
   the network is the second layer.
 - **Writes on behalf of the platform are not a thing.** The only internal endpoint is a read. If one

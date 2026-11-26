@@ -480,6 +480,10 @@ docs(triage): what the model gets right and what it gets wrong
 **Done when:** `./gradlew evalTriage`, in `triage/`, prints the confusion matrix, and the triage README
 publishes it.
 
+**Deferred to `v2.1.0`.** The matrix only means something when it comes from the model itself, and
+no model key was at hand when phase two closed. So `v2.0.0` went out without this step, and the
+README says so.
+
 ### 23 · `feat/k8s-local`
 
 [Plan 08](plan-08-local-kubernetes.md), steps 1 to 7.
@@ -518,6 +522,8 @@ ADR-010 to ADR-013 are `Accepted`.
 ```
 git checkout main && git merge --no-ff develop && git tag v2.0.0
 ```
+
+As built, without step 22. It goes to `main` on its own later, tagged `v2.1.0`.
 
 ## Rules that are not skipped
 

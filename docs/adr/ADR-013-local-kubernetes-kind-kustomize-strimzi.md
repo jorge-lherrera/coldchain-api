@@ -1,6 +1,6 @@
 # ADR-013 — Local Kubernetes with kind, Kustomize and Strimzi
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-25
 - **Amended:** 2026-11-26. The entry point is a Gateway API route served by Envoy Gateway, not an
   Ingress: ingress-nginx was retired in March 2026.

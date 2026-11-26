@@ -7,8 +7,9 @@ organizations, its temperature is measured for the entire journey, and when it c
 a certificate or it doesn't**.
 
 > **Status:** the six modules are built and closed, and a second service triages every excursion and
-> sends its advice back. Every rule in the catalogue has a machine that checks it, and the integration
-> suite runs against a real Oracle raised from nothing on every push.
+> sends its advice back. The whole system runs with Docker Compose or in a local Kubernetes cluster,
+> and CI walks the demo both ways. Every rule in the catalogue has a machine that checks it, and the
+> integration suite runs against a real Oracle raised from nothing on every push.
 > The specification lives in [`docs/specification.md`](docs/specification.md), the decisions in
 > [`docs/adr/`](docs/adr/), and the order the work was done in
 > [`docs/branching-plan.md`](docs/branching-plan.md).
@@ -115,6 +116,8 @@ module is in [ADR-010](docs/adr/ADR-010-second-service-for-excursion-triage.md).
 - **Spring AI** with Claude for the triage, behind a port, with rules that answer whenever the model
   does not
 - Spring Security with our own JWT, OpenAPI, Docker Compose
+- **Kubernetes** on kind for the second way to run it: Kustomize, Kafka through **Strimzi**, and the
+  **Gateway API** served by **Envoy Gateway**
 - Every message the API answers with travels as a key and resolves in **English, Spanish and
   Portuguese**, chosen by `Accept-Language`
 
@@ -154,7 +157,44 @@ scripts/demo.sh                  # the whole story below, end to end
 The stack answers at `http://localhost:8080/api`, and the contract it serves is browsable at
 `http://localhost:8080/api/swagger-ui.html`.
 
-To work on the code, run the API from Gradle against the same database:
+### On Kubernetes
+
+Docker Compose is the everyday path. The same system also runs in a local Kubernetes cluster, which
+answers what Compose cannot: when an instance is alive but not ready, what happens to an excursion
+when the pod that committed it dies, and how far the consumer can scale
+([ADR-013](docs/adr/ADR-013-local-kubernetes-kind-kustomize-strimzi.md)).
+
+```bash
+cp .env.example .env                            # the same credentials Compose reads
+scripts/k8s-up.sh                               # the cluster, its platform, both images, every workload ready
+BASE_URL=http://localhost/api scripts/demo.sh   # the same walkthrough, through the Gateway
+scripts/k8s-down.sh                             # the cluster and its volumes, gone
+```
+
+It needs Docker, kind and `kubectl`, and about 6 GB for the cluster.
+
+- **One kind node**, with the manifests composed by Kustomize: a `base` and a `local` overlay.
+- **Kafka run by Strimzi**, its four topics declared as `KafkaTopic` resources. Oracle and
+  PostgreSQL run as `StatefulSet`s with a volume each.
+- **The API and triage as `Deployment`s**: probes from the actuator, requests and limits, non-root
+  on a read-only filesystem. A database that is down makes a pod not ready and never restarts it.
+- **The API answers through a Gateway API route served by Envoy Gateway**, at
+  `http://localhost/api`. Only the public prefixes are routed, so `/api/internal` answers `404` from
+  outside.
+- **Triage scales on CPU up to three replicas**, the partition count of its feed. A fourth would
+  receive no partition and sit idle.
+- **Running the script again changes nothing.** An image that changed rolls its own `Deployment`
+  and nothing else.
+
+CI runs the same script on a kind cluster on every push, runs it a second time to prove it changes
+nothing, and walks the demo through the Gateway. The checks and the failure drills are written down
+with what they showed in [plan 08](docs/plan-08-local-kubernetes.md#what-the-cluster-showed): the
+API killed with an excursion in its outbox, triage killed mid-triage, and a duplicate the inbox
+drops.
+
+### Working on the code
+
+Run the API from Gradle against the same database:
 
 ```bash
 docker compose up -d oracle kafka   # the database and the broker
@@ -233,9 +273,10 @@ that run is published as a build artifact.
   [04 telemetry](docs/plan-04-telemetry.md) ·
   [05 compliance](docs/plan-05-compliance.md) ·
   [06 advisory](docs/plan-06-advisory.md).
-- **Phase two**, in progress — a second service that triages excursions with a language model, and
-  Kubernetes: [07 triage](docs/plan-07-triage-service.md) ·
-  [08 kubernetes](docs/plan-08-local-kubernetes.md), decided in ADR-010 to ADR-013.
+- **Phase two** — a second service that triages excursions with a language model, and Kubernetes:
+  [07 triage](docs/plan-07-triage-service.md) ·
+  [08 kubernetes](docs/plan-08-local-kubernetes.md), decided in ADR-010 to ADR-013. What is left is
+  the evaluation of the model against a golden set of excursions, which needs a model key to run.
 - **Data model** (draw.io):
   [`docs/coldchain-data-model.drawio`](docs/coldchain-data-model.drawio) — the 25 tables with their
   columns and relationships, and one page per module.

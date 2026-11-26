@@ -1,7 +1,7 @@
 # Build plan · 08 · local kubernetes
 
-> **Status:** in progress — a deployment, not a module of the monolith. Steps 1 to 7 are built in
-> step 23 of the [branching plan](branching-plan.md); step 8 is step 24.
+> **Status:** closed — a deployment, not a module of the monolith. Steps 1 to 7 were built in step 23
+> of the [branching plan](branching-plan.md), and step 8 in step 24.
 
 The two services, their databases and Kafka in a local cluster that anybody who clones the repository
 can raise with one script ([ADR-013](adr/ADR-013-local-kubernetes-kind-kustomize-strimzi.md)). The
@@ -151,6 +151,18 @@ Each one is a documented command and an expected outcome:
 - On failure it dumps `kubectl get events` and the logs of every pod.
 - If the runner's memory cannot hold Oracle and Kafka together, the fallback is explicit, not
   silent: validate the manifests with kubeconform, and say so in the README.
+
+As built, the job `the walkthrough on kind` in `.github/workflows/ci.yml`:
+
+- installs kind and `kubectl` at pinned versions, each checked against its published checksum;
+- copies `.env.example`, the file a new clone starts from, so the credentials are the documented
+  ones;
+- runs `k8s-up.sh` twice and fails if any workload, Kafka resource, route or autoscaler changed
+  generation or identity on the second run, which turns the check of step 1 into a gate;
+- walks `scripts/demo.sh` through the Gateway, and fails unless `/api/internal` answers `404` there;
+- deletes the cluster whatever happened.
+
+The standard runner holds the whole cluster, so the kubeconform fallback was not needed.
 
 ## Step 9 · The tests that close the milestone
 

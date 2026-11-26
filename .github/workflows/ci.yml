@@ -98,6 +98,70 @@ jobs:
         if: always()
         run: docker compose down --volumes
 
+  kubernetes:
+    name: the walkthrough on kind
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      KIND_VERSION: v0.33.0
+      KUBECTL_VERSION: v1.37.3
+    steps:
+      - uses: actions/checkout@v4
+      - name: kind and kubectl, at pinned versions
+        run: |
+          mkdir -p "$HOME/.local/bin"
+          cd "$HOME/.local/bin"
+          curl --fail --silent --show-error --location --output kind \
+            "https://kind.sigs.k8s.io/dl/$KIND_VERSION/kind-linux-amd64"
+          echo "$(curl --fail --silent --show-error --location \
+            "https://kind.sigs.k8s.io/dl/$KIND_VERSION/kind-linux-amd64.sha256sum" | cut -d' ' -f1)  kind" \
+            | sha256sum --check
+          curl --fail --silent --show-error --location --output kubectl \
+            "https://dl.k8s.io/release/$KUBECTL_VERSION/bin/linux/amd64/kubectl"
+          echo "$(curl --fail --silent --show-error --location \
+            "https://dl.k8s.io/release/$KUBECTL_VERSION/bin/linux/amd64/kubectl.sha256")  kubectl" \
+            | sha256sum --check
+          chmod +x kind kubectl
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: the credentials a new clone starts from
+        run: cp .env.example .env
+      - name: raise the cluster
+        run: scripts/k8s-up.sh
+      - name: a second run changes nothing
+        run: |
+          snapshot() {
+            kubectl --context kind-coldchain get \
+              deployments,statefulsets,replicasets,kafkas,kafkanodepools,kafkatopics,gateways,httproutes,horizontalpodautoscalers \
+              --all-namespaces --no-headers \
+              --output=custom-columns=KIND:.kind,NAMESPACE:.metadata.namespace,NAME:.metadata.name,GENERATION:.metadata.generation,UID:.metadata.uid \
+              | sort
+          }
+          snapshot > "$RUNNER_TEMP/before.txt"
+          scripts/k8s-up.sh
+          snapshot > "$RUNNER_TEMP/after.txt"
+          diff "$RUNNER_TEMP/before.txt" "$RUNNER_TEMP/after.txt"
+      - name: walk the whole story through the Gateway
+        run: BASE_URL=http://localhost/api scripts/demo.sh
+      - name: the internal surface is not routed
+        run: |
+          status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
+            http://localhost/api/internal/v1/shipments/00000000-0000-0000-0000-000000000000/excursions/00000000-0000-0000-0000-000000000000/context)"
+          echo "GET /api/internal/v1/... through the Gateway answered $status"
+          test "$status" = 404
+      - name: what the cluster said
+        if: failure()
+        run: |
+          kubectl --context kind-coldchain get events --all-namespaces --sort-by=.lastTimestamp || true
+          kubectl --context kind-coldchain get pods --all-namespaces --output=wide || true
+          for pod in $(kubectl --context kind-coldchain get pods --namespace coldchain --output=name); do
+            echo "::group::$pod"
+            kubectl --context kind-coldchain logs --namespace coldchain "$pod" --all-containers --prefix --tail=300 || true
+            echo "::endgroup::"
+          done
+      - name: tear it down
+        if: always()
+        run: scripts/k8s-down.sh
+
   image:
     name: production image
     runs-on: ubuntu-latest

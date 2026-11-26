@@ -507,6 +507,9 @@ docs: running ColdChain on Kubernetes
 docs(adr): accept the phase two decisions
 ```
 
+As built, the job also runs the script a second time and fails if anything changed, so the
+idempotency of step 23 is checked on every push rather than once by hand.
+
 **Done when:** the CI job on kind is green, the `README` explains both ways of running the system, and
 ADR-010 to ADR-013 are `Accepted`.
 

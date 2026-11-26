@@ -1,6 +1,6 @@
 # ADR-011 — A platform credential for service-to-service calls
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-25
 
 ## Context

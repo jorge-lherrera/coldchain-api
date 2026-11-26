@@ -1,6 +1,6 @@
 # ADR-010 — A second service for excursion triage
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-11-25
 
 ## Context

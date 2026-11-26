@@ -485,12 +485,12 @@ publishes it.
 [Plan 08](plan-08-local-kubernetes.md), steps 1 to 7.
 
 ```
-chore(deploy): kind cluster script with ingress-nginx and Strimzi
+chore(deploy): kind cluster script with Envoy Gateway and Strimzi
 chore(deploy): Kafka, Oracle and PostgreSQL in the cluster
 chore(deploy): the two services with probes, limits and an autoscaler
 ```
 
-**Done when:** `scripts/k8s-up.sh` and the walkthrough against the Ingress are green on a new cluster.
+**Done when:** `scripts/k8s-up.sh` and the walkthrough against the Gateway are green on a new cluster.
 
 ### 24 · `chore/k8s-ci-and-readme`
 

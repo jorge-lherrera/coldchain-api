@@ -4,7 +4,7 @@
 
 The two services, their databases and Kafka in a local cluster that anybody who clones the repository
 can raise with one script ([ADR-013](adr/ADR-013-local-kubernetes-kind-kustomize-strimzi.md)). The
-milestone ends when the walkthrough runs against the cluster's Ingress, and keeps its promises when
+milestone ends when the walkthrough runs against the cluster's Gateway, and keeps its promises when
 a pod is killed halfway.
 
 Docker Compose stays the everyday path. This plan adds the second one and the proof that both
@@ -14,15 +14,17 @@ stay green.
 
 ```
 deploy/k8s/
+  kind-cluster.yaml   one node, pinned image, port 80 of the host mapped to the proxy's NodePort
+  platform/           what a cluster administrator installs: the GatewayClass, and metrics-server
   base/
-    kustomization.yaml · namespace.yaml · ingress.yaml
+    kustomization.yaml · namespace.yaml · gateway.yaml (Gateway + HTTPRoute)
     kafka/        kafka.yaml (Kafka + KafkaNodePool) · topics.yaml (one KafkaTopic each)
     oracle/       statefulset.yaml · service.yaml
     postgres/     statefulset.yaml · service.yaml
     api/          deployment.yaml · service.yaml · configmap.yaml
     triage/       deployment.yaml · configmap.yaml · hpa.yaml
   overlays/
-    local/        kustomization.yaml: image tags, replicas, resources
+    local/        kustomization.yaml: image tags, replicas · resources.yaml · envoy-proxy.yaml
 scripts/
   k8s-up.sh · k8s-down.sh
 ```
@@ -31,8 +33,9 @@ scripts/
 
 `scripts/k8s-up.sh`, idempotent, in this order:
 
-1. Create the kind cluster with the port mapping the Ingress needs.
-2. Install ingress-nginx and the Strimzi operator from manifests pinned to an exact version.
+1. Create the kind cluster with the port mapping the Gateway needs.
+2. Install Envoy Gateway, the Strimzi operator and metrics-server from manifests pinned to an exact
+   version, and the `GatewayClass`.
 3. Build both images and load them with `kind load docker-image`.
 4. Create the `Secret` from `.env`: database credentials, JWT secret, platform client, and the model
    key if present.
@@ -82,15 +85,18 @@ there.
 
 **Check:** `kubectl rollout restart deployment/api` during the walkthrough does not fail a single step.
 
-## Step 5 · The Ingress
+## Step 5 · The Gateway
 
-- The Ingress lists the public prefixes one by one: `/api/v1`, `/api/actuator/health`,
-  `/api/swagger-ui` and `/api/v3/api-docs`. A single `/api` prefix would carry `/api/internal` with
-  it, so the list is the control ([ADR-011](adr/ADR-011-platform-credential-for-service-calls.md)).
-  Triage has no business HTTP and no route.
-- `scripts/demo.sh` runs unchanged with `BASE_URL` pointing at the Ingress.
+- One `Gateway` on port 80 and one `HTTPRoute`, served by Envoy Gateway. ingress-nginx was the first
+  plan, and it was retired in March 2026 (ADR-013).
+- The route lists the public prefixes one by one: `/api/v1`, `/api/actuator/health`,
+  `/api/swagger-ui` (with the exact `/api/swagger-ui.html`) and `/api/v3/api-docs`. A single `/api`
+  prefix would carry `/api/internal` with it, so the list is the control
+  ([ADR-011](adr/ADR-011-platform-credential-for-service-calls.md)). Triage has no business HTTP and
+  no route.
+- `scripts/demo.sh` runs unchanged with `BASE_URL` pointing at the Gateway.
 
-**Check:** `curl` on `/api/internal/v1/...` through the Ingress gets `404`.
+**Check:** `curl` on `/api/internal/v1/...` through the Gateway gets `404`.
 
 ## Step 6 · Scaling the consumer
 
@@ -118,7 +124,7 @@ Each one is a documented command and an expected outcome:
 ## Step 8 · CI
 
 - A job creates a kind cluster on the runner, runs `k8s-up.sh` without a model key, and runs
-  `scripts/demo.sh` against the Ingress.
+  `scripts/demo.sh` against the Gateway.
 - On failure it dumps `kubectl get events` and the logs of every pod.
 - If the runner's memory cannot hold Oracle and Kafka together, the fallback is explicit, not
   silent: validate the manifests with kubeconform, and say so in the README.
